@@ -1,0 +1,202 @@
+{% extends "network/layout.html" %}
+{% load static %}
+{% block body %}
+
+<script>
+
+// This function gets the value of the cookie with the specified name
+function getCookie(name){
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if(parts.length == 2) return parts.pop().split(';').shift();
+        }
+
+        // This function is called when the form for editing a post is submitted
+        function submitHandler(id){
+            // Get the value of the textarea for the post being edited
+            const textareaValue = document.getElementById(`textarea_${id}`).value;
+            // Get the content element of the post being edited
+            const content = document.getElementById(`content_${id}`);
+            // Get the modal element for editing the post
+            const modal = document.getElementById(`modal_edit_post_${id}`);
+            // Send a POST request to the server to save the changes to the post
+            fetch(`/edit/${id}`, {
+                method: "POST",
+                headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+                body: JSON.stringify({
+                    content: textareaValue
+                })
+            })
+            // Parse the response as JSON
+            .then(response => response.json())
+            .then(result => {
+                // Update the content of the post with the new content
+                content.innerHTML = result.data;
+                // Close the modal
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+                modal.setAttribute('style', 'display: none');
+                // Remove the modal backdrop
+                const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
+                for(let i=0; i<modalsBackdrops.length; i++){
+                    document.body.removeChild(modalsBackdrops[i]);
+                }
+            })
+            
+        }
+
+  // This function is called when the like button for a post is clicked
+  function likeHandler(id, whoYouLiked){
+      // Get the like button element
+      const btn = document.getElementById(`${id}`);
+
+      // Remove the existing like/dislike icon classes
+      btn.classList.remove('fa-thumbs-up')
+      btn.classList.remove('fa-thumbs-down')
+
+      // Check if the post has already been liked by the user
+      if(whoYouLiked.indexOf(id) >= 0){
+          var liked = true;
+      } else {
+          var liked = false;
+      }
+
+      // Send a request to the server to like/unlike the post
+      if(liked === true){
+        
+          fetch(`/remove_like/${id}`)
+          .then(response => response.json())
+          .then(result => {
+              // Add the like icon class
+              btn.classList.add('fa-thumbs-up')
+              // Update the like count element in the HTML template
+              document.getElementById("likeCount_" + id).innerHTML = result.likes;
+          })
+
+      } else {
+        
+          fetch(`/add_like/${id}`)
+          .then(response => response.json())
+          .then(result => {
+            console.log(result)
+              btn.classList.add('fa-thumbs-down')
+              // Update the like count element in the HTML template
+              document.getElementById("likeCount_" + id).innerHTML = result.likes;
+          })
+
+      }
+      liked = !liked
+  }
+
+</script>
+
+<div>
+
+  {% if user.is_authenticated %} 
+    <!-- Check if the user is authenticated -->
+    <form class="create-post-container" action="{% url 'newPost' %}" method="POST">
+        <!-- Add a CSRF token to the form -->
+        {% csrf_token %}
+        <!-- Textarea for creating a new post -->
+        <textarea class="create-post-text" name="post_content" placeholder="What's on your mind?"></textarea>
+        <div>
+        <!-- Submit button for creating a new post -->
+        <button type="submit" class="create-post-button">post</button>
+        {% else %} 
+        <!-- If the user is not authenticated, display a link to register -->
+        <a id="register" href="{% url 'register' %}">Click on register to create an account</a>
+        
+        {% endif %}
+    </div>
+    </form>
+</div>
+
+    {% for posts in page_post %}
+    
+    
+    <div class="row">
+      <div class="facebook-post">
+        <!-- Display a link to the user's profile -->
+        <a class="font-weight-bold" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
+        <!-- Display the content of the post -->
+        <h6 class="content" id="content_{{ posts.id }}">{{ posts.postContent }}</h6>
+        <!-- Display the timestamp of the post -->
+        <p class="date">{{posts.timestamp}}</p>
+        {% if user.is_authenticated %}
+          {% if user == posts.user %}
+        <div class="edit-buttons">
+          <!-- Display an "Edit" button that opens the modal to edit the post -->
+          <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{posts.id}}">Edit</button>
+        </div>
+        <!-- The modal for editing a post -->
+        <div class="modal fade" id="modal_edit_post_{{posts.id}}" tabindex="-1" role="dialog" aria-labelledby="modal_edit_post_{{posts.id}}_" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <!-- Textarea for editing the post's content -->
+                <textarea rows="10" id="textarea_{{posts.id}}"  class="form-control" name="content">{{posts.postContent}}</textarea>
+
+              </div>
+              <div class="modal-footer">
+
+
+              </div>
+              <div class="modal-footer">
+               
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                
+                <button type="button" class="btn btn-primary" onclick="submitHandler({{ posts.id }})">Save changes</button>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <span id="likeCount_{{ posts.id }}">{{ posts.likes }}</span>
+<!-- Check if the current post has been liked by the authenticated user -->
+{% if posts.id in whoYouLiked %}
+  
+  <!-- This means that we already liked the post -->
+  
+  <!-- If the post has been liked, display a thumbs-down button -->
+  <button class="btn btn-info fa fa-thumbs-down col-1" onclick="likeHandler({{ posts.id }}, {{ whoYouLiked }})" id="{{ posts.id }}"></button>
+  
+  {% else %}
+  
+  <!-- If the post has not been liked, display a thumbs-up button -->
+  
+  <button class="btn btn-info fa fa-thumbs-up col-1" onclick="likeHandler({{ posts.id }}, {{ whoYouLiked }})" id="{{ posts.id }}"></button>
+  
+  
+  {% endif %}
+  {% endif %} 
+  {% endif %} 
+  
+
+  </div>
+  </div>
+  </div>
+  <!-- End of the for loop -->
+  {% endfor %}
+
+  <!-- Pagination for navigating through the posts -->
+  <nav aria-label="Page navigation example">
+  <ul class="pagination d-flex justify-content-center">
+  {% if page_post.has_previous %}
+  <!-- If there is a previous page, display a "previous" button -->
+  <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
+  {% endif %}
+  {% if page_post.has_next %}
+  <!-- If there is a next page, display a "next" button -->
+  <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
+  {% endif %}
+  </ul>
+  </nav>
+
+  {% endblock %}
