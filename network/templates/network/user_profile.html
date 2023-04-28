@@ -1,9 +1,10 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
 
 <div class="container">
-  <div class="row d-flex justify-content-center">
+  <div style="color: white;" class="row d-flex justify-content-center">
     <h3 class="col-4">Following: {{following.count}}</h3>
     <h3 class="col-4">Followers: {{follower.count}}</h3>
   </div>
@@ -26,17 +27,82 @@
           {% endif %}
 </div>
 
-<div class="all-posts">
-    {% for posts in page_post%}
-    <div class="row">
-      <div class="facebook-post">
-        <a href="{% url 'profile' user_id=user.id %}" class="font-weight-bold">@{{posts.user}}</a>
-        <h5>{{posts.postContent}}</h5>
-        <p class="date">{{posts.timestamp}}</p>
+
+{% for posts in page_post %}
+    
+    
+<div class="row">
+  <div class="facebook-post">
+    <!-- Display a link to the user's profile -->
+    <a href="{% url 'profile' user_id=user.id %}" class="font-weight-bold">@{{posts.user}}</a>
+    <!-- Display the content of the post -->
+    <h6 class="content" id="content_{{ posts.id }}">{{ posts.postContent }}</h6>
+    <!-- Display the timestamp of the post -->
+    <p class="date">{{posts.timestamp}}</p>
+    {% if user.is_authenticated %}
+      {% if user == posts.user %}
+    <div class="edit-buttons">
+      <!-- Display an "Edit" button that opens the modal to edit the post -->
+      <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{posts.id}}">Edit</button>
+    </div>
+    <!-- The modal for editing a post -->
+    <div class="modal fade" id="modal_edit_post_{{posts.id}}" tabindex="-1" role="dialog" aria-labelledby="modal_edit_post_{{posts.id}}_" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Edit</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Textarea for editing the post's content -->
+            <textarea rows="10" id="textarea_{{posts.id}}"  class="form-control" name="content">{{posts.postContent}}</textarea>
+
+          </div>
+          <div class="modal-footer">
+
+
+          </div>
+          <div class="modal-footer">
+           
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            
+            <button type="button" class="btn btn-primary" onclick="submitHandler({{ posts.id }})">Save changes</button>
+
+          </div>
+        </div>
       </div>
     </div>
-  </div> 
-  {% endfor %}
+    {% else %}
+    
+<!-- Check if the current post has been liked by the authenticated user -->
+{% if posts.id in whoYouLiked %}
+
+<!-- This means that we already liked the post -->
+
+<!-- If the post has been liked, display a thumbs-down button -->
+
+
+{% else %}
+
+<!-- If the post has not been liked, display a thumbs-up button -->
+
+
+
+
+{% endif %}
+{% endif %} 
+{% endif %} 
+
+
+</div>
+</div>
+</div>
+<!-- End of the for loop -->
+{% endfor %}
+
+
 
     
   <nav aria-label="Page navigation example">

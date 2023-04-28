@@ -1,7 +1,7 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-<h1>Dear <a href="{% url 'profile' user_id=user.id %}">{{user.username}}</a>, these are the posts you follow</h1>
+<h1 style="color: white;">Dear <a href="{% url 'profile' user_id=user.id %}">{{user.username}}</a>, these are the posts you follow</h1>
 
     {% for posts in page_post%}
     <div class="row">

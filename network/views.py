@@ -6,15 +6,21 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 import json
 from django.http import JsonResponse
-
+from django.core.exceptions import ValidationError
 from .models import *
 
 
 def index(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     post = Post.objects.all().order_by("id").reverse()
     paginator = Paginator(post, 10) # Show 10 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
+    user = request.user
+    profile_pics = user.profile_pics
+    
 
     allLikes = Like.objects.all()
 
@@ -29,10 +35,21 @@ def index(request):
     return render(request, "network/index.html", {
         "post": post,
         "page_post": page_post,
-        "whoYouLiked": whoYouLiked
+        "whoYouLiked": whoYouLiked,
+        "profile_pics": profile_pics,
     })
 
+def profile_pic(request, user_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page"
+        return render(request, "network/register.html")
+    
+
+
 def newPost(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     if request.method == "POST":
         post = request.POST["post_content"]
         user = User.objects.get(pk=request.user.id)
@@ -41,6 +58,9 @@ def newPost(request):
         return HttpResponseRedirect(reverse(index))
 
 def profile(request, user_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     user = User.objects.get(pk=user_id)
     post = Post.objects.filter(user=user).order_by("id").reverse()
     paginator = Paginator(post, 10) # Show 10 contacts per page.
@@ -71,6 +91,9 @@ def profile(request, user_id):
 
 
 def follow(request):
+   if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
    user_follow = request.POST["followUser"]
    current_user = User.objects.get(pk=request.user.id)
    userFollowData =User.objects.get(username=user_follow)
@@ -81,6 +104,9 @@ def follow(request):
 
 
 def unfollow(request):
+   if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
    user_follow = request.POST["followUser"]
    current_user = User.objects.get(pk=request.user.id)
    userFollowData =User.objects.get(username=user_follow)
@@ -90,6 +116,9 @@ def unfollow(request):
    return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
 def following(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     current_user = User.objects.get(pk=request.user.id)
     following = Follow.objects.filter(following=current_user)
     posts = Post.objects.all().order_by("id").reverse()
@@ -109,6 +138,9 @@ def following(request):
     })
 
 def edit(request, post_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     if request.method == "POST":
         data = json.loads(request.body)
         edit_post = Post.objects.get(pk=post_id)
@@ -118,6 +150,9 @@ def edit(request, post_id):
 
 
 def remove_like(request, post_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     post = Post.objects.get(pk=post_id)
     post.likes -= 1
     post.save()
@@ -131,6 +166,9 @@ def remove_like(request, post_id):
 
 
 def add_like(request, post_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
     post = Post.objects.get(pk=post_id)
     post.likes += 1
     post.save()
@@ -173,24 +211,30 @@ def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
-
-        # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
+        profile_pics = request.FILES.get("profile_pic")
+
         if password != confirmation:
             return render(request, "network/register.html", {
                 "message": "Passwords must match."
             })
 
-        # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
-            user.save()
+            if profile_pics:
+                user.profile_pics.save(profile_pics.name, profile_pics, save=True)
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."
             })
+        except ValidationError as e:
+            return render(request, "network/register.html", {
+                "message": e.message
+            })
+
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+

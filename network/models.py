@@ -3,7 +3,8 @@ from django.db import models
 
 
 class User(AbstractUser):
-    pass
+    profile_pics = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    
 
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="post_user")
