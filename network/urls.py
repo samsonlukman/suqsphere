@@ -8,6 +8,7 @@ urlpatterns = [
     path("newpost", views.newPost, name="newPost"),
     path('profile_pic/<int:user_id/', views.profile_pic, name="profile_pic"),
     path('profile/<int:user_id>/', views.profile, name="profile"),
+    path('addComment/<int:post_id>/', views.addComment, name='addComment'),
     path("follow", views.follow, name="follow"),
     path("unfollow", views.unfollow, name="unfollow"),
     path("following", views.following, name="following"),

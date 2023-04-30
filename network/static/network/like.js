@@ -1,4 +1,34 @@
-
+function disableComment() {
+    const commentBtns = document.querySelectorAll(".btn-comment button");
+    const commentFields = document.querySelectorAll(".comment-field textarea");
+  
+    for (let i = 0; i < commentFields.length; i++) {
+      const commentBtn = commentBtns[i];
+      const newComment = commentFields[i];
+  
+      if (newComment.value.trim() === "") {
+        commentBtn.disabled = true;
+      } else {
+        commentBtn.disabled = false;
+      }
+  
+      // add event listener for input event
+      newComment.addEventListener("input", function () {
+        if (newComment.value.trim() === "") {
+          commentBtn.disabled = true;
+        } else {
+          commentBtn.disabled = false;
+        }
+      });
+    }
+  }
+  
+  window.onload = function() {
+    disableComment();
+  };
+  
+  
+  
 
 // This function gets the value of the cookie with the specified name
 function getCookie(name){
@@ -40,6 +70,8 @@ function getCookie(name){
             })
             
         }
+
+
 
   // This function is called when the like button for a post is clicked
   function likeHandler(id, whoYouLiked){

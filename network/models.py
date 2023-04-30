@@ -22,6 +22,15 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.following} is following {self.follower}"
 
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="userComment")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True, related_name="postComment")
+    message = models.CharField(max_length=10000)
+
+    def __str__(self):
+        return f"{str(self.author)} commented on {self.post}"
+
+
 
 class Like(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE, related_name="user_like")
