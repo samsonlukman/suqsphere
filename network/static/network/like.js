@@ -26,6 +26,44 @@ function disableComment() {
   window.onload = function() {
     disableComment();
   };
+
+  // Request permission from the user
+Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      // Create a service worker
+      navigator.serviceWorker.register('/static/network/service-worker.js').then(() => {
+        // Subscribe the user to push notifications
+        navigator.serviceWorker.ready.then(registration => {
+          registration.pushManager.subscribe({ userVisibleOnly: true }).then(subscription => {
+            // Send the subscription object to your server
+            fetch('/subscribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(subscription)
+            });
+          });
+        });
+      });
+    }
+  });
+  
+  // Send a push notification
+  function sendPushNotification(subscription, title, message) {
+    fetch('/send-push-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        subscription: subscription,
+        title: title,
+        message: message
+      })
+    });
+  }
+  
   
   
   

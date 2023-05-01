@@ -30,6 +30,18 @@ class Comment(models.Model):
     def __str__(self):
         return f"{str(self.author)} commented on {self.post}"
 
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    endpoint = models.CharField(max_length=255)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.endpoint
 
 
 class Like(models.Model):

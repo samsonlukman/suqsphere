@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
 import json
@@ -10,6 +10,9 @@ from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import *
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
+import firebase_admin
+from firebase_admin import credentials, messaging
 
 
 def index(request):
@@ -44,6 +47,64 @@ def index(request):
         "comments": comments,        
     })
 
+@csrf_exempt
+def subscribe(request):
+    if request.method == 'POST':
+        # Parse the JSON data in the request body
+        data = json.loads(request.body)
+
+        # Extract the subscription endpoint, public key, and auth token from the request
+        endpoint = data.get('endpoint')
+        p256dh = data.get('keys', {}).get('p256dh')
+        auth = data.get('keys', {}).get('auth')
+        print(endpoint)
+
+        # Save the subscription to the database
+        subscription = Subscription.objects.create(
+            user=request.user,
+            endpoint=endpoint,
+            p256dh=p256dh,
+            auth=auth,
+        )
+
+        # Return a JSON response indicating success
+        return JsonResponse({'success': True})
+
+    # Return an error response for all other request methods
+    return JsonResponse({'error': 'Invalid request method'})
+
+# Initialize Firebase SDK
+cred = credentials.Certificate('network/firebase_keys/serviceAccountKey.json')
+firebase_admin.initialize_app(cred)
+
+
+@csrf_exempt
+def send_push_notification(request):
+    if request.method == 'POST':
+        # Parse the JSON data in the request body
+        data = json.loads(request.body)
+
+        # Extract the subscription endpoint and payload from the request
+        endpoint = data.get('endpoint')
+        payload = data.get('payload')
+
+        # Construct a message payload for FCM
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=payload.get('title'),
+                body=payload.get('body')
+            ),
+            token=endpoint
+        )
+
+        # Send the message using the Firebase Admin SDK
+        response = messaging.send(message)
+
+        # Return a JSON response indicating success
+        return JsonResponse({'success': True, 'response': response})
+
+    # Return an error response for all other request methods
+    return JsonResponse({'error': 'Invalid request method'})
 
 def addComment(request, post_id):
     if request.method == 'POST':
@@ -78,7 +139,16 @@ def newPost(request):
         user = User.objects.get(pk=request.user.id)
         postContent = Post(postContent=post, user=user)
         postContent.save()
+
+        # Get all subscription endpoints
+        endpoints = Subscription.objects.all().values_list('endpoint', flat=True)
+
+        # Send push notifications to all endpoints
+        for endpoint in endpoints:
+            send_push_notification(endpoint, 'New Post', 'A new post has been created!')
+
         return HttpResponseRedirect(reverse(index))
+
 
 def profile(request, user_id):
     if not request.user.is_authenticated:

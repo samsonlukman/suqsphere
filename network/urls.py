@@ -1,6 +1,5 @@
 
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
@@ -17,5 +16,7 @@ urlpatterns = [
     path("add_like/<int:post_id>", views.add_like, name="add_like"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path("register", views.register, name="register")
+    path("register", views.register, name="register"),
+    path('subscribe/', views.subscribe, name='subscribe'),
+    path('send_push_notification/', views.send_push_notification, name='send_push_notification'),
 ] 
