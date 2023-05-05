@@ -1,0 +1,211 @@
+{% extends "network/layout.html" %}
+{% load my_filters %}
+{% block body %}
+
+<script>
+ 
+    function getCookie(name){
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if(parts.length == 2) return parts.pop().split(';').shift();
+    }
+  
+    document.getElementById('edit').addEventListener('click', function() {
+    const postId = this.dataset.id;
+    submitHandler(postId);
+  });
+  
+  function likeHandler(id, whoYouLiked){
+      // Get the list of all like buttons
+      const likeButtons = document.querySelectorAll(".fa-thumbs-up, .fa-thumbs-down");
+      
+      // Attach a click event listener to each button
+      likeButtons.forEach(button => {
+        
+        button.addEventListener("click", function() {
+          
+          const postId = this.dataset.id;
+          
+          // Check if the button was a "like" or "unlike" button
+          if (this.classList.contains("fa-thumbs-up")) {
+            // Send a request to like the post
+            fetch(`/add_like/${postId}`)
+              .then(response => response.json())
+              .then(result => {
+                // Update the like count element in the HTML template
+                document.getElementById("likeCount_" + postId).innerHTML = result.likes;
+              })
+              .catch(error => console.log(error));
+              
+            // Toggle the button to an "unlike" button
+            this.classList.remove("fa-thumbs-up");
+            this.classList.add("fa-thumbs-down");
+            
+          } else if (this.classList.contains("fa-thumbs-down")) {
+            // Send a request to unlike the post
+            fetch(`/remove_like/${postId}`)
+              .then(response => response.json())
+              .then(result => {
+                // Update the like count element in the HTML template
+                document.getElementById("likeCount_" + postId).innerHTML = result.likes;
+              })
+              .catch(error => console.log(error));
+              
+            // Toggle the button to a "like" button
+            this.classList.remove("fa-thumbs-down");
+            this.classList.add("fa-thumbs-up");
+          }
+        });
+      });
+    }
+  // This function is called when the form for editing a post is submitted
+  function submitHandler(id){
+              // Get the value of the textarea for the post being edited
+              const textareaValue = document.getElementById(`textarea_${id}`).value;
+              // Get the content element of the post being edited
+              const content = document.getElementById(`content_${id}`);
+              // Get the modal element for editing the post
+              const modal = document.getElementById(`modal_edit_post_${id}`);
+              // Send a POST request to the server to save the changes to the post
+              fetch(`/edit/${id}`, {
+                  method: "POST",
+                  headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+                  body: JSON.stringify({
+                      content: textareaValue
+                  })
+              })
+              // Parse the response as JSON
+              .then(response => response.json())
+              .then(result => {
+                  // Update the content of the post with the new content
+                  content.innerHTML = result.data;
+                  // Close the modal
+                  modal.classList.remove('show');
+                  modal.setAttribute('aria-hidden', 'true');
+                  modal.setAttribute('style', 'display: none');
+                  // Remove the modal backdrop
+                  const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
+                  for(let i=0; i<modalsBackdrops.length; i++){
+                      document.body.removeChild(modalsBackdrops[i]);
+                  }
+              })
+              
+          }
+      
+        
+    
+      
+       
+    
+  </script>
+
+<div class="card">
+    <div class="card-body">
+      <a href="{% url 'profile' user_id=post.user.id %}">
+        <img src="{{ post.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+      </a>
+
+        <!-- Display a link to the user's profile -->
+        <a class="card-title" href="{% url 'profile' user_id=post.user.id %}">@{{post.user}}</a>
+        <br>
+        <br>
+        <!-- Display the content of the post -->
+        <!-- Display the content of the post -->
+        <div class="card-text" id="content_{{ post.id }}">
+          {% for paragraph in post.postContent|split_paragraphs %}
+    <p>{{ paragraph|urlize }}</p>
+{% endfor %}
+
+        </div>
+        <!-- Display the timestamp of the post -->
+        <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+        <ul class="list-group">
+          {% for comment in post.postComment.all %}
+          <li class="list-group-item">
+            <a href="{% url 'profile' user_id=post.user.id %}">
+              <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+            </a>
+            <strong><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author }}</a> wrote:</strong>
+            {{ comment.message }}
+        </li>
+
+          {% empty %}
+              <li class="list-group-item">No comments yet.</li>
+          {% endfor %}
+      </ul>
+        <br>
+        {% if user.is_authenticated %}
+        <form action="{% url 'addComment' post_id=post.id %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <span class="comment-field">
+            <textarea type="text" id="new-comment" name="newComment" class="form-control rounded-0 shadow-none" rows="3" placeholder="Write a comment..."></textarea>
+          </span>
+          </div>
+          <div class="form-group">
+            <span class="btn-comment">
+            <button type="submit" class="btn btn-primary btn-sm" style="background-color: #1877f2; border-color: #1877f2;" id="comment-btn">
+              <i class="fas fa-paper-plane"></i> Comment
+            </button>
+          </span>
+          </div>
+        </form>
+        {% endif %}
+        {% if user.is_authenticated %}
+            {% if user == post.user %}
+                <div class="edit-buttons">
+                    <!-- Display an "Edit" button that opens the modal to edit the post -->
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{post.id}}">Edit</button>
+                </div>
+                <!-- The modal for editing a post -->
+                <div class="modal fade" id="modal_edit_post_{{post.id}}" tabindex="-1" role="dialog" aria-labelledby="modal_edit_post_{{post.id}}_" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{post.id}}" aria-label="Edit post">
+                                    Edit
+                                </button>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Textarea for editing the post's content -->
+                                <textarea rows="10" id="textarea_{{post.id}}" class="form-control" name="content">{{post.postContent}}</textarea>
+                            </div>
+                            <div class="modal-footer"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+
+<!-- Check if the current post has been liked by the authenticated user -->
+{% if posts.id in whoYouLiked %}
+
+  <!-- This means that we already liked the post -->
+
+  <!-- If the post has been liked, display a thumbs-down button -->
+
+
+  {% else %}
+
+  <!-- If the post has not been liked, display a thumbs-up button -->
+
+
+
+
+  {% endif %}
+  {% endif %}
+  {% endif %}
+
+
+  </div>
+  </div>
+  </div>
+ 
+{% endblock %}

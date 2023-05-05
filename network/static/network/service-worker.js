@@ -3,7 +3,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/static/network/service-worker.js').then(function(registration) {
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
       if (Notification.permission === 'granted') {
-        registration.pushManager.subscribe({userVisibleOnly: true})
+        registration.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: 'BIKlGAe7-k7aHe8txwYJQgVzAH_6_98_qvlT5axN7v_UVjzX8LqaiqvXfKPg3Dc8T7EYsk47K3EvgpufxTnFczU'})
           .then(function(subscription) {
             console.log(subscription.endpoint);
             console.log(subscription.getKey('p256dh'));

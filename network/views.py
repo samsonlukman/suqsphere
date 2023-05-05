@@ -9,11 +9,36 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import *
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 import firebase_admin
 from firebase_admin import credentials, messaging
+from django.shortcuts import redirect
 
+def follow(request):
+   if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
+   user_follow = request.POST["followUser"]
+   current_user = User.objects.get(pk=request.user.id)
+   userFollowData =User.objects.get(username=user_follow)
+   saveFollowers = Follow(following=current_user, follower=userFollowData)
+   saveFollowers.save()
+   user_id = userFollowData.id
+   return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
+
+
+def unfollow(request):
+   if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
+   user_follow = request.POST["followUser"]
+   current_user = User.objects.get(pk=request.user.id)
+   userFollowData =User.objects.get(username=user_follow)
+   saveFollowers = Follow.objects.get(following=current_user, follower=userFollowData)
+   saveFollowers.delete()
+   user_id = userFollowData.id
+   return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
 def index(request):
     if not request.user.is_authenticated:
@@ -47,6 +72,64 @@ def index(request):
         "comments": comments,        
     })
 
+def post_content(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    allComments = Comment.objects.filter(post=post)
+
+    return render(request, "network/post_content.html", {
+        "post": post,
+        "allComments": allComments
+    })
+
+
+def add_like(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    user = request.user
+    if Like.objects.filter(user=user, post=post).exists():
+        # The user has already liked this post, do nothing
+        pass
+    else:
+        # The user has not already liked this post, increment the like count and create a new like instance
+        post.likes += 1
+        post.save()
+        like = Like.objects.create(user=user, post=post)
+    return redirect("index")
+
+def remove_like(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    user = request.user
+    try:
+        like = Like.objects.get(user=user, post=post)
+    except Like.DoesNotExist:
+        # The user has not already liked this post, do nothing
+        pass
+    else:
+        # The user has already liked this post, decrement the like count and delete the like instance
+        post.likes -= 1
+        post.save()
+        like.delete()
+    return redirect("index")
+
+def load_posts(request):
+    post = Post.objects.all().order_by("id").reverse().select_related("user")
+    paginator = Paginator(post, 10) # Show 10 contacts per page.
+    page_number = request.GET.get('page')
+    page_post = paginator.get_page(page_number)
+
+    # Serialize the posts to JSON
+    data = []
+    for post in page_post:
+        data.append({
+            'id': post.id,
+            'user': post.user.username,
+            'content': post.postContent,
+            'timestamp': post.timestamp.strftime('%b %d %Y, %I:%M %p'),
+            'likes': post.likes.count(),
+            'liked': request.user in post.likes.all(),
+        })
+
+    return JsonResponse({'posts': data})
+
 @csrf_exempt
 def subscribe(request):
     if request.method == 'POST':
@@ -58,6 +141,8 @@ def subscribe(request):
         p256dh = data.get('keys', {}).get('p256dh')
         auth = data.get('keys', {}).get('auth')
         print(endpoint)
+        print(p256dh)
+        print(auth)
 
         # Save the subscription to the database
         subscription = Subscription.objects.create(
@@ -74,7 +159,7 @@ def subscribe(request):
     return JsonResponse({'error': 'Invalid request method'})
 
 # Initialize Firebase SDK
-cred = credentials.Certificate('network/firebase_keys/serviceAccountKey.json')
+cred = credentials.Certificate('network/firebase_keys/ServiceAccountKey.json')
 firebase_admin.initialize_app(cred)
 
 
@@ -115,9 +200,7 @@ def addComment(request, post_id):
         post = Post.objects.get(id=post_id)
         author = request.user
         comment = Comment.objects.create(author=author, post=post, message=message)
-        return redirect('index')
-    else:
-        return redirect('index')
+        return HttpResponseRedirect(reverse("post_content",args=(post_id, )))
 
 
 
@@ -159,6 +242,8 @@ def profile(request, user_id):
     paginator = Paginator(post, 10) # Show 10 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
+    # Get comments for the posts displayed on the page
+    comments = Comment.objects.filter(post__in=page_post)
 
     following = Follow.objects.filter(following=user)
     follower = Follow.objects.filter(follower=user)
@@ -179,34 +264,12 @@ def profile(request, user_id):
         "following": following,
         "follower": follower,
         "username": user.username,
-        "isFollowing": newFollowing
+        "isFollowing": newFollowing,
+        "comments": comments,
     })
 
 
-def follow(request):
-   if not request.user.is_authenticated:
-        error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-   user_follow = request.POST["followUser"]
-   current_user = User.objects.get(pk=request.user.id)
-   userFollowData =User.objects.get(username=user_follow)
-   saveFollowers = Follow(following=current_user, follower=userFollowData)
-   saveFollowers.save()
-   user_id = userFollowData.id
-   return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
-
-def unfollow(request):
-   if not request.user.is_authenticated:
-        error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-   user_follow = request.POST["followUser"]
-   current_user = User.objects.get(pk=request.user.id)
-   userFollowData =User.objects.get(username=user_follow)
-   saveFollowers = Follow.objects.get(following=current_user, follower=userFollowData)
-   saveFollowers.delete()
-   user_id = userFollowData.id
-   return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
 def following(request):
     if not request.user.is_authenticated:
@@ -230,6 +293,7 @@ def following(request):
         "page_post":page_post
     })
 
+
 def edit(request, post_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -239,7 +303,9 @@ def edit(request, post_id):
         edit_post = Post.objects.get(pk=post_id)
         edit_post.postContent = data["content"]
         edit_post.save()
-        return JsonResponse({"message": "Change successful", "data": data["content"]})
+        return redirect("post_content", post_id=post_id)
+
+
 
 
 def remove_like(request, post_id):
