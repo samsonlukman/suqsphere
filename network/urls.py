@@ -6,8 +6,10 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     path("newpost", views.newPost, name="newPost"),
+    path("post_content/<int:post_id>", views.post_content, name="post_content"),
     path('profile_pic/<int:user_id/', views.profile_pic, name="profile_pic"),
     path('profile/<int:user_id>/', views.profile, name="profile"),
+    path('addComment/<int:post_id>/', views.addComment, name='addComment'),
     path("follow", views.follow, name="follow"),
     path("unfollow", views.unfollow, name="unfollow"),
     path("following", views.following, name="following"),
@@ -17,4 +19,4 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register")
-] 
+]

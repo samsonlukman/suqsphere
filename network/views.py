@@ -1,27 +1,30 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
 import json
+from django.contrib import messages
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import *
+from django.shortcuts import redirect, render, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
+from django.shortcuts import redirect
 
 def index(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-    post = Post.objects.all().order_by("id").reverse()
+        return render(request, "network/login.html")
+
+    post = Post.objects.all().order_by("id").reverse().select_related("user")
     paginator = Paginator(post, 10) # Show 10 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
     user = request.user
     profile_pics = user.profile_pics
-    
-
     allLikes = Like.objects.all()
 
     whoYouLiked = []
@@ -32,18 +35,47 @@ def index(request):
     except:
         whoYouLiked = []
 
+    # Get comments for the posts displayed on the page
+    comments = Comment.objects.filter(post__in=page_post)
+
     return render(request, "network/index.html", {
         "post": post,
         "page_post": page_post,
         "whoYouLiked": whoYouLiked,
         "profile_pics": profile_pics,
+        "comments": comments,
     })
+
+def post_content(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    allComments = Comment.objects.filter(post=post)
+
+    return render(request, "network/post_content.html", {
+        "post": post,
+        "allComments": allComments
+    })
+
+
+def addComment(request, post_id):
+    if request.method == 'POST':
+        message = request.POST.get('newComment')
+        if not message.strip():
+            messages.error(request, "Comment cannot be empty.")
+            return redirect('index')
+        post = Post.objects.get(id=post_id)
+        author = request.user
+        comment = Comment.objects.create(author=author, post=post, message=message)
+        return HttpResponseRedirect(reverse("post_content",args=(post_id, )))
+
+
+
+
 
 def profile_pic(request, user_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
-    
+
 
 
 def newPost(request):
@@ -78,7 +110,7 @@ def profile(request, user_id):
             newFollowing = False
     except:
         newFollowing = False
-    
+
     return render(request, "network/user_profile.html", {
         "userProfile": user,
         "post": post,
@@ -131,7 +163,7 @@ def following(request):
     paginator = Paginator(followingPosts, 10) # Show 10 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
-    
+
 
     return render(request, "network/following.html",{
         "page_post":page_post
@@ -204,7 +236,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return render(request, "network/login.html")
 
 
 def register(request):
