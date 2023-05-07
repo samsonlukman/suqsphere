@@ -2,7 +2,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.views.generic import TemplateView
+from django.urls import reverse, reverse_lazy
 from django.core.paginator import Paginator
 import json
 from django.contrib import messages
@@ -11,8 +13,14 @@ from django.core.exceptions import ValidationError
 from .models import *
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib.auth.views import PasswordResetView
 from django.shortcuts import redirect
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
 
 def index(request):
     if not request.user.is_authenticated:
@@ -54,6 +62,11 @@ def post_content(request, post_id):
         "post": post,
         "allComments": allComments
     })
+
+class CustomPasswordResetView(PasswordResetView):
+    email_template_name = 'network/reset_password_email.html'
+    success_url = reverse_lazy('password_reset_done')
+    template_name = 'network/reset_password.html'
 
 
 def addComment(request, post_id):
@@ -269,4 +282,25 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+    
 
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'network/password_reset_form.html'
+    success_url = reverse_lazy('password_reset_done')
+    email_template_name = 'network/password_reset_email.html'
+
+    def form_valid(self, form):
+        context = {'email': form.cleaned_data['email']}
+        return render(self.request, self.template_name, context)
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'network/password_reset_done.html'
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'network/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+
+class CustomPasswordResetCompleteView(TemplateView):
+    template_name = 'network/password_reset_complete.html'
