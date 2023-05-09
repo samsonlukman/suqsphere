@@ -56,6 +56,7 @@
         </div>
             <!-- Display the timestamp of the post -->
             <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+            <p class="card-text">{{ post.post_like.count }} likes</p>
             <ul class="list-group">
               {% for comment in post.postComment.all %}
               <li class="list-group-item">
@@ -117,24 +118,7 @@
                 </div>
               </div>
             </div>
-            {% else %}
-
-    <!-- Check if the current post has been liked by the authenticated user -->
-    {% if posts.id in whoYouLiked %}
-
-      <!-- This means that we already liked the post -->
-
-      <!-- If the post has been liked, display a thumbs-down button -->
-
-
-      {% else %}
-
-      <!-- If the post has not been liked, display a thumbs-up button -->
-
-
-
-
-      {% endif %}
+            
       {% endif %}
       {% endif %}
 
@@ -142,6 +126,23 @@
       </div>
       </div>
       </div>
+      {% if not likes %}
+  <div>
+  <form action="{% url 'add_like' post_id=post.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="likeComment" value="{{ posts.id }}" />
+    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">like</button>
+  </form>
+</div>
+{% else %}
+<div>
+  <form action="{% url 'remove_like' post_id=post.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="unlikeComment" value="{{ posts.id }}" />
+    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">unlike</button>
+  </form>
+</div>
+{% endif %}
       <!-- End of the for loop -->
       {% endfor %}
 

@@ -1,12 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.views.generic import TemplateView
 from django.urls import reverse, reverse_lazy
 from django.core.paginator import Paginator
 import json
+from django.http import Http404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -33,34 +34,74 @@ def index(request):
     page_post = paginator.get_page(page_number)
     user = request.user
     profile_pics = user.profile_pics
-    allLikes = Like.objects.all()
+    post_like = Like.objects.filter(user=user)
+    likes = True
 
-    whoYouLiked = []
-    try:
-        for like in allLikes:
-            if like.user.id == request.user.id:
-                whoYouLiked.append(like.post.id)
-    except:
-        whoYouLiked = []
-
+    if len(post_like) > 0:
+        likes = True
+    else:
+        likes = False
     # Get comments for the posts displayed on the page
     comments = Comment.objects.filter(post__in=page_post)
 
     return render(request, "network/index.html", {
         "post": post,
         "page_post": page_post,
-        "whoYouLiked": whoYouLiked,
+        "post_like": post_like,
         "profile_pics": profile_pics,
         "comments": comments,
+        "likes": likes
+    })
+
+def profile(request, user_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "network/register.html")
+    user = User.objects.get(pk=user_id)
+    post = Post.objects.filter(user=user).order_by("id").reverse()
+    paginator = Paginator(post, 10) # Show 10 contacts per page.
+    page_number = request.GET.get('page')
+    page_post = paginator.get_page(page_number)
+
+    following = Follow.objects.filter(following=user)
+    follower = Follow.objects.filter(follower=user)
+
+    try:
+        checkFollowers = follower.filter(following=User.objects.get(pk=request.user.id))
+        if len(checkFollowers) != 0:
+            newFollowing = True
+        else:
+            newFollowing = False
+    except:
+        newFollowing = False
+
+    return render(request, "network/user_profile.html", {
+        "userProfile": user,
+        "post": post,
+        "page_post": page_post,
+        "following": following,
+        "follower": follower,
+        "username": user.username,
+        "isFollowing": newFollowing
     })
 
 def post_content(request, post_id):
     post = Post.objects.get(pk=post_id)
     allComments = Comment.objects.filter(post=post)
+    user = request.user
+    post_like = Like.objects.filter(user=user)
+    likes = True
+
+    if len(post_like) > 0:
+        likes = True
+    else:
+        likes = False
 
     return render(request, "network/post_content.html", {
         "post": post,
-        "allComments": allComments
+        "allComments": allComments,
+        "post_like": post_like,
+        "likes": likes
     })
 
 class CustomPasswordResetView(PasswordResetView):
@@ -102,37 +143,17 @@ def newPost(request):
         postContent.save()
         return HttpResponseRedirect(reverse(index))
 
-def profile(request, user_id):
-    if not request.user.is_authenticated:
-        error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-    user = User.objects.get(pk=user_id)
-    post = Post.objects.filter(user=user).order_by("id").reverse()
-    paginator = Paginator(post, 10) # Show 10 contacts per page.
-    page_number = request.GET.get('page')
-    page_post = paginator.get_page(page_number)
 
-    following = Follow.objects.filter(following=user)
-    follower = Follow.objects.filter(follower=user)
-
+def remove_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
     try:
-        checkFollowers = follower.filter(following=User.objects.get(pk=request.user.id))
-        if len(checkFollowers) != 0:
-            newFollowing = True
-        else:
-            newFollowing = False
-    except:
-        newFollowing = False
+        like = Like.objects.get(post=post, user=request.user)
+        like.delete()
+        messages.success(request, 'You unliked this post.')
+    except Like.DoesNotExist:
+        messages.error(request, 'You have not liked this post.')
+    return redirect(reverse('post_content', kwargs={'post_id': post_id}))
 
-    return render(request, "network/user_profile.html", {
-        "userProfile": user,
-        "post": post,
-        "page_post": page_post,
-        "following": following,
-        "follower": follower,
-        "username": user.username,
-        "isFollowing": newFollowing
-    })
 
 
 def follow(request):
@@ -146,6 +167,21 @@ def follow(request):
    saveFollowers.save()
    user_id = userFollowData.id
    return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
+
+def add_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            like = Like.objects.get(post=post, user=user)
+            like.delete()
+            messages.success(request, 'You unliked this post.')
+        except Like.DoesNotExist:
+            like = Like.objects.create(post=post, user=user)
+            messages.success(request, 'You liked this post.')
+        return redirect(reverse('post_content', kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
 
 
 def unfollow(request):
@@ -166,7 +202,9 @@ def following(request):
         return render(request, "network/register.html")
     current_user = User.objects.get(pk=request.user.id)
     following = Follow.objects.filter(following=current_user)
-    posts = Post.objects.all().order_by("id").reverse()
+    posts = Post.objects.all().order_by('-timestamp')
+
+
 
     followingPosts = []
     for users in following:
@@ -192,39 +230,6 @@ def edit(request, post_id):
         edit_post.postContent = data["content"]
         edit_post.save()
         return JsonResponse({"message": "Change successful", "data": data["content"]})
-
-
-def remove_like(request, post_id):
-    if not request.user.is_authenticated:
-        error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-    post = Post.objects.get(pk=post_id)
-    post.likes -= 1
-    post.save()
-    user = User.objects.get(pk=request.user.id)
-    like = Like.objects.filter(user=user, post=post).first()
-    if like:
-        like.delete()
-        return JsonResponse({"likes": post.likes, "message": "Like removed!"})
-    else:
-        return JsonResponse({"message":"This like does not exist"})
-
-
-def add_like(request, post_id):
-    if not request.user.is_authenticated:
-        error_message = "You need to log in to access this page."
-        return render(request, "network/register.html")
-    post = Post.objects.get(pk=post_id)
-    post.likes += 1
-    post.save()
-    user = User.objects.get(pk=request.user.id)
-    newLike = Like(user=user, post=post)
-    newLike.save()
-    return JsonResponse({"likes": post.likes, "message": "Like added!"})
-
-
-
-
 
 
 def login_view(request):

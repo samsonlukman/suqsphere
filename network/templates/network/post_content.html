@@ -1,103 +1,10 @@
 {% extends "network/layout.html" %}
+{% load custom_tags %}
 {% load my_filters %}
+{% load static %}
 {% block body %}
 
-<script>
- 
-    function getCookie(name){
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if(parts.length == 2) return parts.pop().split(';').shift();
-    }
-  
-    document.getElementById('edit').addEventListener('click', function() {
-    const postId = this.dataset.id;
-    submitHandler(postId);
-  });
-  
-  function likeHandler(id, whoYouLiked){
-      // Get the list of all like buttons
-      const likeButtons = document.querySelectorAll(".fa-thumbs-up, .fa-thumbs-down");
-      
-      // Attach a click event listener to each button
-      likeButtons.forEach(button => {
-        
-        button.addEventListener("click", function() {
-          
-          const postId = this.dataset.id;
-          
-          // Check if the button was a "like" or "unlike" button
-          if (this.classList.contains("fa-thumbs-up")) {
-            // Send a request to like the post
-            fetch(`/add_like/${postId}`)
-              .then(response => response.json())
-              .then(result => {
-                // Update the like count element in the HTML template
-                document.getElementById("likeCount_" + postId).innerHTML = result.likes;
-              })
-              .catch(error => console.log(error));
-              
-            // Toggle the button to an "unlike" button
-            this.classList.remove("fa-thumbs-up");
-            this.classList.add("fa-thumbs-down");
-            
-          } else if (this.classList.contains("fa-thumbs-down")) {
-            // Send a request to unlike the post
-            fetch(`/remove_like/${postId}`)
-              .then(response => response.json())
-              .then(result => {
-                // Update the like count element in the HTML template
-                document.getElementById("likeCount_" + postId).innerHTML = result.likes;
-              })
-              .catch(error => console.log(error));
-              
-            // Toggle the button to a "like" button
-            this.classList.remove("fa-thumbs-down");
-            this.classList.add("fa-thumbs-up");
-          }
-        });
-      });
-    }
-  // This function is called when the form for editing a post is submitted
-  function submitHandler(id){
-              // Get the value of the textarea for the post being edited
-              const textareaValue = document.getElementById(`textarea_${id}`).value;
-              // Get the content element of the post being edited
-              const content = document.getElementById(`content_${id}`);
-              // Get the modal element for editing the post
-              const modal = document.getElementById(`modal_edit_post_${id}`);
-              // Send a POST request to the server to save the changes to the post
-              fetch(`/edit/${id}`, {
-                  method: "POST",
-                  headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
-                  body: JSON.stringify({
-                      content: textareaValue
-                  })
-              })
-              // Parse the response as JSON
-              .then(response => response.json())
-              .then(result => {
-                  // Update the content of the post with the new content
-                  content.innerHTML = result.data;
-                  // Close the modal
-                  modal.classList.remove('show');
-                  modal.setAttribute('aria-hidden', 'true');
-                  modal.setAttribute('style', 'display: none');
-                  // Remove the modal backdrop
-                  const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
-                  for(let i=0; i<modalsBackdrops.length; i++){
-                      document.body.removeChild(modalsBackdrops[i]);
-                  }
-              })
-              
-          }
-      
-        
-    
-      
-       
-    
-  </script>
+
 
 <div class="card">
     <div class="card-body">
@@ -119,7 +26,7 @@
         
         <!-- Display the timestamp of the post -->
         <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
-        
+        <p class="card-text">{{ post.post_like.count }} likes</p>
         <ul class="list-group">
           {% for comment in post.postComment.all %}
             <li class="list-group-item">
@@ -187,24 +94,7 @@
             </div>
           </div>
         </div>
-        {% else %}
-
-<!-- Check if the current post has been liked by the authenticated user -->
-{% if posts.id in whoYouLiked %}
-
-  <!-- This means that we already liked the post -->
-
-  <!-- If the post has been liked, display a thumbs-down button -->
-
-
-  {% else %}
-
-  <!-- If the post has not been liked, display a thumbs-up button -->
-
-
-
-
-  {% endif %}
+        
   {% endif %}
   {% endif %}
 
@@ -212,5 +102,22 @@
   </div>
   </div>
   </div>
+  {% if not likes %}
+  <div>
+  <form action="{% url 'add_like' post_id=post.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="likeComment" value="{{ posts.id }}" />
+    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">like</button>
+  </form>
+</div>
+{% else %}
+<div>
+  <form action="{% url 'remove_like' post_id=post.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="unlikeComment" value="{{ posts.id }}" />
+    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">unlike</button>
+  </form>
+</div>
+{% endif %}
  
 {% endblock %}

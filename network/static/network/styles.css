@@ -9,6 +9,18 @@
   }
 }
 
+ .btn-like {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+  .btn-like:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+  }
 
 .profile-pic {
   width: 150px;
