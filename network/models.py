@@ -10,7 +10,7 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="post_user")
     postContent = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    likes = models.IntegerField(default=0)
+    post_image = models.ImageField(upload_to='post_image/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user} {self.postContent} {self.timestamp}"
@@ -34,6 +34,20 @@ class Follow(models.Model):
 class Like(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE, related_name="user_like")
     post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name="post_like")
+
+class Allahu_akbar(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userAllah")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="postAllah")
+
+class Subhanallah(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userSubhanallah")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="postSubhanallah")
+
+class Laa(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userLaa")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="postLaa")
+
+
 
 
     def __str__(self):

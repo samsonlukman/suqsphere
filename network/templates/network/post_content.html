@@ -26,7 +26,104 @@
         
         <!-- Display the timestamp of the post -->
         <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
-        <p class="card-text">{{ post.post_like.count }} likes</p>
+        <!--display post reactions-->
+        {% if user.is_authenticated %}
+      <div class="d-flex justify-content-between">
+      <div class="reaction-button">
+        {% if request.user in post.post_like.all %}
+          <form action="{% url 'remove_like' post_id=post.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="unlikePost" value="{{ post.id }}" />
+            <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+              <i class="fa fa-thumbs-down"></i> Unlike
+            </button>
+          </form>
+        {% else %}
+          <form action="{% url 'add_like' post_id=post.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="likePost" value="{{ post.id }}" />
+            <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #007bff (blue); border-color: #dc3545;">
+              <i class="fa fa-thumbs-up"></i> Maa Shaa Allah! {{ post.post_like.count }}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+  {% endif %}
+      
+
+{% if user.is_authenticated %}
+      
+<div class="reaction-button">
+  {% if request.user in post.postAllah.all %}
+    <form action="{% url 'remove_akbar' post_id=post.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="unlike_akbar" value="{{ post.id }}" />
+      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+        <i class="fa fa-thumbs-down"></i> Unlike
+      </button>
+    </form>
+  {% else %}
+    <form action="{% url 'add_akbar' post_id=post.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="likePost" value="{{ post.id }}" />
+      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: rgb(43, 255, 0); border-color: #dc3545;">
+        <i class=""></i>✊ <strong>Allahu Akbar!</strong> {{ post.postAllah.count }}
+      </button>
+    </form>
+  {% endif %}
+</div>
+{% endif %}
+
+
+
+{% if user.is_authenticated %}
+      
+<div class="reaction-button">
+  {% if request.user in post.postSubhanallah.all %}
+    <form action="{% url 'remove_subhanallah' post_id=posts.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="unlike_subhanallah" value="{{ posts.id }}" />
+      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+        <i class="fa fa-thumbs-down"></i> Unlike
+      </button>
+    </form>
+  {% else %}
+    <form action="{% url 'add_subhanallah' post_id=post.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="subhanallahPost" value="{{ post.id }}" />
+      <button id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: rgb(0, 0, 0); border-color: #dc3545;">
+        <i class=""></i>😱 Subhanallah! {{ post.postSubhanallah.count }}
+      </button>
+    </form>
+  {% endif %}
+</div>
+
+{% endif %}
+
+{% if user.is_authenticated %}
+      
+<div class="reaction-button">
+  {% if request.user in post.postLaa.all %}
+    <form action="{% url 'remove_laa' post_id=post.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="unlike_laa" value="{{ post.id }}" />
+      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+        <i class="fa fa-thumbs-down"></i> Unlike
+      </button>
+    </form>
+  {% else %}
+    <form action="{% url 'add_laa' post_id=post.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="laaPost" value="{{ post.id }}" />
+      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+        <i class="fa fa-thumbs-down"></i> لا  {{ post.postLaa.count }} 
+      </button>
+    </form>
+  {% endif %}
+</div>
+
+{% endif %}
+      </div>
         <ul class="list-group">
           {% for comment in post.postComment.all %}
             <li class="list-group-item">
@@ -63,6 +160,8 @@
           </div>
         </form>
         {% endif %}
+        
+         
         {% if user.is_authenticated %}
             {% if user == post.user %}
                 <div class="edit-buttons">
@@ -102,22 +201,6 @@
   </div>
   </div>
   </div>
-  {% if not likes %}
-  <div>
-  <form action="{% url 'add_like' post_id=post.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="likeComment" value="{{ posts.id }}" />
-    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">like</button>
-  </form>
-</div>
-{% else %}
-<div>
-  <form action="{% url 'remove_like' post_id=post.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="unlikeComment" value="{{ posts.id }}" />
-    <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">unlike</button>
-  </form>
-</div>
-{% endif %}
- 
+  
+
 {% endblock %}

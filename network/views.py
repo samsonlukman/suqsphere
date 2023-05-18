@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import *
+from django.db.models import Count
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.views import PasswordResetView
@@ -35,7 +36,12 @@ def index(request):
     user = request.user
     profile_pics = user.profile_pics
     post_like = Like.objects.filter(user=user)
+    post_akbar = Allahu_akbar.objects.filter(user=user)
+    post_subhanallah = Subhanallah.objects.filter(user=user)
+    post_laa = Subhanallah.objects.filter(user=user)
     likes = True
+
+
 
     if len(post_like) > 0:
         likes = True
@@ -50,7 +56,10 @@ def index(request):
         "post_like": post_like,
         "profile_pics": profile_pics,
         "comments": comments,
-        "likes": likes
+        "likes": likes,
+        "post_akbar": post_akbar,
+        "post_subhanallah": post_subhanallah,
+        "post_laa": post_laa,
     })
 
 def profile(request, user_id):
@@ -62,6 +71,11 @@ def profile(request, user_id):
     paginator = Paginator(post, 10) # Show 10 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
+    user_like = request.user
+    post_like = Like.objects.filter(user=user_like)
+    post_akbar = Allahu_akbar.objects.filter(user=user)
+    post_subhanallah = Subhanallah.objects.filter(user=user)
+    post_laa = Laa.objects.filter(user=user)
 
     following = Follow.objects.filter(following=user)
     follower = Follow.objects.filter(follower=user)
@@ -78,6 +92,11 @@ def profile(request, user_id):
     return render(request, "network/user_profile.html", {
         "userProfile": user,
         "post": post,
+        "user_like": user_like,
+        "post_like": post_like,
+        "post_akbar": post_akbar,
+        "post_subhanallah": post_subhanallah,
+        "post_laa": post_laa,
         "page_post": page_post,
         "following": following,
         "follower": follower,
@@ -90,6 +109,9 @@ def post_content(request, post_id):
     allComments = Comment.objects.filter(post=post)
     user = request.user
     post_like = Like.objects.filter(user=user)
+    post_akbar = Allahu_akbar.objects.filter(user=user)
+    post_subhanallah = Subhanallah.objects.filter(user=user)
+    post_laa = Subhanallah.objects.filter(user=user)
     likes = True
 
     if len(post_like) > 0:
@@ -101,7 +123,10 @@ def post_content(request, post_id):
         "post": post,
         "allComments": allComments,
         "post_like": post_like,
-        "likes": likes
+        "likes": likes,
+        "post_akbar": post_akbar,
+        "post_subhanallah": post_subhanallah,
+        "post_laa": post_laa,
     })
 
 class CustomPasswordResetView(PasswordResetView):
@@ -130,6 +155,10 @@ def profile_pic(request, user_id):
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
 
+def post_image(request, user_id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page"
+        return render(request, "network/register.html")
 
 
 def newPost(request):
@@ -138,8 +167,9 @@ def newPost(request):
         return render(request, "network/register.html")
     if request.method == "POST":
         post = request.POST["post_content"]
+        post_image = request.FILES.get("post_image")
         user = User.objects.get(pk=request.user.id)
-        postContent = Post(postContent=post, user=user)
+        postContent = Post(postContent=post, user=user, post_image=post_image)
         postContent.save()
         return HttpResponseRedirect(reverse(index))
 
@@ -152,9 +182,107 @@ def remove_like(request, post_id):
         messages.success(request, 'You unliked this post.')
     except Like.DoesNotExist:
         messages.error(request, 'You have not liked this post.')
-    return redirect(reverse('post_content', kwargs={'post_id': post_id}))
+    
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+def add_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            like = Like.objects.get(post=post, user=user)
+            like.delete()
+            messages.success(request, 'You unliked this post.')
+        except Like.DoesNotExist:
+            like = Like.objects.create(post=post, user=user)
+            messages.success(request, 'You liked this post.')
+        
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
 
+def add_akbar(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            like = Allahu_akbar.objects.get(post=post, user=user)
+            like.delete()
+            messages.success(request, 'You unliked this post.')
+        except Allahu_akbar.DoesNotExist:
+            like = Allahu_akbar.objects.create(post=post, user=user)
+            messages.success(request, 'You liked this post.')
+        
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
+    
+
+def remove_akbar(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    try:
+        like = Allahu_akbar.objects.get(post=post, user=request.user)
+        like.delete()
+        messages.success(request, 'You unliked this post.')
+    except Allahu_akbar.DoesNotExist:
+        messages.error(request, 'You have not liked this post.')
+    
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+
+def add_subhanallah(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            like = Subhanallah.objects.get(post=post, user=user)
+            like.delete()
+            messages.success(request, 'You unliked this post.')
+        except Subhanallah.DoesNotExist:
+            like = Subhanallah.objects.create(post=post, user=user)
+            messages.success(request, 'You liked this post.')
+        
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
+    
+
+def remove_subhanallah(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    try:
+        like = Subhanallah.objects.get(post=post, user=request.user)
+        like.delete()
+        messages.success(request, 'You unliked this post.')
+    except Subhanallah.DoesNotExist:
+        messages.error(request, 'You have not liked this post.')
+    
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+
+def add_laa(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            like = Laa.objects.get(post=post, user=user)
+            like.delete()
+            messages.success(request, 'You unliked this post.')
+        except Laa.DoesNotExist:
+            like = Laa.objects.create(post=post, user=user)
+            messages.success(request, 'You liked this post.')
+        
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
+    
+def remove_laa(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    try:
+        like = Laa.objects.get(post=post, user=request.user)
+        like.delete()
+        messages.success(request, 'You unliked this post.')
+    except Laa.DoesNotExist:
+        messages.error(request, 'You have not liked this post.')
+    
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
 def follow(request):
    if not request.user.is_authenticated:
@@ -168,20 +296,7 @@ def follow(request):
    user_id = userFollowData.id
    return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
-def add_like(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            like = Like.objects.get(post=post, user=user)
-            like.delete()
-            messages.success(request, 'You unliked this post.')
-        except Like.DoesNotExist:
-            like = Like.objects.create(post=post, user=user)
-            messages.success(request, 'You liked this post.')
-        return redirect(reverse('post_content', kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
+
 
 
 def unfollow(request):
@@ -194,7 +309,7 @@ def unfollow(request):
    saveFollowers = Follow.objects.get(following=current_user, follower=userFollowData)
    saveFollowers.delete()
    user_id = userFollowData.id
-   return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
+   return HttpResponseRedirect(reverse("index"))
 
 def following(request):
     if not request.user.is_authenticated:
@@ -217,7 +332,7 @@ def following(request):
 
 
     return render(request, "network/following.html",{
-        "page_post":page_post
+        "page_post": page_post
     })
 
 def edit(request, post_id):

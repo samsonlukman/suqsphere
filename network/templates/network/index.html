@@ -6,6 +6,9 @@
 
 
 <script>
+
+
+
 function playSound() {
   var audio = document.getElementById("myAudio");
   audio.play();
@@ -15,10 +18,10 @@ function playSound() {
 
   {% if user.is_authenticated %}
   <audio id="myAudio">
-    <source src="{% static 'network/001.mp3' %}" type="audio/mpeg">
+    <source src="{% static 'network/001.mp' %}" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
-  
+
 <button onclick="playSound()">Sheikh Hussary</button>
 
     <!-- Check if the user is authenticated -->
@@ -27,6 +30,10 @@ function playSound() {
         {% csrf_token %}
         <!-- Textarea for creating a new post -->
         <textarea id="new-post" class="create-post-text" name="post_content" placeholder="Share a thought..." required></textarea>
+        <div class="form-group">
+          <label for="image">Select Profile Picture</label>
+        <input type="file" name="post_image" class="form-control" accept="image/*">
+      </div>
         <div>
         <!-- Submit button for creating a new post -->
         <button id="post-btn" type="submit" class="create-post-button">post</button>
@@ -64,28 +71,125 @@ function playSound() {
 {% endif %}
 
         </div>
-        <!-- Display the timestamp of the post -->
-        <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
-      
-      <!-- Display the number of likes for the post -->
-      <p class="card-text">{{ posts.post_like.count }} likes</p>
-      <div>
-      <form action="{% url 'add_like' post_id=posts.id %}" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="likeComment" value="{{ posts.id }}" />
-          <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">like</button>
-        </form>
-      </div>
-      
-      <div>
-        <form action="{% url 'remove_like' post_id=posts.id %}" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="unlikeComment" value="{{ posts.id }}" />
-          <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">unlike</button>
-        </form>
-      </div>
+        {% if posts.post_image %}
+        <div class="post-image-container">
+          <img src="{{ posts.post_image.url }}" alt="Post image">
+        </div>
+{% endif %}
+
+<!-- Display the number of likes for the post -->
+{% if user.is_authenticated %}
+<div class="">
+<div class="reaction-button">
+  {% if request.user in posts.post_like.all %}
+    <form action="{% url 'remove_like' post_id=posts.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
+      <button id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+        <i class="fa fa-thumbs-down"></i> Unlike
+      </button>
+    </form>
+  {% else %}
+    <form action="{% url 'add_like' post_id=posts.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="likePost" value="{{ posts.id }}" />
+      <button class="like_button" id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: #007bff (blue); border-color: #dc3545;">
+        <h6><i class="fa fa-thumbs-up"></i> Maa Shaa Allah! {{ posts.post_like.count }}</h6>
+      </button>
+    </form>
+  {% endif %}
 </div>
-    
+{% endif %}
+
+
+{% if user.is_authenticated %}
+
+<div class="reaction-button">
+{% if request.user in posts.postAllah.all %}
+<form action="{% url 'remove_akbar' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="unlike_akbar" value="{{ posts.id }}" />
+<button class="like_button" id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+  <i class="fa fa-thumbs-down"></i> Unlike
+</button>
+</form>
+{% else %}
+<form action="{% url 'add_akbar' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="likePost" value="{{ posts.id }}" />
+<button class="like_button" id="like-btn-{{ posts.id }}">
+  <h6><i class=""></i>✊ <strong>Allahu Akbar!</strong> {{ posts.postAllah.count }}</h6>
+</button>
+</form>
+{% endif %}
+</div>
+{% endif %}
+
+
+
+{% if user.is_authenticated %}
+
+<div class="reaction-button">
+{% if request.user in posts.postSubhanallah.all %}
+<form action="{% url 'remove_subhanallah' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="unlike_subhanallah" value="{{ posts.id }}" />
+<button id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+  <i class="fa fa-thumbs-down"></i> Unlike
+</button>
+</form>
+{% else %}
+<form action="{% url 'add_subhanallah' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="subhanallahPost" value="{{ posts.id }}" />
+<button class="like_button" id="like-btn-{{ posts.id }}">
+  <h6><i class=""></i>😱 Subhanallah! {{ posts.postSubhanallah.count }}</h6>
+</button>
+</form>
+{% endif %}
+</div>
+
+{% endif %}
+
+{% if user.is_authenticated %}
+
+<div class="reaction-button">
+{% if request.user in posts.postLaa.all %}
+<form action="{% url 'remove_laa' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="unlike_laa" value="{{ posts.id }}" />
+<button class="like_button" id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+  <i class="fa fa-thumbs-down"></i> Unlike
+</button>
+</form>
+{% else %}
+<form action="{% url 'add_laa' post_id=posts.id %}" method="post">
+{% csrf_token %}
+<input type="hidden" name="laaPost" value="{{ posts.id }}" />
+<button class="like_button" id="like-btn-{{ posts.id }}">
+  <h6><i class="fa fa-thumbs-down"></i> لا  {{ posts.postLaa.count }}</h6>
+</button>
+</form>
+{% endif %}
+</div>
+
+{% endif %}
+<div>
+<button data-post-id="{{ posts.id }}" id="like-btn-1">Like</button>
+<button id="comment-btn-1">Comment</button>
+{% if posts.postComment.count <= 1 %}
+<p>{{posts.postComment.count}} Comment</p>
+{% else %}
+<p>{{posts.postComment.count}} Comments</p>
+{% endif %}
+</div>
+
+
+
+
+
+
+      </div>
         <ul class="list-group">
           {% for comment in posts.postComment.all|slice:":3" %}
   <li class="list-group-item">
@@ -121,7 +225,6 @@ function playSound() {
           </div>
         </form>
         {% endif %}
-
         {% if user.is_authenticated %}
           {% if user == posts.user %}
         <div class="edit-buttons">
@@ -161,7 +264,7 @@ function playSound() {
   {% endif %}
   {% endif %}
 
-  
+
 
 
 
@@ -170,6 +273,7 @@ function playSound() {
   </div>
   <!-- End of the for loop -->
   {% endfor %}
+
 
   <!-- Pagination for navigating through the posts -->
   <nav aria-label="Page navigation example">

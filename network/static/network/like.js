@@ -3,6 +3,35 @@ window.addEventListener("load", function(){
   audio.play();
 });
 
+const mainButton = document.getElementById('main-button');
+const popup = document.getElementById('popup');
+
+let hoverTimer;
+let pressTimer;
+
+mainButton.addEventListener('mousedown', () => {
+  pressTimer = setTimeout(() => {
+    popup.style.display = 'block';
+  }, 2000);
+});
+
+mainButton.addEventListener('mouseup', () => {
+  clearTimeout(pressTimer);
+  popup.style.display = 'none';
+});
+
+mainButton.addEventListener('mouseover', () => {
+  hoverTimer = setTimeout(() => {
+    popup.style.display = 'block';
+  }, 2000);
+});
+
+mainButton.addEventListener('mouseout', () => {
+  clearTimeout(hoverTimer);
+  popup.style.display = 'none';
+});
+
+
 
 function disableComment() {
     const commentBtns = document.querySelectorAll(".btn-comment button");
@@ -217,7 +246,7 @@ function getCookie(name){
     } else {
     fetch(`/add_like/${id}`)
     .then(response => response.json())
-    .then(result => {
+     .then(result => {
         if (result.message === "You have already liked this post.") {
             // User has already liked the post, don't update the button or like count
             return;
