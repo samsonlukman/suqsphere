@@ -8,126 +8,36 @@
 
 <div class="card">
     <div class="card-body">
-      <a href="{% url 'profile' user_id=post.user.id %}">
-        <img src="{{ post.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+      <a href="{% url 'profile' user_id=posts.user.id %}">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
       </a>
 
         <!-- Display a link to the user's profile -->
-        <a class="card-title" href="{% url 'profile' user_id=post.user.id %}">@{{post.user}}</a>
+        <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
         <br>
         <br>
+        
         <!-- Display the content of the post -->
-        <!-- Display the content of the post -->
-        <div class="card-text" id="content_{{ post.id }}">
-          {% for paragraph in post.postContent|split_paragraphs %}
+        <div class="card-text" id="content_{{ posts.id }}">
+          {% for paragraph in posts.postContent|split_paragraphs %}
             <p>{{ paragraph|urlize }}</p>
           {% endfor %}
+          <div class="card-body">
+            {% if posts.post_image %}
+              <img src="{{ posts.post_image.url }}" class="img-fluid" alt="Post Image">
+            {% endif %}
+          </div>
         </div>
         
         <!-- Display the timestamp of the post -->
-        <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+        <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
         <!--display post reactions-->
-        {% if user.is_authenticated %}
-      <div class="d-flex justify-content-between">
-      <div class="reaction-button">
-        {% if request.user in post.post_like.all %}
-          <form action="{% url 'remove_like' post_id=post.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ post.id }}" />
-            <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'add_like' post_id=post.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ post.id }}" />
-            <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #007bff (blue); border-color: #dc3545;">
-              <i class="fa fa-thumbs-up"></i> Maa Shaa Allah! {{ post.post_like.count }}
-            </button>
-          </form>
-        {% endif %}
-      </div>
-  {% endif %}
-      
-
-{% if user.is_authenticated %}
-      
-<div class="reaction-button">
-  {% if request.user in post.postAllah.all %}
-    <form action="{% url 'remove_akbar' post_id=post.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="unlike_akbar" value="{{ post.id }}" />
-      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
-        <i class="fa fa-thumbs-down"></i> Unlike
-      </button>
-    </form>
-  {% else %}
-    <form action="{% url 'add_akbar' post_id=post.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="likePost" value="{{ post.id }}" />
-      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: rgb(43, 255, 0); border-color: #dc3545;">
-        <i class=""></i>✊ <strong>Allahu Akbar!</strong> {{ post.postAllah.count }}
-      </button>
-    </form>
-  {% endif %}
-</div>
-{% endif %}
-
-
-
-{% if user.is_authenticated %}
-      
-<div class="reaction-button">
-  {% if request.user in post.postSubhanallah.all %}
-    <form action="{% url 'remove_subhanallah' post_id=posts.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="unlike_subhanallah" value="{{ posts.id }}" />
-      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
-        <i class="fa fa-thumbs-down"></i> Unlike
-      </button>
-    </form>
-  {% else %}
-    <form action="{% url 'add_subhanallah' post_id=post.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="subhanallahPost" value="{{ post.id }}" />
-      <button id="like-btn-{{ posts.id }}" class="btn btn-primary w-100" style="background-color: rgb(0, 0, 0); border-color: #dc3545;">
-        <i class=""></i>😱 Subhanallah! {{ post.postSubhanallah.count }}
-      </button>
-    </form>
-  {% endif %}
-</div>
-
-{% endif %}
-
-{% if user.is_authenticated %}
-      
-<div class="reaction-button">
-  {% if request.user in post.postLaa.all %}
-    <form action="{% url 'remove_laa' post_id=post.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="unlike_laa" value="{{ post.id }}" />
-      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
-        <i class="fa fa-thumbs-down"></i> Unlike
-      </button>
-    </form>
-  {% else %}
-    <form action="{% url 'add_laa' post_id=post.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="laaPost" value="{{ post.id }}" />
-      <button id="like-btn-{{ post.id }}" class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
-        <i class="fa fa-thumbs-down"></i> لا  {{ post.postLaa.count }} 
-      </button>
-    </form>
-  {% endif %}
-</div>
-
-{% endif %}
-      </div>
+        {% include 'network/likes.html' %}
+        
         <ul class="list-group">
-          {% for comment in post.postComment.all %}
+          {% for comment in posts.postComment.all %}
             <li class="list-group-item">
-              <a href="{% url 'profile' user_id=post.user.id %}">
+              <a href="{% url 'profile' user_id=posts.user.id %}">
                 <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
               </a>
               <strong><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author }}</a> wrote:</strong>
@@ -144,7 +54,7 @@
         
         <br>
         {% if user.is_authenticated %}
-        <form action="{% url 'addComment' post_id=post.id %}" method="POST">
+        <form action="{% url 'addComment' post_id=posts.id %}" method="POST">
           {% csrf_token %}
           <div class="form-group">
             <span class="comment-field">
@@ -163,17 +73,17 @@
         
          
         {% if user.is_authenticated %}
-            {% if user == post.user %}
+            {% if user == posts.user %}
                 <div class="edit-buttons">
                     <!-- Display an "Edit" button that opens the modal to edit the post -->
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{post.id}}">Edit</button>
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{posts.id}}">Edit</button>
                 </div>
                 <!-- The modal for editing a post -->
-                <div class="modal fade" id="modal_edit_post_{{post.id}}" tabindex="-1" role="dialog" aria-labelledby="modal_edit_post_{{post.id}}_" aria-hidden="true">
+                <div class="modal fade" id="modal_edit_post_{{posts.id}}" tabindex="-1" role="dialog" aria-labelledby="modal_edit_post_{{posts.id}}_" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{post.id}}" aria-label="Edit post">
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_post_{{posts.id}}" aria-label="Edit post">
                                     Edit
                                 </button>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -182,7 +92,7 @@
                             </div>
                             <div class="modal-body">
                                 <!-- Textarea for editing the post's content -->
-                                <textarea rows="10" id="textarea_{{post.id}}" class="form-control" name="content">{{post.postContent}}</textarea>
+                                <textarea rows="10" id="textarea_{{posts.id}}" class="form-control" name="content">{{posts.postContent}}</textarea>
                             </div>
                             <div class="modal-footer"></div>
                             <div class="modal-footer">

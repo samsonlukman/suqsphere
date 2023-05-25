@@ -35,6 +35,7 @@ def index(request):
     page_post = paginator.get_page(page_number)
     user = request.user
     profile_pics = user.profile_pics
+
     post_like = Like.objects.filter(user=user)
     post_akbar = Allahu_akbar.objects.filter(user=user)
     post_subhanallah = Subhanallah.objects.filter(user=user)
@@ -120,7 +121,7 @@ def post_content(request, post_id):
         likes = False
 
     return render(request, "network/post_content.html", {
-        "post": post,
+        "posts": post,
         "allComments": allComments,
         "post_like": post_like,
         "likes": likes,
@@ -155,7 +156,7 @@ def profile_pic(request, user_id):
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
 
-def post_image(request, user_id):
+def post_image(request, post_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
@@ -173,6 +174,11 @@ def newPost(request):
         postContent.save()
         return HttpResponseRedirect(reverse(index))
 
+def hover(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
 def remove_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)

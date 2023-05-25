@@ -25,6 +25,7 @@ urlpatterns = [
     path("add_subhanallah/<int:post_id>", views.add_subhanallah, name="add_subhanallah"),
     path("remove_laa/<int:post_id>", views.remove_laa, name="remove_laa"),
     path("add_laa/<int:post_id>", views.add_laa, name="add_laa"),
+    path("add_hover/<int:post_id>", views.hover, name="hover"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
