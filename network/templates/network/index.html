@@ -4,113 +4,88 @@
 {% load static %}
 {% block body %}
 
-
-<script>
-
-function playSound() {
-  var audio = document.getElementById("myAudio");
-  audio.play();
-}
-</script>
-<div>
-
+<div class="container">
   {% if user.is_authenticated %}
-  <audio id="myAudio">
-    <source src="{% static 'network/001.mp' %}" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
-
-<button onclick="playSound()">Sheikh Hussary</button>
-
-
     <!-- Check if the user is authenticated -->
-    <form action="{% url 'newPost' %}" method="POST" enctype="multipart/form-data">
-        <!-- Add a CSRF token to the form -->
-        {% csrf_token %}
-        <!-- Textarea for creating a new post -->
-        <textarea id="new-post" class="create-post-text" name="post_content" placeholder="Share a thought..." required></textarea>
-        <div class="form-group">
-         <!--<label for="image">Select Profile Picture</label>-->
-        <input type="file" name="post_image" class="form-control" accept="image/*" enctype="multipart/form-data" multiple>
-      </div>
-        <div>
-        <!-- Submit button for creating a new post -->
-        <button id="post-btn" type="submit" class="create-post-button">post</button>
-        {% else %}
-        <!-- If the user is not authenticated, display a link to register -->
-        <a id="register" href="{% url 'register' %}">Click on register to create an account</a>
-
-        {% endif %}
+    <div class="input-group mb-3" id="create-post-field-container">
+      <input style="margin-top: 20px; height: 50px; border-radius: 1rem;" type="text" id="create-post-field" class="form-control" placeholder="Share a thought" onclick="openModal()">
     </div>
-    </form>
-</div>
 
+    <!-- Modal -->
+    <div id="postModal" class="modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal()">&times;</span>
+          <form action="{% url 'newPost' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+              <textarea style="height: 300px;" id="new-post" class="form-control" name="post_content" placeholder="Share a thought..." required></textarea>
+            </div>
+            <div class="form-group">
+              <input type="file" name="post_image" class="form-control-file" accept="image/*" multiple>
+            </div>
+            <div class="text-right">
+              <button id="post-btn" type="submit" class="btn btn-primary">Post</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
-
-{% for posts in page_post %}
-
-<div class="card">
-    <div class="card-body">
-      <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
-      </a>
-
-        <!-- Display a link to the user's profile -->
-        <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
+  {% for posts in page_post %}
+    <div class="card mb-4">
+      <div class="card-body">
+        <a href="{% url 'profile' user_id=posts.user.id %}">
+          <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+        </a>
+        <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{ posts.user }}</a>
         <br>
         <br>
-        <!-- Display the content of the post -->
         <div class="card-text" id="content_{{ posts.id }}">
           {% for paragraph in posts.postContent|split_paragraphs %}
-  {% if forloop.counter <= 10 %}
-    <p>{{ paragraph|urlize }}</p>
-  {% endif %}
-{% endfor %}
-{% if posts.postContent|split_paragraphs|length > 2 %}
-<a href="{% url 'post_content' post_id=posts.id %}">
-  <p class="btn btn-link read-more" data-post="{{ posts.id }}">Read full content >>></p>
-</a>
-{% endif %}
-
+            {% if forloop.counter <= 10 %}
+              <p>{{ paragraph|urlize }}</p>
+            {% endif %}
+          {% endfor %}
+          {% if posts.postContent|split_paragraphs|length > 2 %}
+            <a href="{% url 'post_content' post_id=posts.id %}">
+              <p class="btn btn-link read-more" data-post="{{ posts.id }}">Read full content >>></p>
+            </a>
+          {% endif %}
         </div>
         <div class="card-body">
           {% if posts.post_image %}
-          <div class="image-container">
-  <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
-</div>
-
-          
+            <div class="image-container">
+              <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
+            </div>
           {% endif %}
         </div>
+      </div>
+      <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
+
+      <!-- Display the number of likes for the post -->
+      {% include 'network/likes.html' %}
+
+      <!--Urlize comments, read more comments, and display comments-->
+      {% include 'network/comments.html' %}
+    </div>
 </div>
-<p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
-
-<!-- Display the number of likes for the post -->
-{% include 'network/likes.html' %}
-
-<!--Urlize comments, read more commets and display comments-->
-{% include 'network/comments.html' %}
-        
-        
-  </div>
-  </div>
-  </div>
-  <!-- End of the for loop -->
   {% endfor %}
-
 
   <!-- Pagination for navigating through the posts -->
   <nav aria-label="Page navigation example">
-  <ul class="pagination d-flex justify-content-center">
-  {% if page_post.has_previous %}
-  <!-- If there is a previous page, display a "previous" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
-  {% endif %}
-  {% if page_post.has_next %}
-  <!-- If there is a next page, display a "next" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
-  {% endif %}
-  </ul>
+    <ul class="pagination justify-content-center">
+      {% if page_post.has_previous %}
+        <!-- If there is a previous page, display a "previous" button -->
+        <li class="page-item"><a class="page-link" href="?page={{ page_post.previous_page_number }}">Previous</a></li>
+      {% endif %}
+      {% if page_post.has_next %}
+        <!-- If there is a next page, display a "next" button -->
+        <li class="page-item"><a class="page-link" href="?page={{ page_post.next_page_number }}">Next</a></li>
+      {% endif %}
+    </ul>
   </nav>
+</div>
 
-  {% endblock %}
+{% endblock %}

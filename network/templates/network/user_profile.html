@@ -3,13 +3,13 @@
 {% load my_filters %}
 {% block body %}
 
-<div style="color:black;" class="container-fluid">
+<div class="container">
   <div class="row mb-3">
     <div class="col-6 text-center">
-      <h5 class="text-white">Following: {{ following.count }}</h5>
+      <h5 class="text-black">Following: {{ following.count }}</h5>
     </div>
     <div class="col-6 text-center">
-      <h5 class="text-white">Followers: {{ follower.count }}</h5>
+      <h5 class="text-black">Followers: {{ follower.count }}</h5>
     </div>
   </div>
   {% if user.is_authenticated %}
@@ -37,7 +37,7 @@
 
 
 {% for posts in page_post %}
-
+<div class="container">
 <div class="card">
     <div class="card-body">
       <a href="{% url 'profile' user_id=posts.user.id %}">
@@ -62,12 +62,15 @@
 {% endif %}
 
         </div>
-        {% if posts.post_image %}
-        <div class="post-image-container">
-          <img src="{{ posts.post_image.url }}" alt="Post image">
+        <div class="card-body">
+          {% if posts.post_image %}
+          <div class="image-container">
+  <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
+</div>
+
+          
+          {% endif %}
         </div>
-{% endif %}
-    </div>
 </div>
 <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
 
@@ -76,21 +79,27 @@
 
 <!--Urlize comments, read more commets and display comments-->
 {% include 'network/comments.html' %}
+        
+</div>    
+  </div>
+  </div>
+  </div>
   <!-- End of the for loop -->
   {% endfor %}
 
-      <!-- Pagination for navigating through the posts -->
-      <nav aria-label="Page navigation example">
-      <ul class="pagination d-flex justify-content-center">
-      {% if page_post.has_previous %}
-      <!-- If there is a previous page, display a "previous" button -->
-      <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
-      {% endif %}
-      {% if page_post.has_next %}
-      <!-- If there is a next page, display a "next" button -->
-      <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
-      {% endif %}
-      </ul>
-      </nav>
 
-{% endblock %}
+  <!-- Pagination for navigating through the posts -->
+  <nav aria-label="Page navigation example">
+  <ul class="pagination d-flex justify-content-center">
+  {% if page_post.has_previous %}
+  <!-- If there is a previous page, display a "previous" button -->
+  <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
+  {% endif %}
+  {% if page_post.has_next %}
+  <!-- If there is a next page, display a "next" button -->
+  <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
+  {% endif %}
+  </ul>
+  </nav>
+
+  {% endblock %}

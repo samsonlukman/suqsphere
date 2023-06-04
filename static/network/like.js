@@ -1,4 +1,34 @@
-document.addEventListener('DOMContentLoaded', function() {
+
+function disableComment() {
+  const commentBtns = document.querySelectorAll(".btn-comment button");
+  const commentFields = document.querySelectorAll(".comment-field textarea");
+
+  for (let i = 0; i < commentFields.length; i++) {
+    const commentBtn = commentBtns[i];
+    const newComment = commentFields[i];
+
+    if (newComment.value.trim() === "") {
+      commentBtn.disabled = true;
+    } else {
+      commentBtn.disabled = false;
+    }
+
+    // add event listener for input event
+    newComment.addEventListener("input", function () {
+      if (newComment.value.trim() === "") {
+        commentBtn.disabled = true;
+      } else {
+        commentBtn.disabled = false;
+      }
+    });
+  }
+}
+
+window.onload = function() {
+  disableComment();
+};
+
+$(document).ready(function() {
   var reactionTimeout;
 
   // Hide all reaction buttons by default
@@ -16,18 +46,60 @@ document.addEventListener('DOMContentLoaded', function() {
     var postId = $(this).data('post-id');
     reactionTimeout = setTimeout(function() {
       $('#reaction-buttons-' + postId).hide();
-    }, 5000); // 10 seconds
+    }, 3000); // 10 seconds
   });
-
-
-
-
-
-
-window.addEventListener("load", function(){
-  var audio = document.getElementById("myAudio");
-  audio.play();
 });
+
+
+function opensModal(postId) {
+  var modal = document.getElementById('reactedUsersModal-' + postId);
+  modal.style.display = 'block'; /* Show the modal */
+
+  showColumn('like-column'); /* Show the "thumbs up" column by default */
+}
+
+function showColumn(columnId) {
+  var columns = document.querySelectorAll('.reaction-columns .reaction-column');
+  columns.forEach(function(column) {
+    var columnContent = column.querySelector('div');
+    var button = column.querySelector('button');
+    if (columnContent.id === columnId) {
+      columnContent.style.display = 'block'; /* Show the selected column */
+      button.classList.add('active'); /* Add active class to the selected button */
+    } else {
+      columnContent.style.display = 'none'; /* Hide the other columns */
+      button.classList.remove('active'); /* Remove active class from other buttons */
+    }
+  });
+}
+
+function closesModal(postId) {
+  var modal = document.getElementById('reactedUsersModal-' + postId);
+  modal.style.display = 'none'; /* Hide the modal */
+}
+
+function openModal() {
+  var modal = document.getElementById('postModal');
+  var createPostFieldContainer = document.getElementById('create-post-field-container');
+  modal.style.display = 'block'; /* Show the modal */
+  createPostFieldContainer.style.display = 'none';
+}
+
+function closeModal() {
+  var modal = document.getElementById('postModal');
+  var createPostFieldContainer = document.getElementById('create-post-field-container');
+  modal.style.display = 'none'; /* Hide the modal */
+  createPostFieldContainer.style.display = 'block';
+}
+
+
+
+
+
+
+
+
+
 
 const mainButton = document.getElementById('main-button');
 const popup = document.getElementById('popup');
@@ -44,34 +116,7 @@ mainButton.addEventListener('mousedown', () => {
 
 
 
-function disableComment() {
-    const commentBtns = document.querySelectorAll(".btn-comment button");
-    const commentFields = document.querySelectorAll(".comment-field textarea");
 
-    for (let i = 0; i < commentFields.length; i++) {
-      const commentBtn = commentBtns[i];
-      const newComment = commentFields[i];
-
-      if (newComment.value.trim() === "") {
-        commentBtn.disabled = true;
-      } else {
-        commentBtn.disabled = false;
-      }
-
-      // add event listener for input event
-      newComment.addEventListener("input", function () {
-        if (newComment.value.trim() === "") {
-          commentBtn.disabled = true;
-        } else {
-          commentBtn.disabled = false;
-        }
-      });
-    }
-  }
-
-  window.onload = function() {
-    disableComment();
-  };
 
 
 
@@ -83,199 +128,3 @@ function getCookie(name){
             if(parts.length == 2) return parts.pop().split(';').shift();
         }
 
-        // This function is called when the form for editing a post is submitted
-        function submitHandler(id){
-            // Get the value of the textarea for the post being edited
-            const textareaValue = document.getElementById(`textarea_${id}`).value;
-            // Get the content element of the post being edited
-            const content = document.getElementById(`content_${id}`);
-            // Get the modal element for editing the post
-            const modal = document.getElementById(`modal_edit_post_${id}`);
-            // Send a POST request to the server to save the changes to the post
-            fetch(`/edit/${id}`, {
-                method: "POST",
-                headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
-                body: JSON.stringify({
-                    content: textareaValue
-                })
-            })
-            // Parse the response as JSON
-            .then(response => response.json())
-            .then(result => {
-                // Update the content of the post with the new content
-                content.innerHTML = result.data;
-                // Close the modal
-                modal.classList.remove('show');
-                modal.setAttribute('aria-hidden', 'true');
-                modal.setAttribute('style', 'display: none');
-                // Remove the modal backdrop
-                const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
-                for(let i=0; i<modalsBackdrops.length; i++){
-                    document.body.removeChild(modalsBackdrops[i]);
-                }
-            })
-
-        }
-
-
-
-  // This function is called when the like button for a post is clicked
-  function likeHandler(id, whoYouLiked){
-    // Get the like button element
-    const btn = document.getElementById(`${id}`);
-
-    // Remove the existing like/dislike icon classes
-    btn.classList.remove('fa-thumbs-up')
-    btn.classList.remove('fa-thumbs-down')
-
-    // Check if the post has already been liked by the user
-    let liked = (whoYouLiked.indexOf(id) >= 0);
-
-    // Send a request to the server to like/unlike the post
-    if(liked === true){
-        fetch(`/remove_like/${id}`)
-        .then(response => response.json())
-        .then(result => {
-            if (result.message === "You have already liked this post.") {
-                // User has already liked the post, don't update the button or like count
-                return;
-            }
-            // Update the like count element in the HTML template
-            document.getElementById("likeCount_" + id).innerHTML = result.likes;
-
-            // Update the liked variable based on the new like count
-            liked = (result.likes > 0);
-
-            // Add the appropriate icon class
-            if (liked) {
-                btn.classList.add('fa-thumbs-down')
-            } else {
-                btn.classList.add('fa-thumbs-up')
-            }
-        })
-    } else {
-    fetch(`/add_like/${id}`)
-    .then(response => response.json())
-    .then(result => {
-        if (result.message === "You have already liked this post.") {
-            // User has already liked the post, don't update the button or like count
-            return;
-        }
-        // Update the like count element in the HTML template
-        document.getElementById("likeCount_" + id).innerHTML = result.likes;
-
-        // Update the liked variable based on the new like count
-        liked = (result.likes > 0);
-
-        // Add the appropriate icon class
-        if (liked) {
-            btn.classList.add('fa-thumbs-down')
-        } else {
-            btn.classList.add('fa-thumbs-up')
-        }
-    })
-}
-  }
-
-
-
-// This function gets the value of the cookie with the specified name
-function getCookie(name){
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if(parts.length == 2) return parts.pop().split(';').shift();
-        }
-
-        // This function is called when the form for editing a post is submitted
-        function submitHandler(id){
-            // Get the value of the textarea for the post being edited
-            const textareaValue = document.getElementById(`textarea_${id}`).value;
-            // Get the content element of the post being edited
-            const content = document.getElementById(`content_${id}`);
-            // Get the modal element for editing the post
-            const modal = document.getElementById(`modal_edit_post_${id}`);
-            // Send a POST request to the server to save the changes to the post
-            fetch(`/edit/${id}`, {
-                method: "POST",
-                headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
-                body: JSON.stringify({
-                    content: textareaValue
-                })
-            })
-            // Parse the response as JSON
-            .then(response => response.json())
-            .then(result => {
-                // Update the content of the post with the new content
-                content.innerHTML = result.data;
-                // Close the modal
-                modal.classList.remove('show');
-                modal.setAttribute('aria-hidden', 'true');
-                modal.setAttribute('style', 'display: none');
-                // Remove the modal backdrop
-                const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
-                for(let i=0; i<modalsBackdrops.length; i++){
-                    document.body.removeChild(modalsBackdrops[i]);
-                }
-            })
-
-        }
-
-  // This function is called when the like button for a post is clicked
-  function likeHandler(id, whoYouLiked){
-    // Get the like button element
-    const btn = document.getElementById(`${id}`);
-
-    // Remove the existing like/dislike icon classes
-    btn.classList.remove('fa-thumbs-up')
-    btn.classList.remove('fa-thumbs-down')
-
-    // Check if the post has already been liked by the user
-    let liked = (whoYouLiked.indexOf(id) >= 0);
-
-    // Send a request to the server to like/unlike the post
-    if(liked === true){
-        fetch(`/remove_like/${id}`)
-        .then(response => response.json())
-        .then(result => {
-            if (result.message === "You have already liked this post.") {
-                // User has already liked the post, don't update the button or like count
-                return;
-            }
-            // Update the like count element in the HTML template
-            document.getElementById("likeCount_" + id).innerHTML = result.likes;
-
-            // Update the liked variable based on the new like count
-            liked = (result.likes > 0);
-
-            // Add the appropriate icon class
-            if (liked) {
-                btn.classList.add('fa-thumbs-down')
-            } else {
-                btn.classList.add('fa-thumbs-up')
-            }
-        })
-    } else {
-    fetch(`/add_like/${id}`)
-    .then(response => response.json())
-     .then(result => {
-        if (result.message === "You have already liked this post.") {
-            // User has already liked the post, don't update the button or like count
-            return;
-        }
-        // Update the like count element in the HTML template
-        document.getElementById("likeCount_" + id).innerHTML = result.likes;
-
-        // Update the liked variable based on the new like count
-        liked = (result.likes > 0);
-
-        // Add the appropriate icon class
-        if (liked) {
-            btn.classList.add('fa-thumbs-down')
-        } else {
-            btn.classList.add('fa-thumbs-up')
-        }
-    })
-}
-  }
-
-});

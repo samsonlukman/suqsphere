@@ -36,31 +36,29 @@ def index(request):
     user = request.user
     profile_pics = user.profile_pics
 
-    post_like = Like.objects.filter(user=user)
-    post_akbar = Allahu_akbar.objects.filter(user=user)
-    post_subhanallah = Subhanallah.objects.filter(user=user)
-    post_laa = Subhanallah.objects.filter(user=user)
-    likes = True
+    
 
 
 
-    if len(post_like) > 0:
-        likes = True
-    else:
-        likes = False
+        
+        
     # Get comments for the posts displayed on the page
     comments = Comment.objects.filter(post__in=page_post)
 
     return render(request, "network/index.html", {
+        
         "post": post,
         "page_post": page_post,
-        "post_like": post_like,
+    
         "profile_pics": profile_pics,
         "comments": comments,
-        "likes": likes,
-        "post_akbar": post_akbar,
-        "post_subhanallah": post_subhanallah,
-        "post_laa": post_laa,
+    })
+        
+
+def like_count(request):
+    post = Post.objects.all().order_by("id").reverse().select_related("user")
+    return render(request, "network/likecount.html", {
+        "posts": post
     })
 
 def profile(request, user_id):
@@ -104,7 +102,8 @@ def profile(request, user_id):
         "username": user.username,
         "isFollowing": newFollowing
     })
-
+def transact(request):
+    return render(request, "network/transact.html")
 def post_content(request, post_id):
     post = Post.objects.get(pk=post_id)
     allComments = Comment.objects.filter(post=post)
@@ -174,11 +173,49 @@ def newPost(request):
         postContent.save()
         return HttpResponseRedirect(reverse(index))
 
-def hover(request, post_id):
+def remove_maashaa(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    try:
+        maashaa = MaaShaaAllah.objects.get(post=post, user=request.user)
+        maashaa.delete()
+    except MaaShaaAllah.DoesNotExist:
+        messages.error(request, 'You have not liked this post.') 
+    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+
+def add_maashaa(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
         user = request.user
+        try:
+            maa = MaaShaaAllah.objects.get(post=post, user=user)
+            maa.delete()          
+        except MaaShaaAllah.DoesNotExist:
+            haha = MaaShaaAllah.objects.create(post=post, user=user)
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")    
+
+def remove_haha(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    try:
+        haha = Haha.objects.get(post=post, user=request.user)
+        haha.delete()
+    except Haha.DoesNotExist:
+        messages.error(request, 'You have not liked this post.') 
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+
+def add_haha(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        user = request.user
+        try:
+            haha = Haha.objects.get(post=post, user=user)
+            haha.delete()          
+        except Haha.DoesNotExist:
+            haha = Haha.objects.create(post=post, user=user)
+        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
+    else:
+        raise Http404("Method not allowed")
 
 def remove_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -206,6 +243,9 @@ def add_like(request, post_id):
         return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
     else:
         raise Http404("Method not allowed")
+    
+
+
 
 def add_akbar(request, post_id):
     post = get_object_or_404(Post, id=post_id)

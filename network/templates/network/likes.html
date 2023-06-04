@@ -1,138 +1,185 @@
-
 {% load custom_tags %}
 {% load my_filters %}
 {% load static %}
 
-
 <div class="img-fluid react_space" id="react_space">
+  <div class="reaction-button" id="reaction-buttons-{{ posts.id }}">
+    {% if user.is_authenticated %}
+      {% if request.user in posts.post_like.all %}
+        <form action="{% url 'remove_like' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
+          <button>
+            <i class="fa fa-thumbs-down"></i> Unlike
+          </button>
+        </form>
+      {% else %}
+        <form action="{% url 'add_like' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="likePost" value="{{ posts.id }}"/>
+          <button style="background: none; border: none;">
+            <img src="/media/post_image/hand.gif" class="rounded-circle" width="50" height="50" alt="Maa Shaa Allah"/>
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
+  
+    {% if user.is_authenticated %}
+      {% if request.user in posts.postMaashaa.all %}
+        <form action="{% url 'remove_maashaa' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
+          <button>
+            <i class="fa fa-thumbs-down"></i> Unlike
+          </button>
+        </form>
+      {% else %}
+        <form action="{% url 'add_maashaa' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="likePost" value="{{ posts.id }}" />
+          <button style="background: none; border: none;">
+            <img src="/media/post_image/mashaa.gif" class="rounded-circle" width="50" height="50" alt="Maa Shaa Allah"/>
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
+
+    {% if user.is_authenticated %}
+      {% if request.user in posts.postHaha.all %}
+        <form action="{% url 'remove_haha' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
+          <button>
+            <i class="fa fa-thumbs-down"></i> Unlike
+          </button>
+        </form>
+      {% else %}
+        <form action="{% url 'add_haha' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="likePost" value="{{ posts.id }}" />
+          <button style="background: none; border: none;">
+            <img src="/media/post_image/funny.gif" class="rounded-circle" width="50" height="50" alt="Maa Shaa Allah"/>
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
     
+    {% if user.is_authenticated %}
+      {% if request.user in posts.postAllah.all %}
+        <form action="{% url 'remove_akbar' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="unlike_akbar" value="{{ posts.id }}" />
+          <button>
+            <i class="fa fa-thumbs-down"></i> Unlike
+          </button>
+        </form>
+      {% else %}
+        <form action="{% url 'add_akbar' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="likePost" value="{{ posts.id }}" />
+          <button style="background: none; border: none;">
+            <img src="/media/post_image/allah.gif" width="50" height="50" alt="Allah akbar"/>
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
     
-      <div class="reaction-button" id="reaction-buttons-{{ posts.id }}">
-        {% if user.is_authenticated %}
-          {% if request.user in posts.postMaashaa.all %}
-            <form action="{% url 'remove_maashaa' post_id=posts.id %}" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-              <button>
-                <i class="fa fa-thumbs-down"></i> Unlike
-              </button>
-            </form>
-          {% else %}
-            <form action="{% url 'add_maashaa' post_id=posts.id %}" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="likePost" value="{{ posts.id }}" />
-              <button style="background: none; border: none;">
-                  <img src="/media/post_image/mashaa.gif" class="rounded-circle" width="80" height="80" alt="Maa Shaa Allah"/>
-                  
-              </button>
-              
-            </form>
-          {% endif %}
-        {% endif %}
+    {% if user.is_authenticated %}
+      {% if request.user in posts.postSubhanallah.all %}
+        <form action="{% url 'remove_subhanallah' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="unlike_subhanallah" value="{{ posts.id }}" />
+          <button>
+            <i class="fa fa-thumbs-down"></i> Unlike
+          </button>
+        </form>
+      {% else %}
+        <form action="{% url 'add_subhanallah' post_id=posts.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="subhanallahPost" value="{{ posts.id }}" />
+          <button style="background: none; border: none;">
+            <img src="/media/post_image/shock.gif" class="rounded-circle" width="50" height="50" alt="Subhanallah"/>
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
+    
+ 
+  </div>
+
+  <h3 class="like-btn" data-post-id="{{ posts.id }}"><i class="fa fa-thumbs-up"></i></h3>
+
+  {% with total_count=posts.postMaashaa.count|add:posts.postHaha.count|add:posts.postAllah.count|add:posts.postSubhanallah.count|add:posts.post_like.count %}
+  {% if posts.postMaashaa.count > 0 and posts.postHaha.count < 1 %}
+    <h3 onclick="opensModal('{{ posts.id }}')"><button class="like-button">❤️ {{ total_count }}</button> 💬 {{ posts.postComment.count }}</h3>
+  {% elif posts.postMaashaa.count > 0 and posts.postHaha.count > 0 and posts.postSubhanallah.count < 1 %}
+    <h3 onclick="opensModal('{{ posts.id }}')"><button class="like-button">❤️😂 {{ total_count }}</button> 💬 {{ posts.postComment.count }}</h3>
+  {% elif posts.postMaashaa.count > 0 and posts.postHaha.count > 0 and posts.postSubhanallah.count > 0  %}
+    <h3 onclick="opensModal('{{ posts.id }}')"><button class="like-button">❤️😂😮{{ total_count }}</button> 💬 {{ posts.postComment.count }}</h3>
+  {% endif %}
+{% endwith %}
+
+<!-- Modal -->
+<div id="reactedUsersModal-{{ posts.id }}" class="reaction-modal">
+  <div class="modal-content">
+    <span class="close" onclick="closesModal('{{ posts.id }}')">&times;</span>
+    <div class="reaction-columns">
+      <div class="reaction-column">
+        <p class="desktop-only">Like</p>
+        <button onclick="showColumn('like-column')" style="background: none; border: none;">
+          <img src="/media/post_image/hand.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.post_like.count}}
+        </button>
+        <div id="like-column">
+          {% for like_reactions in posts.post_like.all %}
+            <a href="{% url 'profile' user_id=like_reactions.user.id %}">{{ like_reactions.user }}</a><br>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="reaction-column">
+        <p class="desktop-only">Maa Shaa Allah</p>
+        <button onclick="showColumn('love-column')" style="background: none; border: none;">
+          <img src="/media/post_image/mashaa.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.postMaashaa.count}}
+        </button>
         
-        {% if user.is_authenticated %}
-        {% if request.user in posts.postHaha.all %}
-          <form action="{% url 'remove_haha' post_id=posts.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'add_haha' post_id=posts.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}" />
-            <button style="background: none; border: none;">
-                <img src="/media/post_image/funny.gif" class="rounded-circle" width="80" height="80" alt="Maa Shaa Allah"/>
-            </button>
-            
-          </form>
-        {% endif %}
-      {% endif %}
-    
-        {% if user.is_authenticated %}
-          {% if request.user in posts.postAllah.all %}
-            <form action="{% url 'remove_akbar' post_id=posts.id %}" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="unlike_akbar" value="{{ posts.id }}" />
-              <button>
-                <i class="fa fa-thumbs-down"></i> Unlike
-              </button>
-            </form>
-          {% else %}
-            <form action="{% url 'add_akbar' post_id=posts.id %}" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="likePost" value="{{ posts.id }}" />
-              <button style="background: none; border: none;">
-                <img src="/media/post_image/allah.gif" width="80" height="80" alt="Allah akbar"/>
-            
-              </button>
-            </form>
-          {% endif %}
-        {% endif %}
-    
-    
-    
-    {% if user.is_authenticated %}
-    {% if request.user in posts.postSubhanallah.all %}
-    <form action="{% url 'remove_subhanallah' post_id=posts.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="unlike_subhanallah" value="{{ posts.id }}" />
-    <button>
-      <i class="fa fa-thumbs-down"></i> Unlike
-    </button>
-    </form>
-    {% else %}
-    <form action="{% url 'add_subhanallah' post_id=posts.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="subhanallahPost" value="{{ posts.id }}" />
-    <button style="background: none; border: none;">
-      <img src="/media/post_image/shock.gif" class="rounded-circle" width="80" height="80" alt="Subhanallah"/>
-      
-    </button>
-    </form>
-    {% endif %}
-    {% endif %}
-    
-    {% if user.is_authenticated %}
-    {% if request.user in posts.postLaa.all %}
-    <form action="{% url 'remove_laa' post_id=posts.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="unlike_laa" value="{{ posts.id }}" />
-    <button>
-      <i class="fa fa-thumbs-down"></i> Unlike
-    </button>
-    </form>
-    {% else %}
-    <form action="{% url 'add_laa' post_id=posts.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="laaPost" value="{{ posts.id }}" />
-    <img style="margin-top: 15px;" src="/media/post_image/down.png" class="rounded-circle" width="50" height="50" alt="La"/>
-    </button>
-    </form>
-    {% endif %}
-    {% endif %}
+        <div id="love-column">
+          {% for love_reactions in posts.postMaashaa.all %}
+            <a href="{% url 'profile' user_id=love_reactions.user.id %}">{{ love_reactions.user }}</a><br>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="reaction-column">
+        <p class="desktop-only">Subhanallah</p>
+        <button onclick="showColumn('shock-column')" style="background: none; border: none;">
+          <img src="/media/post_image/shock.gif" class="rounded-circle" width="30" height="30" alt="Subhanallah"/>{{posts.postSubhanallah.count}}
+        </button>
+        <div id="shock-column">
+          {% for shock_reactions in posts.postSubhanallah.all %}
+            <a href="{% url 'profile' user_id=shock_reactions.user.id %}">{{ shock_reactions.user }}</a><br>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="reaction-column">
+        <p class="desktop-only">Allahu Akbar</p>
+        <button onclick="showColumn('akbar-column')" style="background: none; border: none;">
+          <img src="/media/post_image/allah.gif" width="30" height="30" alt="Allah akbar"/>{{posts.postAllah.count}}
+        </button>
+        <div id="akbar-column">
+          {% for akbar_reactions in posts.postAllah.all %}
+            <a href="{% url 'profile' user_id=akbar_reactions.user.id %}">{{ akbar_reactions.user }}</a><br>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="reaction-column">
+        <p class="desktop-only">Haha</p>
+        <button onclick="showColumn('laugh-column')" style="background: none; border: none;">
+          <img src="/media/post_image/funny.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.postHaha.count}}
+        </button>
+        <div id="laugh-column">
+          {% for laugh_reactions in posts.postHaha.all %}
+            <a href="{% url 'profile' user_id=laugh_reactions.user.id %}">{{ laugh_reactions.user }}</a><br>
+          {% endfor %}
+        </div>
+      </div>
     </div>
-    {% if user.is_authenticated %}
-        {% if request.user in posts.post_like.all %}
-          <form action="{% url 'remove_like' post_id=posts.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'add_like' post_id=posts.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}" />
-            {% if posts.id %}
-            <button style="background: none; border: none;" class="like-btn" data-post-id="{{ posts.id }}">
-              <h6><i class="fa fa-thumbs-up"></i> react {{sum_like}}</h6>
-            </button>
-            {% endif %}
-          </form>
-        {% endif %}
-      {% endif %}
-    </div>
+  </div>
+</div>

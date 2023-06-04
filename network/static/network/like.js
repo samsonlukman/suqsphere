@@ -1,3 +1,33 @@
+
+function disableComment() {
+  const commentBtns = document.querySelectorAll(".btn-comment button");
+  const commentFields = document.querySelectorAll(".comment-field textarea");
+
+  for (let i = 0; i < commentFields.length; i++) {
+    const commentBtn = commentBtns[i];
+    const newComment = commentFields[i];
+
+    if (newComment.value.trim() === "") {
+      commentBtn.disabled = true;
+    } else {
+      commentBtn.disabled = false;
+    }
+
+    // add event listener for input event
+    newComment.addEventListener("input", function () {
+      if (newComment.value.trim() === "") {
+        commentBtn.disabled = true;
+      } else {
+        commentBtn.disabled = false;
+      }
+    });
+  }
+}
+
+window.onload = function() {
+  disableComment();
+};
+
 $(document).ready(function() {
   var reactionTimeout;
 
@@ -16,46 +46,60 @@ $(document).ready(function() {
     var postId = $(this).data('post-id');
     reactionTimeout = setTimeout(function() {
       $('#reaction-buttons-' + postId).hide();
-    }, 5000); // 10 seconds
+    }, 3000); // 10 seconds
   });
+});
+
+
+function opensModal(postId) {
+  var modal = document.getElementById('reactedUsersModal-' + postId);
+  modal.style.display = 'block'; /* Show the modal */
+}
+
+function closesModal(postId) {
+  var modal = document.getElementById('reactedUsersModal-' + postId);
+  modal.style.display = 'none'; /* Hide the modal */
+}
+
+function openModal() {
+  var modal = document.getElementById('postModal');
+  var createPostFieldContainer = document.getElementById('create-post-field-container');
+  modal.style.display = 'block'; /* Show the modal */
+  createPostFieldContainer.style.display = 'none';
+}
+
+function closeModal() {
+  var modal = document.getElementById('postModal');
+  var createPostFieldContainer = document.getElementById('create-post-field-container');
+  modal.style.display = 'none'; /* Hide the modal */
+  createPostFieldContainer.style.display = 'block';
+}
+
+
+
+
+
+
+
+
+
+
+const mainButton = document.getElementById('main-button');
+const popup = document.getElementById('popup');
+
+let hoverTimer;
+let pressTimer;
+
+mainButton.addEventListener('mousedown', () => {
+  pressTimer = setTimeout(() => {
+    popup.style.display = 'block';
+  }, 2000);
 });
 
 
 
 
 
-
-
-
-
-function disableComment() {
-    const commentBtns = document.querySelectorAll(".btn-comment button");
-    const commentFields = document.querySelectorAll(".comment-field textarea");
-
-    for (let i = 0; i < commentFields.length; i++) {
-      const commentBtn = commentBtns[i];
-      const newComment = commentFields[i];
-
-      if (newComment.value.trim() === "") {
-        commentBtn.disabled = true;
-      } else {
-        commentBtn.disabled = false;
-      }
-
-      // add event listener for input event
-      newComment.addEventListener("input", function () {
-        if (newComment.value.trim() === "") {
-          commentBtn.disabled = true;
-        } else {
-          commentBtn.disabled = false;
-        }
-      });
-    }
-  }
-
-  window.onload = function() {
-    disableComment();
-  };
 
 
 
@@ -67,40 +111,3 @@ function getCookie(name){
             if(parts.length == 2) return parts.pop().split(';').shift();
         }
 
-        // This function is called when the form for editing a post is submitted
-        function submitHandler(id){
-            // Get the value of the textarea for the post being edited
-            const textareaValue = document.getElementById(`textarea_${id}`).value;
-            // Get the content element of the post being edited
-            const content = document.getElementById(`content_${id}`);
-            // Get the modal element for editing the post
-            const modal = document.getElementById(`modal_edit_post_${id}`);
-            // Send a POST request to the server to save the changes to the post
-            fetch(`/edit/${id}`, {
-                method: "POST",
-                headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
-                body: JSON.stringify({
-                    content: textareaValue
-                })
-            })
-            // Parse the response as JSON
-            .then(response => response.json())
-            .then(result => {
-                // Update the content of the post with the new content
-                content.innerHTML = result.data;
-                // Close the modal
-                modal.classList.remove('show');
-                modal.setAttribute('aria-hidden', 'true');
-                modal.setAttribute('style', 'display: none');
-                // Remove the modal backdrop
-                const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
-                for(let i=0; i<modalsBackdrops.length; i++){
-                    document.body.removeChild(modalsBackdrops[i]);
-                }
-            })
-
-        }
-
-
-
-  
