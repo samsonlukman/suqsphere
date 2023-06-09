@@ -121,15 +121,16 @@
 
 <!-- Modal -->
 <div id="reactedUsersModal-{{ posts.id }}" class="reaction-modal">
+  <!-- Modal content -->
   <div class="modal-content">
     <span class="close" onclick="closesModal('{{ posts.id }}')">&times;</span>
     <div class="reaction-columns">
       <div class="reaction-column">
         <p class="desktop-only">Like</p>
-        <button onclick="showColumn('like-column')" style="background: none; border: none;">
+        <button onclick="showColumn('like-column-{{ posts.id }}')" style="background: none; border: none;">
           <img src="/media/post_image/hand.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.post_like.count}}
         </button>
-        <div id="like-column">
+        <div id="like-column-{{ posts.id }}">
           {% for like_reactions in posts.post_like.all %}
             <a href="{% url 'profile' user_id=like_reactions.user.id %}">{{ like_reactions.user }}</a><br>
           {% endfor %}
@@ -137,11 +138,11 @@
       </div>
       <div class="reaction-column">
         <p class="desktop-only">Maa Shaa Allah</p>
-        <button onclick="showColumn('love-column')" style="background: none; border: none;">
+        <button onclick="showColumn('love-column-{{ posts.id }}')" style="background: none; border: none;">
           <img src="/media/post_image/mashaa.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.postMaashaa.count}}
         </button>
         
-        <div id="love-column">
+        <div id="love-column-{{ posts.id }}">
           {% for love_reactions in posts.postMaashaa.all %}
             <a href="{% url 'profile' user_id=love_reactions.user.id %}">{{ love_reactions.user }}</a><br>
           {% endfor %}
@@ -149,10 +150,10 @@
       </div>
       <div class="reaction-column">
         <p class="desktop-only">Subhanallah</p>
-        <button onclick="showColumn('shock-column')" style="background: none; border: none;">
+        <button onclick="showColumn('shock-column-{{ posts.id }}')" style="background: none; border: none;">
           <img src="/media/post_image/shock.gif" class="rounded-circle" width="30" height="30" alt="Subhanallah"/>{{posts.postSubhanallah.count}}
         </button>
-        <div id="shock-column">
+        <div id="shock-column-{{ posts.id }}">
           {% for shock_reactions in posts.postSubhanallah.all %}
             <a href="{% url 'profile' user_id=shock_reactions.user.id %}">{{ shock_reactions.user }}</a><br>
           {% endfor %}
@@ -160,10 +161,10 @@
       </div>
       <div class="reaction-column">
         <p class="desktop-only">Allahu Akbar</p>
-        <button onclick="showColumn('akbar-column')" style="background: none; border: none;">
+        <button onclick="showColumn('akbar-column-{{ posts.id }}')" style="background: none; border: none;">
           <img src="/media/post_image/allah.gif" width="30" height="30" alt="Allah akbar"/>{{posts.postAllah.count}}
         </button>
-        <div id="akbar-column">
+        <div id="akbar-column-{{ posts.id }}">
           {% for akbar_reactions in posts.postAllah.all %}
             <a href="{% url 'profile' user_id=akbar_reactions.user.id %}">{{ akbar_reactions.user }}</a><br>
           {% endfor %}
@@ -171,10 +172,10 @@
       </div>
       <div class="reaction-column">
         <p class="desktop-only">Haha</p>
-        <button onclick="showColumn('laugh-column')" style="background: none; border: none;">
+        <button onclick="showColumn('laugh-column-{{ posts.id }}')" style="background: none; border: none;">
           <img src="/media/post_image/funny.gif" class="rounded-circle" width="30" height="30" alt="Maa Shaa Allah"/>{{posts.postHaha.count}}
         </button>
-        <div id="laugh-column">
+        <div id="laugh-column-{{ posts.id }}">
           {% for laugh_reactions in posts.postHaha.all %}
             <a href="{% url 'profile' user_id=laugh_reactions.user.id %}">{{ laugh_reactions.user }}</a><br>
           {% endfor %}

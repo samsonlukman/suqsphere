@@ -36,16 +36,123 @@
 </div>
 
 
+<!-- Modal -->
+<div id="editBioModal" class="custom-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Bio</h5>
+        <button type="button" class="close" onclick="closeEditBioModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'edit_profile' user_id=user.id %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="firstNameInput">First Name:</label>
+            <input type="text" class="form-control" id="firstNameInput" name="1" placeholder="Enter your first name" value="{{ user.first_name }}">
+          </div>
+          <div class="form-group">
+            <label for="lastNameInput">Last Name:</label>
+            <input type="text" class="form-control" id="lastNameInput" name="2" placeholder="Enter your last name" value="{{ user.last_name }}">
+          </div>
+          <div class="form-group">
+            <label for="aboutTextarea">About:</label>
+            <textarea class="form-control" id="aboutTextarea" name="3" rows="3" placeholder="Tell us about yourself">{{ user.about }}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="emailInput">Email:</label>
+            <input type="email" class="form-control" id="emailInput" name="4" value="{{ user.email }}" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label for="phoneInput">Phone Number:</label>
+            <input type="tel" class="form-control" id="phoneInput" name="5" value="{{ user.phone_number }}" placeholder="Enter your phone number">
+          </div>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeEditBioModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-modal {
+    display: none;
+  }
+</style>
+
+<script>
+  function openEditBioModal() {
+    var modal = document.getElementById('editBioModal');
+    modal.style.display = 'block';
+  }
+
+  function closeEditBioModal() {
+    var modal = document.getElementById('editBioModal');
+    modal.style.display = 'none';
+  }
+</script>
+
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex align-items-center">
+          <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
+        <div class="ml-3">
+          <h4 class="card-title mb-0">
+            {{ userProfile.first_name }} {{ userProfile.last_name }}
+          </h4>
+          <p class="mb-0">
+           Username: {{ userProfile.username }}
+          </p>
+          <p class="mb-0">
+           Email: {{ userProfile.email }}
+          </p>
+          <p class="mb-0">
+            Phone Number: {{ userProfile.phone_number }}
+          </p>
+          <!-- Button to open the modal -->
+{% if user == userProfile %}
+<button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
+{% endif %}
+        </div>
+      </div>
+      <hr>
+      <div>
+       {% if userProfile.about %}
+        <p>{{ userProfile.about }}</p>
+        {% else %}
+        <p>About: ...</p>
+        {%endif%}
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
 {% for posts in page_post %}
 <div class="container">
 <div class="card">
     <div class="card-body">
+        <div class="d-flex align-items-center">
       <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
       </a>
-
+      <div class="ml-3">
+        <h5 class="card-title mb-1">
         <!-- Display a link to the user's profile -->
-        <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
+        <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
+        </h5>
+        <p class="mb-0">
+          <p>@{{posts.user.username}}</p>
+        </p>
+      </div>
+        </div>
         <br>
         <br>
         <!-- Display the content of the post -->

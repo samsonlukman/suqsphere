@@ -4,6 +4,9 @@ from django.db import models
 
 class User(AbstractUser):
     profile_pics = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    about = models.TextField(null=True, blank=True)
+    
 
 
 class Post(models.Model):

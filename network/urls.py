@@ -1,17 +1,18 @@
 from django.contrib.auth import views as auth_views
-
 from django.urls import path
-from .views import CustomPasswordResetView
+from .views import *
 
 from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("terms", views.terms, name="terms"),
     path("newpost", views.newPost, name="newPost"),
     path("post_content/<int:post_id>", views.post_content, name="post_content"),
     path("post_image/<int:post_id>", views.post_image, name="post_image"),
     path('profile_pic/<int:user_id/', views.profile_pic, name="profile_pic"),
     path('profile/<int:user_id>/', views.profile, name="profile"),
+    path('edit_profile/<int:user_id>/', views.edit_profile, name="edit_profile"),
     path('addComment/<int:post_id>/', views.addComment, name='addComment'),
     path("follow", views.follow, name="follow"),
     path("tranasact", views.transact, name="transact"),
@@ -34,8 +35,9 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-    path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
-    path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('password_reset/',auth_views.PasswordResetView.as_view(),name='password_reset'),
+    path('password_reset/done/',auth_views.PasswordResetDoneView.as_view(),name='password_reset_done'),
+    path('reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(),name='password_reset_confirm'),
+    path('reset/done/',auth_views.PasswordResetCompleteView.as_view(),name='password_reset_complete'),
+
 ]

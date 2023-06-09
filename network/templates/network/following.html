@@ -4,74 +4,75 @@
 {% load static %}
 {% block body %}
 
+<br>
+<h1>Dear <a href="{% url 'profile' user_id=user.id %}">{{user.username}}</a>, these are the posts you follow...</h1>
 
-<h1>Dear <a href="{% url 'profile' user_id=user.id %}">{{user.username}}</a>, these are the posts you follow</h1>
-
-
-    {% for posts in page_post %}
-
+<br>
+<br>
+{% for posts in page_post %}
+<div class="container">
 <div class="card">
     <div class="card-body">
+        <div class="d-flex align-items-center">
       <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
       </a>
-
+      <div class="ml-3">
+        <h5 class="card-title mb-1">
         <!-- Display a link to the user's profile -->
-        <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
+        <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}
+        </h5>
+        <p class="mb-0">
+          <p>@{{posts.user.username}}</p></a>
+        </p>
+      </div>
+        </div>
         <br>
         <br>
-        <!-- Display the content of the post -->
         <div class="card-text" id="content_{{ posts.id }}">
           {% for paragraph in posts.postContent|split_paragraphs %}
-  {% if forloop.counter <= 10 %}
-    <p>{{ paragraph|urlize }}</p>
-  {% endif %}
-{% endfor %}
-{% if posts.postContent|split_paragraphs|length > 2 %}
-<a href="{% url 'post_content' post_id=posts.id %}">
-  <p class="btn btn-link read-more" data-post="{{ posts.id }}">Read full content >>></p>
-</a>
-{% endif %}
-
+            {% if forloop.counter <= 10 %}
+              <p>{{ paragraph|urlize }}</p>
+            {% endif %}
+          {% endfor %}
+          {% if posts.postContent|split_paragraphs|length > 2 %}
+            <a href="{% url 'post_content' post_id=posts.id %}">
+              <p class="btn btn-link read-more" data-post="{{ posts.id }}">Read full content >>></p>
+            </a>
+          {% endif %}
         </div>
         <div class="card-body">
           {% if posts.post_image %}
-          <div class="image-container">
-  <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
-</div>
-
-
+            <div class="image-container">
+              <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
+            </div>
           {% endif %}
         </div>
+      </div>
+      <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
+
+      <!-- Display the number of likes for the post -->
+      {% include 'network/likes.html' %}
+
+      <!--Urlize comments, read more comments, and display comments-->
+      {% include 'network/comments.html' %}
+    </div>
 </div>
-<p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
-
-<!-- Display the number of likes for the post -->
-{% include 'network/likes.html' %}
-
-<!--Urlize comments, read more commets and display comments-->
-{% include 'network/comments.html' %}
-
-
-  </div>
-  </div>
-  </div>
-  <!-- End of the for loop -->
   {% endfor %}
-
 
   <!-- Pagination for navigating through the posts -->
   <nav aria-label="Page navigation example">
-  <ul class="pagination d-flex justify-content-center">
-  {% if page_post.has_previous %}
-  <!-- If there is a previous page, display a "previous" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
-  {% endif %}
-  {% if page_post.has_next %}
-  <!-- If there is a next page, display a "next" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
-  {% endif %}
-  </ul>
+    <ul class="pagination justify-content-center">
+      {% if page_post.has_previous %}
+        <!-- If there is a previous page, display a "previous" button -->
+        <li class="page-item"><a class="page-link" href="?page={{ page_post.previous_page_number }}">Previous</a></li>
+      {% endif %}
+      {% if page_post.has_next %}
+        <!-- If there is a next page, display a "next" button -->
+        <li class="page-item"><a class="page-link" href="?page={{ page_post.next_page_number }}">Next</a></li>
+      {% endif %}
+    </ul>
   </nav>
+</div>
 
-  {% endblock %}
+{% endblock %}

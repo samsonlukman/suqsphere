@@ -10,7 +10,7 @@
         <a href="{% url 'profile' user_id=posts.user.id %}">
           <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
         </a>
-        <strong><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author }}</a> wrote:</strong>
+        <strong><a href="{% url 'profile' user_id=comment.author.id %}">@{{ comment.author.username }}</a> wrote:</strong>
         <div class="card-text" id="content_{{ comment.id }}">
           {% for paragraph in comment.message|split_paragraphs|slice:":8" %}
             <p>{{ paragraph|urlize }}</p>

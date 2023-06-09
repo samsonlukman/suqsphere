@@ -7,14 +7,22 @@
 <div class="container">
   <div class="card">
     <div class="card-body">
-      <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="50" height="50">
-      </a>
-
-      <!-- Display a link to the user's profile -->
-      <a class="card-title" href="{% url 'profile' user_id=posts.user.id %}">@{{posts.user}}</a>
-      <br>
-      <br>
+      <div class="d-flex align-items-center">
+        <a href="{% url 'profile' user_id=posts.user.id %}">
+          <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+        </a>
+        <div class="ml-3">
+          <h5 class="card-title mb-1">
+          <!-- Display a link to the user's profile -->
+          <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}
+          </h5>
+          <p class="mb-0">
+            <p>@{{posts.user.username}}</p></a>
+          </p>
+        </div>
+          </div>
+          <br>
+          <br>
 
       <!-- Display the content of the post -->
       <div class="card-text" id="content_{{ posts.id }}">
@@ -39,7 +47,7 @@
           <a href="{% url 'profile' user_id=posts.user.id %}">
             <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
           </a>
-          <strong><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author }}</a> wrote:</strong>
+          <strong><a href="{% url 'profile' user_id=comment.author.id %}">@{{ comment.author.username }}</a> wrote:</strong>
           <div class="card-text" id="content_{{ comment.id }}">
             {% for paragraph in comment.message|split_paragraphs %}
             <p>{{ paragraph|urlize }}</p>

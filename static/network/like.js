@@ -50,33 +50,22 @@ $(document).ready(function() {
   });
 });
 
-
 function opensModal(postId) {
   var modal = document.getElementById('reactedUsersModal-' + postId);
   modal.style.display = 'block'; /* Show the modal */
-
-  showColumn('like-column'); /* Show the "thumbs up" column by default */
-}
-
-function showColumn(columnId) {
-  var columns = document.querySelectorAll('.reaction-columns .reaction-column');
-  columns.forEach(function(column) {
-    var columnContent = column.querySelector('div');
-    var button = column.querySelector('button');
-    if (columnContent.id === columnId) {
-      columnContent.style.display = 'block'; /* Show the selected column */
-      button.classList.add('active'); /* Add active class to the selected button */
-    } else {
-      columnContent.style.display = 'none'; /* Hide the other columns */
-      button.classList.remove('active'); /* Remove active class from other buttons */
-    }
-  });
 }
 
 function closesModal(postId) {
   var modal = document.getElementById('reactedUsersModal-' + postId);
   modal.style.display = 'none'; /* Hide the modal */
 }
+
+function showColumn(columnId) {
+  var column = document.getElementById(columnId);
+  column.classList.toggle('show'); /* Toggle the 'show' class to display/hide the column */
+}
+
+
 
 function openModal() {
   var modal = document.getElementById('postModal');
@@ -112,6 +101,8 @@ mainButton.addEventListener('mousedown', () => {
     popup.style.display = 'block';
   }, 2000);
 });
+
+
 
 
 
