@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
@@ -24,6 +25,8 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView,
 )
 
+
+@login_required
 def index(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -48,12 +51,15 @@ def index(request):
     })
 
 
+@login_required
 def like_count(request):
     post = Post.objects.all().order_by("id").reverse().select_related("user")
     return render(request, "network/likecount.html", {
         "posts": post
     })
 
+
+@login_required
 def profile(request, user_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -96,6 +102,8 @@ def profile(request, user_id):
         "isFollowing": newFollowing
     })
 
+
+@login_required
 def edit_profile(request, user_id):
     if request.method == "POST":
         user = User.objects.get(pk=user_id)
@@ -113,6 +121,8 @@ def edit_profile(request, user_id):
 def transact(request):
     return render(request, "network/transact.html")
 
+
+@login_required
 def post_content(request, post_id):
     post = Post.objects.get(pk=post_id)
     allComments = Comment.objects.filter(post=post)
@@ -144,6 +154,7 @@ class CustomPasswordResetView(PasswordResetView):
     template_name = 'network/reset_password.html'
 
 
+@login_required
 def addComment(request, post_id):
     if request.method == 'POST':
         message = request.POST.get('newComment')
@@ -159,17 +170,21 @@ def addComment(request, post_id):
 
 
 
+@login_required
 def profile_pic(request, user_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
 
+
+@login_required
 def post_image(request, post_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page"
         return render(request, "network/register.html")
 
 
+@login_required
 def newPost(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -182,6 +197,8 @@ def newPost(request):
         postContent.save()
         return HttpResponseRedirect(reverse(index))
 
+
+@login_required
 def remove_maashaa(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -191,6 +208,8 @@ def remove_maashaa(request, post_id):
         messages.error(request, 'You have not liked this post.')
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def add_maashaa(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -204,6 +223,8 @@ def add_maashaa(request, post_id):
     else:
         raise Http404("Method not allowed")
 
+
+@login_required
 def remove_haha(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -213,6 +234,8 @@ def remove_haha(request, post_id):
         messages.error(request, 'You have not liked this post.')
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def add_haha(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -226,6 +249,8 @@ def add_haha(request, post_id):
     else:
         raise Http404("Method not allowed")
 
+
+@login_required
 def remove_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -237,6 +262,8 @@ def remove_like(request, post_id):
 
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def add_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -256,6 +283,7 @@ def add_like(request, post_id):
 
 
 
+@login_required
 def add_akbar(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -273,6 +301,8 @@ def add_akbar(request, post_id):
         raise Http404("Method not allowed")
 
 
+
+@login_required
 def remove_akbar(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -284,6 +314,8 @@ def remove_akbar(request, post_id):
 
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def add_subhanallah(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -301,6 +333,8 @@ def add_subhanallah(request, post_id):
         raise Http404("Method not allowed")
 
 
+
+@login_required
 def remove_subhanallah(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -312,6 +346,8 @@ def remove_subhanallah(request, post_id):
 
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def add_laa(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.method == 'POST':
@@ -328,6 +364,8 @@ def add_laa(request, post_id):
     else:
         raise Http404("Method not allowed")
 
+
+@login_required
 def remove_laa(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     try:
@@ -339,6 +377,8 @@ def remove_laa(request, post_id):
 
     return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
+
+@login_required
 def follow(request):
    if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -354,6 +394,7 @@ def follow(request):
 
 
 
+@login_required
 def unfollow(request):
    if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -366,6 +407,8 @@ def unfollow(request):
    user_id = userFollowData.id
    return HttpResponseRedirect(reverse("index"))
 
+
+@login_required
 def following(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
@@ -385,6 +428,8 @@ def following(request):
         "page_post": page_post
     })
 
+
+@login_required
 def edit(request, post_id):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."

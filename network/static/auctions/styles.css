@@ -1,0 +1,23 @@
+body {
+    padding: 10px;
+    background-color: rgb(5, 10, 78);
+    color: white;
+    
+}
+
+.listing-image {
+    width: 200px; /* Set desired width */
+    height: 150px; /* Set desired height */
+    object-fit: cover; /* Optional - to control how the image fits within the defined size */
+  }
+
+.card {
+    position:relative; top:50px;
+    margin-bottom: 50px;
+    margin-left: 20px;
+    background-color: black;
+}
+
+.list-group {
+    color: black;
+}

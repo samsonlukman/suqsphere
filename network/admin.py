@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, User, Follow, Like, Comment, Allahu_akbar, Subhanallah, Laa, MaaShaaAllah, Haha
+from .models import *
 
 # Register your models here.
 admin.site.register(Post)
@@ -12,4 +12,7 @@ admin.site.register(Subhanallah)
 admin.site.register(Laa)
 admin.site.register(MaaShaaAllah)
 admin.site.register(Haha)
-admin.site.register
+admin.site.register(Listing)
+admin.site.register(Category)
+admin.site.register(auctions_Comment)
+admin.site.register(Bid)

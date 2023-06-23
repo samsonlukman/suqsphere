@@ -1,0 +1,32 @@
+<form method="POST" action="https://checkout.flutterwave.com/v3/hosted/pay">
+    <div>
+      Your order is ₦3,400
+    </div>
+    <input type="hidden" name="public_key" value="FLWPUBK_TEST-77786c2b12fb8e6c91bfe414214f5193-X" />
+    <input type="hidden" name="customer[email]" value="jessepinkman@walterwhite.org" />
+    <input type="hidden" name="customer[name]" value="Jesse Pinkman" />
+    <input type="hidden" name="tx_ref" value="bitethtx-019203" />
+    <input type="hidden" name="amount" value="3400" />
+    <input type="hidden" name="currency" value="NGN" />
+    <input type="hidden" name="meta[token]" value="54" />
+    <input type="hidden" name="redirect_url" value="https://google.com" />
+    <button type="submit" id="start-payment-button">Pay Now</button>
+  </form>
+
+  <style>
+
+
+#start-payment-button {
+    cursor: pointer;
+    position: relative;
+    background-color: blueviolet;
+    color: #fff;
+    max-width: 30%;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 10px;
+    border: none;
+    transition: all .1s ease-in;
+}
+  </style>

@@ -1,0 +1,132 @@
+{% extends "auctions/layout.html" %}
+{% block body %} 
+ <!-- Display all active listings -->
+ <div class="row mx-3">
+    {% for listing in listings %} 
+  
+    <!-- Display each listing as a card -->
+    <div class="card" style="width: 18rem;">
+        <!-- Display listing image -->
+        <img class="card-img-top" src="{{ listing.image.url }}" alt="{{listing.title}}">
+      <div class="card-body">
+          <!-- Display listing title and description -->
+          
+{% with truncated_text=listing.title|slice:":20" %}
+<h5 class="card-title">{{ truncated_text }}...</h5>
+{% endwith %}
+
+          
+          <!-- Display current bid price -->
+          <p class="card-text"><strong>${{listing.price.bid}}</strong></p>
+          <!-- Link to the listing page -->
+          <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function makePayment() {
+      const amount = `{{ listing.price.bid }}`;
+      const userEmail = "{{ user.email }}";
+      const userName = "{{ user.username }}";
+      const listing_id = "{{ listing.id }}"
+  
+      FlutterwaveCheckout({
+        public_key: "FLWPUBK-6bbfa7653cbce7f200f699bd864785e9-X",
+        tx_ref: `auction-${listing_id}-${Date.now()}`,  // Generate a unique tx_ref per transaction
+        amount: amount,
+        currency: "USD",
+        payment_options: "card, mobilemoneyghana, ussd",
+        redirect_url: "http://127.0.0.1:8000/auctions/pay"+listing_id,
+        meta: {
+          consumer_id: 23,
+          consumer_mac: "92a3-912ba-1192a",
+        },
+        customer: {
+          email: userEmail, 
+          phone_number: "+2349066440069",
+          name: userName,
+        },
+        customizations: {
+          title: "iNetwork Auctions",
+          description: "Aso oke",
+          logo: "https://www.logolynx.com/images/logolynx/22/2239ca38f5505fbfce7e55bbc0604386.jpeg",
+        },
+      });
+
+      flutterwaveOtp();
+      
+
+      
+    }
+
+    function flutterwaveOtp(){
+        const data = JSON.stringify({
+"length": 7,
+"customer": {
+"name": "Flutterwave Developers",
+"email": "developers@flutterwavego.com",
+"phone": "2348000000000"
+},
+"sender": "Flutterwave Inc.",
+"send": true,
+"medium": [
+"email",
+"whatsapp"
+],
+"expiry": 5
+});
+
+const url = 'https://api.flutterwave.com/v3/otps';
+const headers = {
+'Authorization': 'Bearer FLWSECK_TEST-SANDBOXDEMOKEY-X',
+'Content-Type': 'application/json'
+};
+
+const config = {
+method: 'POST',
+headers: headers,
+body: data
+};
+
+fetch(url, config)
+.then(response => response.json())
+.then(data => {
+console.log(JSON.stringify(data));
+})
+.catch(error => {
+console.log(error);
+});
+
+    };
+
+function validateOtp(){
+    const data = JSON.stringify({
+"otp": "481208"
+});
+
+const url = 'https://api.flutterwave.com/v3/otps/CF-BARTER-20190420022611377491/validate';
+const headers = {
+'Authorization': 'Bearer FLWSECK_TEST-SANDBOXDEMOKEY-X',
+'Content-Type': 'application/json'
+};
+
+const config = {
+method: 'POST',
+headers: headers,
+body: data
+};
+
+fetch(url, config)
+.then(response => response.json())
+.then(data => {
+console.log(JSON.stringify(data));
+})
+.catch(error => {
+console.log(error);
+});
+
+}
+</script>
+{% endblock %}

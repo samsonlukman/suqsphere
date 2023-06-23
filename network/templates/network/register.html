@@ -22,26 +22,26 @@
                     <form id="registerFormUnique" action="{% url 'register' %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
-                            <input class="form-control" type="text" name="first_name" placeholder="First Name: ">
+                            <input class="form-control" type="text" name="first_name" placeholder="First Name: " required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" type="text" name="last_name" placeholder="Last Name: ">
+                            <input class="form-control" type="text" name="last_name" placeholder="Last Name: " required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" autofocus type="text" name="username" placeholder="Username">
+                            <input class="form-control" autofocus type="text" name="username" placeholder="Username" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" type="email" name="email" placeholder="Email Address">
+                            <input class="form-control" type="email" name="email" placeholder="Email Address" required>
                         </div>
                         <div class="form-group">
                             <label for="image">Select Profile Picture</label>
-                            <input type="file" name="profile_pic" class="form-control" accept="image/*" required>
+                            <input type="file" name="profile_pic" class="form-control" accept="image/*">
                         </div>
                         <div class="form-group">
-                            <input class="form-control" type="password" name="password" placeholder="Password">
+                            <input class="form-control" type="password" name="password" placeholder="Password" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
+                            <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password" required>
                         </div>
                         <input class="btn btn-primary" type="submit" value="Register">
                         <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
