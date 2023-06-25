@@ -1,8 +1,6 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<script src="https://checkout.flutterwave.com/v3.js"></script>
-<script scr="https://api.flutterwave.com/v3/otps"></script>
 
 {# This template is used to display a single listing #}
 
@@ -86,7 +84,6 @@
         </form>
     {% endif %}
     <br>
-    <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
     {# List of all comments for the listing #}
     <ul class="list-group">
         {% for comment in allComments %}
@@ -100,106 +97,7 @@
 </div>
 
 
-<script>
-    function makePayment() {
-      const amount = "{{ listing.price.bid }}";
-      const userEmail = "{{ user.email }}";
-      const userName = "{{ user.username }}";
-      const listing_id = "{{ listing.id }}";
-      let otp;
 
-      FlutterwaveCheckout({
-        public_key: "FLWPUBK-0a2440ea2edde8cc7f1f201e2984c3fa-X",
-        tx_ref: `auction-${listing_id}-${Date.now()}`,
-        amount: amount,
-        currency: "NGN",
-        payment_options: "card, banktransfer, ussd",
-        redirect_url: "https://inetwork.pythonanywhere.com/auctions",
-        meta: {
-          consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
-          consumer_mac: "92a3-912ba-1192a",
-        },
-        customer: {
-          email: userEmail,
-          phone_number: "08102909304",
-          name: userName,
-        },
-        customizations: {
-          title: "iNetwork",
-          description: "Payment for an awesome cruise",
-          logo: "https://www.logolynx.com/images/logolynx/22/2239ca38f5505fbfce7e55bbc0604386.jpeg",
-        },
-      });
-
-      flutterOtp();
-      validateOtp();
-    }
-
-    function flutterOtp() {
-      const data = JSON.stringify({
-        length: 7,
-        customer: {
-          name: "Flutterwave Developers",
-          email: "developers@flutterwavego.com",
-          phone: "2348000000000",
-        },
-        sender: "Flutterwave Inc.",
-        send: true,
-        medium: ["email", "whatsapp"],
-        expiry: 5,
-      });
-
-      const url = "https://api.flutterwave.com/v3/otps";
-      const headers = {
-        Authorization:
-          "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
-        "Content-Type": "application/json",
-      };
-
-      const config = {
-        method: "POST",
-        headers: headers,
-        body: data,
-      };
-
-      fetch(url, config)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(JSON.stringify(data));
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-
-    function validateOtp() {
-      const data = JSON.stringify({
-        otp: "481208",
-      });
-
-      const url = "https://api.flutterwave.com/v3/otps/:reference/validate";
-      const headers = {
-        Authorization:
-          "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
-        "Content-Type": "application/json",
-      };
-
-      const config = {
-        method: "POST",
-        headers: headers,
-        body: data,
-      };
-
-      fetch(url, config)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(JSON.stringify(data));
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-  </script>
 
 
 

@@ -16,28 +16,28 @@
 
     <!-- Display all active listings -->
     <div class="row mx-3">
-        {% for listing in listings %} 
-      
+        {% for listing in listings %}
+
         <!-- Display each listing as a card -->
         <div class="card" style="width: 18rem;">
             <!-- Display listing image -->
             <img class="card-img-top" src="{{ listing.image.url }}" alt="{{listing.title}}">
           <div class="card-body">
               <!-- Display listing title and description -->
-              
+
   {% with truncated_text=listing.title|slice:":20" %}
     <h5 class="card-title">{{ truncated_text }}...</h5>
   {% endwith %}
 
-              
+
               <!-- Display current bid price -->
-              <p class="card-text"><strong>${{listing.price.bid}}</strong></p>
+              <p class="card-text"><strong>{{listing.currency}}{{listing.price.bid}}</strong></p>
               <!-- Link to the listing page -->
-              <a href="{% url 'listing' id=listing.id %}" class="btn btn-primary">View Details</a>
+              <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
           </div>
         </div>
         {% endfor %}
     </div>
-      
-      
+
+
 {% endblock %}

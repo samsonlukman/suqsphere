@@ -6,7 +6,7 @@ class User(AbstractUser):
     profile_pics = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
-    
+
 
 
 class Post(models.Model):
@@ -75,7 +75,7 @@ class Laa(models.Model):
 
     def __str__(self):
         return f"{self.user} dislikes {self.post}"
-    
+
 
 class Category(models.Model):
     # CharField to store the name of the category
@@ -86,6 +86,15 @@ class Category(models.Model):
         # Returns the category name when the object is printed
         return self.categoryName
 
+class Currency(models.Model):
+    # CharField to store the name of the category
+    # with a max length of 50 characters
+    currencyName = models.CharField(max_length=50)
+
+    def __str__(self):
+        # Returns the category name when the object is printed
+        return self.currencyName
+
 # This class defines a Bid model with a single FloatField
 # to store the bid amount
 class Bid(models.Model):
@@ -95,7 +104,7 @@ class Bid(models.Model):
     # ForeignKey to a User object, with the option to delete the object
     # if the user is deleted
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="Userbid")
-    
+
 
 # This class defines a Listing model with several fields:
 # - CharField for the listing title (max length of 100 characters)
@@ -114,6 +123,7 @@ class Listing(models.Model):
     # CharField to store the listing description
     # with a max length of 1000 characters
     description = models.CharField(max_length=1000)
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, blank=True, null=True, related_name="currency")
     # CharField to store the URL of the listing's image
     # with a max length of 200 characters
     image = models.ImageField(blank=True, null=True, upload_to='images/')
@@ -132,10 +142,10 @@ class Listing(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True, related_name="category")
     # ManyToManyField to a User object to store the users who have added the listing to their watchlist
     watchlist = models.ManyToManyField(User, blank=True, related_name="listingWatchlist")
-     
+
     def __str__(self):
         # Returns the title of the listing when the object is printed
-        return self.title
+        return f"{self.title}, {self.currency}{self.price}"
 
 # This class defines a Comment model with three fields:
 # - ForeignKey to a User object to store the author of the comment

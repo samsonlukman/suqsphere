@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .views import *
+from django.contrib import messages
 
 from .models import *
 
@@ -21,25 +22,29 @@ def auctions(request):
 
 def pay(request, id):
     payment = Listing.objects.get(id=id)
-    payment.completed = True
     tx_ref = request.GET.get("tx_ref")
-    payment.completed.save()
+
     if tx_ref:
         # Save the transaction reference in the database
         payment.transaction_reference = tx_ref
-        payment.transaction_reference.save()
-        payment.completed.save()
+        payment.completed = True
+        payment.save()
 
         # Display a success message to the user
-        messages.success(request, "Payment made successfully")
+        success_message = "Payment made successfully"
 
         # Redirect the user to the listing page
-        return redirect("listing", id=id)
+        return render(request, "auctions/pay_success.html", {
+            "success_message": success_message,
+            "listing": payment,
+        })
     else:
         # Handle the case when the transaction reference is missing or not provided
-        messages.error(request, "Payment failed: Transaction reference not found")
+        error_message = "Payment failed: Transaction reference not found"
+        messages.error(request, error_message)
         return redirect("listing", id=id)
-    
+
+
 def closedDetails(request, id):
     """
     Handles the rendering of the details page for a specific listing.
@@ -51,21 +56,29 @@ def closedDetails(request, id):
     """
     # Get the listing data from the database using the provided primary key
     listingData = Listing.objects.get(pk=id)
-    
+
     # Check if the current user is in the watchlist of the listing
     isListingInWatchList = request.user in listingData.watchlist.all()
-    
+
     # Get all comments for the current listing
     allComments = auctions_Comment.objects.filter(listing=listingData)
-    
+
     # Check if the current user is the owner of the listing
     isOwner = request.user.username == listingData.owner.username
-    
+
+    currencies = [
+        "AED", "ARS", "AUD", "BRL", "CAD", "CHF", "CZK", "ETB", "EUR", "GBP",
+        "GHS", "ILS", "INR", "JPY", "KES", "MAD", "MUR", "MYR", "NGN", "NOK",
+        "NZD", "PEN", "PLN", "RUB", "RWF", "SAR", "SEK", "SGD", "SLL", "TZS",
+        "UGX", "USD", "XAF", "XOF", "ZAR", "ZMK", "ZMW", "MWK"
+    ]
+
     # Render the listing page with the relevant data
     return render(request, "auctions/closedDetails.html", {
         "listing": listingData,
         "isListingInWatchList": isListingInWatchList,
-        "isOwner": isOwner
+        "isOwner": isOwner,
+        "flutterwaveCurrencies": currencies,
     })
 
 def closed_listings(request):
@@ -118,7 +131,7 @@ def addWatchList(request, id):
     currentUser = request.user
     # Add the current user to the listing's watchlist
     listingData.watchlist.add(currentUser)
-    
+
     # Redirect to the listing page
     return HttpResponseRedirect(reverse("listing",args=(id, )))
 
@@ -131,7 +144,7 @@ def displayWatchList(request):
     # Render the watchlist page, passing in the listings to display
     return render(request, "auctions/watchlist.html", {
         "listings": listings
-        
+
     })
 
 # This function is responsible for adding a new bid to a listing
@@ -152,7 +165,7 @@ def addBid(request, id):
         listingData.price = updateBid
         listingData.save()
         # Render the listing page with a success message
-        return render(request, "auctions/listing.html", {
+        return render(request, "auctions/closedDetails.html", {
             "listing": listingData,
             "message": "Bid Successful",
             "update": True,
@@ -165,8 +178,8 @@ def addBid(request, id):
             "message": "Bid failed",
             "update": False,
             "isOwner": isOwner
-        }) 
-    
+        })
+
 # This function is responsible for adding a new comment to a listing
 def addComment(request, id):
     # Get the current user making the request
@@ -199,16 +212,16 @@ def listing(request, id):
     """
     # Get the listing data from the database using the provided primary key
     listingData = Listing.objects.get(pk=id)
-    
+
     # Check if the current user is in the watchlist of the listing
     isListingInWatchList = request.user in listingData.watchlist.all()
-    
+
     # Get all comments for the current listing
     allComments = auctions_Comment.objects.filter(listing=listingData)
-    
+
     # Check if the current user is the owner of the listing
     isOwner = request.user.username == listingData.owner.username
-    
+
     # Render the listing page with the relevant data
     return render(request, "auctions/listing.html", {
         "listing": listingData,
@@ -229,14 +242,16 @@ def create_listing(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
         return HttpResponse(error_message, status=401)
-    
+
     # If the request method is GET, render the create listing page with a list of all categories
     if request.method == "GET":
         allCategories = Category.objects.all()
+        allCurrencies = Currency.objects.all()
         return render(request, "auctions/create.html", {
-            "category": allCategories
+            "category": allCategories,
+            "currency": allCurrencies,
         })
-    
+
     # If the request method is POST, create a new listing with the provided data
     else:
         title = request.POST["title"]
@@ -244,15 +259,17 @@ def create_listing(request):
         image = request.FILES["image"] # Get the uploaded image file
         price = request.POST["price"]
         category = request.POST["category"]
+        currency = request.POST["currency"]
         currentUser = request.user
-        
+
         # Get the category data from the database using the provided category name
         categoryData = Category.objects.get(categoryName=category)
-        
+        currencyData = Currency.objects.get(currencyName=currency)
+
         # Create a new bid with the provided data and save it to the database
         bid = Bid(bid=float(price), user=currentUser)
         bid.save()
-        
+
         # Create a new listing with the provided data and save it to the database
         newListing = Listing(
             title=title,
@@ -261,13 +278,14 @@ def create_listing(request):
             price=bid,
             category=categoryData,
             owner=currentUser,
+            currency=currencyData,
         )
-        
+
         newListing.save()
-        
+
         # Redirect to the index page
         return HttpResponseRedirect(reverse(auctions))
-    
+
 def displayCategory(request):
     """
     Handles displaying items in a specific category.
@@ -276,13 +294,13 @@ def displayCategory(request):
         # Get the category selected by the user
         formCategory = request.POST["category"]
         category = Category.objects.get(categoryName=formCategory)
-        
+
         # Get all active listings in the selected category
         activeListings = Listing.objects.filter(isActive=True, category=category)
-        
+
         # Get all categories to display in the sidebar
         allCategories = Category.objects.all()
-        
+
         return render(request, "auctions/index.html", {
             "listings": activeListings,
             "category": allCategories
