@@ -3,24 +3,25 @@
 {% block body %}
     <h2>Watchlist</h2>
 
-
-  <!-- Display all listings in the watchlist -->
-<div class="row mx-3">
-    {% for listing in listings %} 
-  
-    <!-- Display each listing as a card -->
-    <div class="card" style="width: 18rem;">
-        <!-- Display listing image -->
-        <img class="card-img-top" src="{{ listing.image.url }}" alt="{{listing.title}}">
-      <div class="card-body">
-          <!-- Display listing title and description -->
-          <h5 class="card-title">{{listing.title}}</h5>
-          <p class="card-text">{{listing.description}}</p>
-          <!-- Link to the listing page -->
-          <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
-      </div>
-    </div>
+        <!-- Display all listings in watchlist -->
+    <div class="row mx-3">
+    {% for listing in listings %}
+        <!-- Display each listing as a card -->
+        <div class="card" style="width: 18rem;">
+            <!-- Display the first listing image -->
+            {% if listing.images.exists %}
+                <img class="card-img-top" src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+            {% endif %}
+            <div class="card-body">
+                <!-- Display listing title and description -->
+                <p>{{listing.title}}</p>
+                <!-- Display current bid price -->
+                <p class="card-text"><strong>{{ listing.currency }}{{ listing.price.bid }}</strong></p>
+                <!-- Link to the listing page -->
+                <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
+            </div>
+        </div>
     {% endfor %}
-</div
-      
+</div>
+
 {% endblock %}

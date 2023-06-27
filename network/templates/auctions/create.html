@@ -21,25 +21,25 @@
           </div>
         <!-- Form group for the imageUrl field -->
         <div class="form-group">
-          <label for="image">Image</label>
-          <input type="file" name="image" class="form-control" accept="image/*" required>
-          <!-- Use the "accept" attribute to restrict file types to images -->
-        </div>
+    <label for="images">Images</label>
+    <input type="file" name="images[]" class="form-control" accept="image/*" multiple required>
+</div>
         <!-- Form group for the price field -->
           <div class="form-group">
             <label for="price">Price</label>
             <input type="number" min="0" name="price" class="form-control" placeholder="price" required>
           </div>
-          <div class="form-group">
+</div>
+
+<div class="form-group">
     <label for="currency">Choose Currency:</label>
-    <select name="currency" id="currency" class="form-control" required>
+    <select name="currency" id="currency" required>
         <option value="" selected disabled>Select Currency</option>
         {% for currencies in currency %}
             <option value="{{ currencies }}">{{ currencies }}</option>
         {% endfor %}
-    </select>
-</div>
-
+    </select
+    </div>
         <!-- Form group for the category field -->
           <div class="form-group">
 

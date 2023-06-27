@@ -34,6 +34,6 @@ urlpatterns = [
     # URL for the view to close an auction and select a winner
     path("closeAuction/<int:id>", views_auctions.closeAuction, name="closeAuction"),
     path("closed_listings", views_auctions.closed_listings, name="closed_listings"),
-    path("closedDetails/<int:id>", views_auctions.closedDetails, name="closedDetails"),
+    path("listing_status/<int:id>", views_auctions.closedDetails, name="closedDetails"),
     path("my_listings", views_auctions.my_listings, name="my_listings"),
 ]

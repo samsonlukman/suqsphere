@@ -4,257 +4,284 @@
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script src="https://api.flutterwave.com/v3/otps"></script>
 
-{# If a message is passed to this template, display it #}
+<!-- If a message is passed to this template, display it -->
 {% if message %}
-    {# If the update variable is true, show a success alert. Otherwise, show a danger alert #}
+    <!-- If the update variable is true, show a success alert. Otherwise, show a danger alert -->
     {% if updated %}
-        <div class="alert alert-success" role="alert">
-            {{message}}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
         </div>
     {% else %}
-        <div class="alert alert-danger" role="alert">
-            {{message}}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
         </div>
     {% endif %}
 {% endif %}
 
-
-<div class="jumbotron jumbotron-fluid">
-  {# If the listing is not active and the current user is the highest bidder, show a success alert #}
-  {% if not listing.isActive and user == listing.price.user and not isOwner %}
-  <div class="alert alert-success" role="alert">
-    Congratulations {{ listing.price.user }}, you won the Auction! <button type="button" class="btn btn-primary"
-      onclick="makePayment()">Pay Now</button>
-  </div>
-  {% elif not listing.isActive and not user == listing.price.user and isOwner %}
-  <div class="alert alert-danger" role="alert">
-    Dear {{ listing.owner }}, you closed this auction.
-  </div>
-  {% elif listing.isActive and not isOwner %}
-  <div class="alert alert-info" role="alert">
-    Dear {{ request.user }}, place a bid.
-  </div>
-  {% elif listing.isActive and not user == listing.price.user and isOwner %}
-  <div class="alert alert-info" role="alert">
-    There is a bid on your listing
-  </div>
-  {% else %}
-  <div class="alert alert-info" role="alert">
-    No bid yet
-  </div>
-  {% endif %}
-</div>
-
-
-<div class="form-group">
-    <label for="currencyDropdown">Choose Currency</label>
-    <select id="currencyDropdown" class="form-control">
-        <option value="" selected disabled>Select Currency</option>
-        {% for currency in flutterwaveCurrencies %}
-            <option value="{{ currency }}">{{ currency }}</option>
-        {% endfor %}
-    </select>
-</div>
-<button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
-{# Display a form to close the auction if the current user is the owner and the listing is active #}
-<div class="row mx=3">
-    {% if user.is_authenticated and listing.isActive %}
-        {% if isOwner %}
-            <form action="{% url 'closeAuction' id=listing.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Close Auction</button>
-            </form>
+<div class="container-fluid">
+    <div>
+        <!-- If the listing is not active and the current user is the highest bidder, show a success alert -->
+        {% if not listing.isActive and user == listing.price.user and not isOwner %}
+            <div class="alert alert-success" role="alert">
+                Congratulations {{ listing.price.user }}, you won the Auction!
+                <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
+                <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+            </div>
+            <div class="form-group">
+                <label for="currencyDropdown">Choose Currency</label>
+                <select id="currencyDropdown" class="form-control">
+                    <option value="" selected disabled>Select Currency</option>
+                    {% for currency in flutterwaveCurrencies %}
+                        <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% elif not listing.isActive and not user == listing.price.user and isOwner %}
+            <div class="alert alert-danger" role="alert">
+                Dear {{ listing.owner }}, you closed this auction.
+            </div>
+        {% elif listing.isActive and not isOwner %}
+            <div class="alert alert-info" role="alert">
+                Dear {{ request.user }}, place a bid.
+            </div>
+        {% elif listing.isActive and not user == listing.price.user and isOwner %}
+            <div class="alert alert-info" role="alert">
+                There is a bid on your listing
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No bid yet
+            </div>
         {% endif %}
-    {% endif %}
+    </div>
 
-    {# Display a form to add or remove the listing from the current user's watchlist #}
-    {% if user.is_authenticated %}
-        <form action="{% url 'addWatchList' id=listing.id %}" method="POST">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-success">Add to watchlist</button>
-        </form>
-        {% if not isListingInWatchlist %}
-            <form action="{% url 'removeWatchList' id=listing.id %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Remove from watchlist</button>
-            </form>
-        {% endif %}
-    {% endif %}
-</div>
+    <!-- Display a form to close the auction if the current user is the owner and the listing is active -->
+    <div class="row mx-3">
+        <div class="watchlist-buttons">
+            {% if user.is_authenticated and listing.isActive %}
+                {% if isOwner %}
+                    <form action="{% url 'closeAuction' id=listing.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Close Auction</button>
+                    </form>
+                {% endif %}
+            {% endif %}
 
-{# Display the listing's title, image, description, owner, and price #}
-<h2>{{listing.title}}</h2>
-<img class="card-img-top" src="{{ listing.image.url }}" alt="{{listing.title}}">
-<hr>
-<div>
-    <p>{{listing.description}}</p>
-</div>
-<p>Owner: {{listing.owner}}</p>
-<p>Price: {{listing.currency}}{{listing.price.bid}}</p>
-
-{% if user.is_authenticated and not isOwner %}
-    <form action="{% url 'addBid' listing.id%}" method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="price">New Bid</label>
-            <input type="number" min="0" name="newBid" placeholder="Add Bid">
+            <!-- Display a form to add or remove the listing from the current user's watchlist -->
+            {% if user.is_authenticated %}
+                <form action="{% url 'addWatchList' id=listing.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Add to watchlist</button>
+                </form>
+                {% if not isListingInWatchlist %}
+                    <form action="{% url 'removeWatchList' id=listing.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Remove from watchlist</button>
+                    </form>
+                {% endif %}
+            {% endif %}
         </div>
-        <button id="bid-button" class="btn btn-primary" type="submit">Make a new bid</button>
-    </form>
+    </div>
+
     <br>
-{% endif %}
 
-{# Heading for the comments section #}
-<h2>Comments</h2>
-{% if user.is_authenticated %}
-    {# Form to add a new comment to the listing #}
+    <!-- Display the listing's title, images, description, owner, and price -->
+    <h2>{{ listing.title }}</h2>
+
+    <br>
+
+    <div class="image-container">
+        {% for image in listing.images.all %}
+        <div class="listing-image">
+            <img src="{{ image.image.url }}" alt="{{ listing.title }}">
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <div>
+        <p>{{ listing.description }}</p>
+    </div>
+
+    <p>Owner: {{ listing.owner }}</p>
+    <p>Price: {{ listing.currency }}{{ listing.price.bid }}</p>
+
+    <hr>
+
+    {% if user.is_authenticated and not isOwner %}
+    <div class="bid-buttons">
+        <form action="{% url 'addBid' listing.id %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="price">New Bid</label>
+                <input type="number" min="0" name="newBid" placeholder="Add Bid">
+            </div>
+            <button id="bid-button" class="btn btn-primary" type="submit">Make a new bid</button>
+        </form>
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- Heading for the comments section -->
+    <h2>Comments</h2>
+
+    {% if user.is_authenticated %}
+    <!-- Form to add a new comment to the listing -->
     <form action="{% url 'addComment' id=listing.id %}" method="POST">
         {% csrf_token %}
         <div class="form-group">
-            {# Textarea for the user to enter their comment #}
+            <!-- Textarea for the user to enter their comment -->
             <textarea type="text" name="newComment" placeholder="Enter Comment"></textarea>
         </div>
         <div class="form-group">
-            {# Button to submit the new comment #}
+            <!-- Button to submit the new comment -->
             <button type="submit" class="btn btn-success">Add</button>
         </div>
     </form>
-{% endif %}
-<br>
-{# List of all comments for the listing #}
-<ul class="list-group">
-    {% for comment in allComments %}
+    {% endif %}
+
+    <hr>
+
+    <!-- List of all comments for the listing -->
+    <ul class="list-group">
+        {% for comment in allComments %}
         <li class="list-group-item">{{ comment.message }}
-            {# Display the username of the user who posted the comment #}
-            <p>Posted by <strong>{{comment.author}}</strong> </p>
+            <!-- Display the username of the user who posted the comment -->
+            <p>Posted by <strong>{{ comment.author }}</strong></p>
         </li>
-    {% endfor %}
-</ul>
-</div>
+        {% endfor %}
+    </ul>
 
+    <script>
+        let selectedCurrency;
 
-<script>
-    let selectedCurrency;
+        function makePayment() {
+            const amount = "{{ listing.price.bid }}";
+            const userEmail = "{{ user.email }}";
+            const userName = "{{ user.username }}";
+            const listing_id = "{{ listing.id }}";
+            const listing_currency = "{{ listing.currency }}";
+            let otp;
 
-    function makePayment() {
-        const amount = "{{ listing.price.bid }}";
-        const userEmail = "{{ user.email }}";
-        const userName = "{{ user.username }}";
-        const listing_id = "{{ listing.id }}";
-        const listing_currency = "{{ listing.currency }}";
-        let otp;
-        const currencyDropdown = document.getElementById("currencyDropdown");
-        const selectedCurrency = currencyDropdown.value;
+            const currencyDropdown = document.getElementById("currencyDropdown");
+            const selectedCurrency = currencyDropdown.value;
 
-        // Fetch the currency conversion rate from the ExchangeRate API
-        fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
-            .then(response => response.json())
-            .then(data => {
-                // Get the conversion rate for the selected currency
-                const conversionRate = data.conversion_rates[selectedCurrency];
+            // Fetch the currency conversion rate from the ExchangeRate API
+            fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Get the conversion rate for the selected currency
+                    const conversionRate = data.conversion_rates[selectedCurrency];
+                    const convertedAmount = amount * conversionRate;
 
-                const convertedAmount = amount * conversionRate;
-                FlutterwaveCheckout({
-                    public_key: "FLWPUBK-0a2440ea2edde8cc7f1f201e2984c3fa-X",
-                    tx_ref: `auction-${listing_id}-${Date.now()}`,
-                    amount: convertedAmount,
-                    currency: selectedCurrency,
-                    payment_options: "card, banktransfer, ussd",
-                    redirect_url: "https://inetwork.pythonanywhere.com/auctions/pay/" + listing_id,
-                    meta: {
-                        consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
-                        consumer_mac: "92a3-912ba-1192a",
-                    },
-                    customer: {
-                        email: userEmail,
-                        phone_number: "08102909304",
-                        name: userName,
-                    },
-                    customizations: {
-                        title: "iNetwork",
-                        description: "Payment for an awesome cruise",
-                        logo: "https://www.logolynx.com/images/logolynx/22/2239ca38f5505fbfce7e55bbc0604386.jpeg",
-                    },
+                    FlutterwaveCheckout({
+                        public_key: "FLWPUBK-0a2440ea2edde8cc7f1f201e2984c3fa-X",
+                        tx_ref: `auction-${listing_id}-${Date.now()}`,
+                        amount: convertedAmount,
+                        currency: selectedCurrency,
+                        payment_options: "card, banktransfer, ussd",
+                        redirect_url: "https://inetwork.pythonanywhere.com/auctions/pay/" + listing_id,
+                        meta: {
+                            consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
+                            consumer_mac: "92a3-912ba-1192a",
+                        },
+                        customer: {
+                            email: userEmail,
+                            phone_number: "08102909304",
+                            name: userName,
+                        },
+                        customizations: {
+                            title: "iNetwork",
+                            description: "Payment for an awesome cruise",
+                            logo: "https://www.logolynx.com/images/logolynx/22/2239ca38f5505fbfce7e55bbc0604386.jpeg",
+                        },
+                    });
+
+                    flutterOtp();
+                    validateOtp();
                 });
-
-                flutterOtp();
-                validateOtp();
-
-            });
-    }
-
-    function flutterOtp() {
-        const data = JSON.stringify({
-            length: 7,
-            customer: {
-                name: "Flutterwave Developers",
-                email: "developers@flutterwavego.com",
-                phone: "2348000000000",
-            },
-            sender: "Flutterwave Inc.",
-            send: true,
-            medium: ["email", "whatsapp"],
-            expiry: 5,
-        });
-
-        const url = "https://api.flutterwave.com/v3/otps";
-        const headers = {
-            Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
-            "Content-Type": "application/json",
-        };
-
-        const config = {
-            method: "POST",
-            headers: headers,
-            body: data,
-        };
-
-        fetch(url, config)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(JSON.stringify(data));
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }
-
-    function validateOtp() {
-        const data = JSON.stringify({
-            otp: "481208",
-        });
-
-        const url = "https://api.flutterwave.com/v3/otps/:reference/validate";
-        const headers = {
-            Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
-            "Content-Type": "application/json",
-        };
-
-        const config = {
-            method: "POST",
-            headers: headers,
-            body: data,
-        };
-
-        fetch(url, config)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(JSON.stringify(data));
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }
-
-    function updateFlutterwaveCurrency() {
-        if (selectedCurrency) {
-            FlutterwaveCheckout.currency = selectedCurrency;
-            console.log("Selected currency:", selectedCurrency);
-        } else {
-            console.log("Please select a currency");
         }
-    }
-</script>
 
+        function flutterOtp() {
+            const data = JSON.stringify({
+                length: 7,
+                customer: {
+                    name: "Flutterwave Developers",
+                    email: "developers@flutterwavego.com",
+                    phone: "2348000000000",
+                },
+                sender: "Flutterwave Inc.",
+                send: true,
+                medium: ["email", "whatsapp"],
+                expiry: 5,
+            });
 
+            const url = "https://api.flutterwave.com/v3/otps";
+            const headers = {
+                Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
+                "Content-Type": "application/json",
+            };
+
+            const config = {
+                method: "POST",
+                headers: headers,
+                body: data,
+            };
+
+            fetch(url, config)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(JSON.stringify(data));
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+        function validateOtp() {
+            const data = JSON.stringify({
+                otp: "481208",
+            });
+
+            const url = "https://api.flutterwave.com/v3/otps/:reference/validate";
+            const headers = {
+                Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
+                "Content-Type": "application/json",
+            };
+
+            const config = {
+                method: "POST",
+                headers: headers,
+                body: data,
+            };
+
+            fetch(url, config)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(JSON.stringify(data));
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+        function updateFlutterwaveCurrency() {
+            selectedCurrency = currencyDropdown.value;
+            const amount = "{{ listing.price.bid }}";
+            const listing_currency = "{{ listing.currency }}";
+
+            // Fetch the currency conversion rate from the ExchangeRate API
+            fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Get the conversion rate for the selected currency
+                    const conversionRate = data.conversion_rates[selectedCurrency];
+                    const convertedAmount = amount * conversionRate;
+
+                    document.getElementById("payment-amount").innerHTML = `Amount: ${selectedCurrency} ${convertedAmount.toFixed(2)}`;
+                });
+        }
+    </script>
+</div>
 {% endblock %}

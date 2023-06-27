@@ -59,7 +59,6 @@ def closedDetails(request, id):
 
     # Check if the current user is in the watchlist of the listing
     isListingInWatchList = request.user in listingData.watchlist.all()
-
     # Get all comments for the current listing
     allComments = auctions_Comment.objects.filter(listing=listingData)
 
@@ -173,7 +172,7 @@ def addBid(request, id):
         })
     else:
         # Render the listing page with a failure message
-        return render(request, "auctions/listing.html", {
+        return render(request, "auctions/closedDetails.html", {
             "listing": listingData,
             "message": "Bid failed",
             "update": False,
@@ -232,18 +231,10 @@ def listing(request, id):
 
 
 def create_listing(request):
-    """
-    Handles the creation of a new listing.
-    Parameters:
-        request: HTTP request object
-    Returns:
-        An HTTP response with the index page rendered
-    """
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
         return HttpResponse(error_message, status=401)
 
-    # If the request method is GET, render the create listing page with a list of all categories
     if request.method == "GET":
         allCategories = Category.objects.all()
         allCurrencies = Currency.objects.all()
@@ -252,39 +243,37 @@ def create_listing(request):
             "currency": allCurrencies,
         })
 
-    # If the request method is POST, create a new listing with the provided data
-    else:
+    elif request.method == "POST":
         title = request.POST["title"]
         description = request.POST["description"]
-        image = request.FILES["image"] # Get the uploaded image file
+        images = request.FILES.getlist("images[]")  # Get the list of uploaded image files
         price = request.POST["price"]
         category = request.POST["category"]
         currency = request.POST["currency"]
         currentUser = request.user
 
-        # Get the category data from the database using the provided category name
         categoryData = Category.objects.get(categoryName=category)
         currencyData = Currency.objects.get(currencyName=currency)
 
-        # Create a new bid with the provided data and save it to the database
         bid = Bid(bid=float(price), user=currentUser)
         bid.save()
 
-        # Create a new listing with the provided data and save it to the database
         newListing = Listing(
             title=title,
             description=description,
-            image=image,
             price=bid,
             category=categoryData,
             owner=currentUser,
             currency=currencyData,
         )
-
         newListing.save()
 
-        # Redirect to the index page
-        return HttpResponseRedirect(reverse(auctions))
+        for image in images:
+            listingImage = ListingImage(listing=newListing, image=image)
+            listingImage.save()
+
+        return HttpResponseRedirect(reverse("auctions"))
+
 
 def displayCategory(request):
     """
