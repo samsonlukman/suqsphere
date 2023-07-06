@@ -30,14 +30,16 @@ urlpatterns = [
     path("add_haha/<int:post_id>", views.add_haha, name="add_haha"),
     path("remove_laa/<int:post_id>", views.remove_laa, name="remove_laa"),
     path("add_laa/<int:post_id>", views.add_laa, name="add_laa"),
-    path("login", views.login_view, name="login"),
-    path("logout", views.logout_view, name="logout"),
-    path("register", views.register, name="register"),
+    path("login", views.login_view, name="network_login"),
+    path("logout", views.logout_view, name="network_logout"),
+    path("register", views.register, name="network_register"),
     path('password_reset/',auth_views.PasswordResetView.as_view(),name='password_reset'),
     path('password_reset/done/',auth_views.PasswordResetDoneView.as_view(),name='password_reset_done'),
     path('reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(),name='password_reset_confirm'),
     path('reset/done/',auth_views.PasswordResetCompleteView.as_view(),name='password_reset_complete'),
     # Include the URLs from auctions_urls.py
     path("auctions/", include("network.urls_auctions")),
+    path("market/", include("network.urls_market")),
+
 
 ]

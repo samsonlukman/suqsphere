@@ -1,0 +1,234 @@
+{% extends "market/layout.html" %}
+
+{% block body %}
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script src="https://api.flutterwave.com/v3/otps"></script>
+
+
+
+<div class="container-fluid">
+    <div>
+        <!-- If the listing is not active and the current user is the highest bidder, show a success alert -->
+                <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
+                <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+            </div>
+            <div class="form-group">
+                <label for="currencyDropdown">Choose Currency</label>
+                <select id="currencyDropdown" class="form-control">
+                    <option value="" selected disabled>Select Currency</option>
+                    {% for currency in flutterwaveCurrencies %}
+                        <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </div>  
+    </div>
+
+    <!-- Display a form to close the auction if the current user is the owner and the listing is active -->
+    <div class="row mx-3">
+        <div class="watchlist-buttons">
+            <!-- Display a form to add or remove the listing from the current user's watchlist -->
+            {% if user.is_authenticated %}
+                <form action="{% url 'add_cart' id=listing.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Add to cart</button>
+                </form>
+                {% if not isListingInWatchlist %}
+                    <form action="{% url 'remove_cart' id=listing.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Remove from cart</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Display the listing's title, images, description, owner, and price -->
+    <h2>{{ listing.title }}</h2>
+
+    <br>
+
+    <div class="image-container">
+        {% for image in listing.images.all %}
+        <div class="listing-image">
+            <img src="{{ image.image.url }}" alt="{{ listing.title }}">
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <div>
+        <p>{{ listing.description }}</p>
+    </div>
+
+    <p>Owner: {{ listing.owner }}</p>
+    <p>Price: {{ listing.currency }}{{ listing.price }}</p>
+
+    <hr>
+
+    <!-- Heading for the comments section -->
+    <h2>Comments</h2>
+
+    {% if user.is_authenticated %}
+    <!-- Form to add a new comment to the listing -->
+    <form action="{% url 'market_comment' id=listing.id %}" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- Textarea for the user to enter their comment -->
+            <textarea type="text" name="newComment" placeholder="Enter Comment"></textarea>
+        </div>
+        <div class="form-group">
+            <!-- Button to submit the new comment -->
+            <button type="submit" class="btn btn-success">Add</button>
+        </div>
+    </form>
+    {% endif %}
+
+    <hr>
+
+    <!-- List of all comments for the listing -->
+    <ul class="list-group">
+        {% for comment in allComments %}
+        <li class="list-group-item">{{ comment.message }}
+            <!-- Display the username of the user who posted the comment -->
+            <p>Posted by <strong>{{ comment.author }}</strong></p>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        let selectedCurrency;
+        public_key = "{{ public_key }}"
+        secret_key = "{{ secret_key }}"
+
+        function makePayment() {
+            const amount = "{{ listing.price.bid }}";
+            const userEmail = "{{ user.email }}";
+            const userName = "{{ user.username }}";
+            const listing_id = "{{ listing.id }}";
+            const listing_currency = "{{ listing.currency }}";
+            let otp;
+
+            const currencyDropdown = document.getElementById("currencyDropdown");
+            const selectedCurrency = currencyDropdown.value;
+
+            // Fetch the currency conversion rate from the ExchangeRate API
+            fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Get the conversion rate for the selected currency
+                    const conversionRate = data.conversion_rates[selectedCurrency];
+                    const convertedAmount = amount * conversionRate;
+
+                    FlutterwaveCheckout({
+                        public_key: public_key,
+                        tx_ref: `auction-${listing_id}-${Date.now()}`,
+                        amount: convertedAmount,
+                        currency: selectedCurrency,
+                        payment_options: "card, banktransfer, ussd",
+                        redirect_url: "https://inetwork.pythonanywhere.com/auctions/pay/" + listing_id,
+                        meta: {
+                            consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
+                            consumer_mac: "92a3-912ba-1192a",
+                        },
+                        customer: {
+                            email: userEmail,
+                            phone_number: "08102909304",
+                            name: userName,
+                        },
+                        customizations: {
+                            title: "iNetwork",
+                            description: "Payment for an awesome cruise",
+                            logo: "https://www.logolynx.com/images/logolynx/22/2239ca38f5505fbfce7e55bbc0604386.jpeg",
+                        },
+                    });
+
+                    flutterOtp();
+                    validateOtp();
+                });
+        }
+
+        function flutterOtp() {
+            const data = JSON.stringify({
+                length: 7,
+                customer: {
+                    name: "Flutterwave Developers",
+                    email: "developers@flutterwavego.com",
+                    phone: "2348000000000",
+                },
+                sender: "Flutterwave Inc.",
+                send: true,
+                medium: ["email", "whatsapp"],
+                expiry: 5,
+            });
+
+            const url = "https://api.flutterwave.com/v3/otps";
+            const headers = {
+                Authorization: secret_key,
+                "Content-Type": "application/json",
+            };
+
+            const config = {
+                method: "POST",
+                headers: headers,
+                body: data,
+            };
+
+            fetch(url, config)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(JSON.stringify(data));
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+        function validateOtp() {
+            const data = JSON.stringify({
+                otp: "481208",
+            });
+
+            const url = "https://api.flutterwave.com/v3/otps/:reference/validate";
+            const headers = {
+                Authorization: secret_key,
+                "Content-Type": "application/json",
+            };
+
+            const config = {
+                method: "POST",
+                headers: headers,
+                body: data,
+            };
+
+            fetch(url, config)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(JSON.stringify(data));
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+        function updateFlutterwaveCurrency() {
+            selectedCurrency = currencyDropdown.value;
+            const amount = "{{ listing.price.bid }}";
+            const listing_currency = "{{ listing.currency }}";
+
+            // Fetch the currency conversion rate from the ExchangeRate API
+            fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Get the conversion rate for the selected currency
+                    const conversionRate = data.conversion_rates[selectedCurrency];
+                    const convertedAmount = amount * conversionRate;
+
+                    document.getElementById("payment-amount").innerHTML = `Amount: ${selectedCurrency} ${convertedAmount.toFixed(2)}`;
+                });
+        }
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+    
+    <div class="container">
+        <h2 id="title">Closed Listing </h2>
+        <div class="row">
+            {% if not listing.isActive %}
+                {% for listing in listings %}
+                    <div class="card col-sm-3" style="width: 18rem;">
+                        
+                        <img class="card-img-top" src="{{ listing.image.url }}" alt="{{listing.title}}">
+                        <div class="card-body">
+                            
+                            {% with truncated_text=listing.title|slice:":20" %}
+                            <h5 class="card-title">{{ truncated_text }}...</h5>
+                          {% endwith %}
+                            <div class="card-header">
+                                <p id="bid">Current bid: <span id="price">{{ listing.price.bid }}</span></p>
+                            </div>
+                            <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
+                        </div>
+                    </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

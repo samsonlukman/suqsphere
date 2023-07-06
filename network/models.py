@@ -133,3 +133,55 @@ class auctions_Comment(models.Model):
 
     def __str__(self):
         return f"{self.author} commented on {self.listing}"
+
+
+# Database for Market 
+
+class MarketCurrency(models.Model):
+    currencyName = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.currencyName
+    
+class MarketCategory(models.Model):
+    categoryName = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.categoryName
+
+class Market(models.Model):
+    title = models.CharField(max_length=100)
+    transaction_reference = models.CharField(max_length=100, default="aa")
+    description = models.CharField(max_length=1000)
+    currency = models.ForeignKey(MarketCurrency, on_delete=models.CASCADE, blank=True, null=True, related_name="market_currency")
+    price = models.DecimalField(max_digits=10, decimal_places=5)
+    isActive = models.BooleanField(default=True)
+    isFeatured = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="market_user")
+    category = models.ForeignKey(MarketCategory, on_delete=models.CASCADE, blank=True, null=True, related_name="market_category")
+    cart = models.ManyToManyField(User, blank=True, related_name="cart")
+
+    def __str__(self):
+        return f"{self.title}, {self.currency}{self.price}"
+
+
+class MarketImage(models.Model):
+    item = models.ForeignKey(Market, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to='images/')
+
+    def __str__(self):
+        return f"Image for {self.item.title}"
+
+
+class MarketComment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="market_userComment")
+    item = models.ForeignKey(Market, on_delete=models.CASCADE, blank=True, null=True, related_name="marketComment")
+    message = models.CharField(max_length=500)
+
+    def __str__(self):
+        return f"{self.author} commented on {self.item}"
+
+
+
+

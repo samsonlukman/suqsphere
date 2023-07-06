@@ -20,6 +20,7 @@ def auctions(request):
         "category": allCategories
     })
 
+
 def pay(request, id):
     payment = Listing.objects.get(id=id)
     tx_ref = request.GET.get("tx_ref")
@@ -78,6 +79,7 @@ def closedDetails(request, id):
         "isListingInWatchList": isListingInWatchList,
         "isOwner": isOwner,
         "flutterwaveCurrencies": currencies,
+        "allComments": allComments,
     })
 
 def closed_listings(request):
@@ -102,7 +104,7 @@ def closeAuction(request, id):
     # Get all comments for the listing
     allComments = auctions_Comment.objects.filter(listing=listingData)
     # Render the updated listing page
-    return render(request, "auctions/listing.html", {
+    return render(request, "auctions/closedDetails.html", {
         "listing": listingData,
         "isListingInWatchList": isListingInWatchList,
         "allComments": allComments,
@@ -120,7 +122,7 @@ def removeWatchList(request, id):
     # Remove the current user from the listing's watchlist
     listingData.watchlist.remove(currentUser)
     # Redirect to the listing page
-    return HttpResponseRedirect(reverse("listing",args=(id, )))
+    return HttpResponseRedirect(reverse("closedDetails",args=(id, )))
 
 # This function handles the addition of a listing to the current user's watchlist
 def addWatchList(request, id):
@@ -132,7 +134,7 @@ def addWatchList(request, id):
     listingData.watchlist.add(currentUser)
 
     # Redirect to the listing page
-    return HttpResponseRedirect(reverse("listing",args=(id, )))
+    return HttpResponseRedirect(reverse("closedDetails",args=(id, )))
 
 # This function is responsible for displaying the watchlist page for the user
 def displayWatchList(request):
@@ -197,7 +199,7 @@ def addComment(request, id):
     # Save the comment to the database
     newComment.save()
     # Redirect the user back to the listing page
-    return HttpResponseRedirect(reverse("listing",args=(id, )))
+    return HttpResponseRedirect(reverse("closedDetails",args=(id, )))
 
 
 def listing(request, id):
@@ -339,7 +341,7 @@ def register(request):
         profile_pics = request.FILES.get("profile_pic")
 
         if password != confirmation:
-            return render(request, "network/register.html", {
+            return render(request, "auctions/register.html", {
                 "message": "Passwords must match."
             })
 
@@ -352,16 +354,16 @@ def register(request):
             if profile_pics:
                 user.profile_pics.save(profile_pics.name, profile_pics, save=True)
         except IntegrityError:
-            return render(request, "network/register.html", {
+            return render(request, "auctions/register.html", {
                 "message": "Username already taken."
             })
         except ValidationError as e:
-            return render(request, "network/register.html", {
+            return render(request, "auctions/register.html", {
                 "message": e.message
             })
 
         login(request, user)
         return HttpResponseRedirect(reverse("auctions"))
     else:
-        return render(request, "network/register.html")
+        return render(request, "auctions/register.html")
 

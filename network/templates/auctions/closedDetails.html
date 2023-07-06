@@ -116,9 +116,10 @@
             <div class="form-group">
                 <label for="price">New Bid</label>
                 <input type="number" min="0" name="newBid" placeholder="Add Bid">
-            </div>
+
             <button id="bid-button" class="btn btn-primary" type="submit">Make a new bid</button>
         </form>
+         </div>
     </div>
     <hr>
     {% endif %}
@@ -155,6 +156,8 @@
 
     <script>
         let selectedCurrency;
+        public_key = "{{ public_key }}"
+        secret_key = "{{ secret_key }}"
 
         function makePayment() {
             const amount = "{{ listing.price.bid }}";
@@ -176,7 +179,7 @@
                     const convertedAmount = amount * conversionRate;
 
                     FlutterwaveCheckout({
-                        public_key: "FLWPUBK-0a2440ea2edde8cc7f1f201e2984c3fa-X",
+                        public_key: public_key,
                         tx_ref: `auction-${listing_id}-${Date.now()}`,
                         amount: convertedAmount,
                         currency: selectedCurrency,
@@ -219,7 +222,7 @@
 
             const url = "https://api.flutterwave.com/v3/otps";
             const headers = {
-                Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
+                Authorization: secret_key,
                 "Content-Type": "application/json",
             };
 
@@ -246,7 +249,7 @@
 
             const url = "https://api.flutterwave.com/v3/otps/:reference/validate";
             const headers = {
-                Authorization: "FLWSECK-7b1efe08a6f6db8d561fed231b4ff33b-188e425fb86vt-X",
+                Authorization: secret_key,
                 "Content-Type": "application/json",
             };
 
