@@ -101,7 +101,11 @@
   <div class="card">
     <div class="card-body">
       <div class="d-flex align-items-center">
+        {% if userProfile.profile.pics %}
           <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
+          {% else %} 
+          <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+          {% endif %}
         <div class="ml-3">
           <h4 class="card-title mb-0">
             {{ userProfile.first_name }} {{ userProfile.last_name }}
@@ -140,9 +144,15 @@
 <div class="card">
     <div class="card-body">
         <div class="d-flex align-items-center">
-      <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
-      </a>
+          {% if posts.user.profile_pics %}
+          <a href="{% url 'profile' user_id=posts.user.id %}">
+            <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+          </a>
+          {% else %}
+          <a href="{% url 'profile' user_id=posts.user.id %}">
+            <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+          </a>
+          {% endif %}
       <div class="ml-3">
         <h5 class="card-title mb-1">
         <!-- Display a link to the user's profile -->

@@ -6,8 +6,9 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .views import *
 from django.contrib import messages
-
+from django.db.models import Sum
 from .models import *
+
 
 
 # This function handles the rendering of the index page with all active listings and categories
@@ -104,13 +105,34 @@ def add_cart(request, id):
     return HttpResponseRedirect(reverse("item",args=(id, )))
 
 # This function is responsible for displaying the watchlist page for the user
+
+
 def display_cart(request):
     # Get the current user making the request
     currentUser = request.user
-    # Get all the listings that are in the user's watchlist
+    # Get all the items in the user's cart
     items = currentUser.cart.all()
-    context = {"item": items}
-    # Render the watchlist page, passing in the listings to display
+
+    # Calculate the total amount for each currency in the cart
+    amount = {}
+    for item in items:
+        currency = item.currency
+        amount[currency] = items.filter(currency=currency).aggregate(total=Sum('price'))['total']
+
+    currencies = [
+        "AED", "ARS", "AUD", "BRL", "CAD", "CHF", "CZK", "ETB", "EUR", "GBP",
+        "GHS", "ILS", "INR", "JPY", "KES", "MAD", "MUR", "MYR", "NGN", "NOK",
+        "NZD", "PEN", "PLN", "RUB", "RWF", "SAR", "SEK", "SGD", "SLL", "TZS",
+        "UGX", "USD", "XAF", "XOF", "ZAR", "ZMK", "ZMW", "MWK"
+    ]
+
+    context = {
+        "items": items,
+        "flutterwaveCurrencies": currencies,
+        "amount": amount,
+    }
+
+    # Render the cart page, passing in the items and amount to display
     return render(request, "market/cart.html", context)
 
 
@@ -210,10 +232,43 @@ def create_listing(request):
         return HttpResponseRedirect(reverse("market"))
 
 
-def displayCategory(request):
+def displayCategory(request, category):
     """
     Handles displaying items in a specific category.
     """
+    if request.method == "POST":
+        # Get the category selected by the user
+        formCategory = request.POST["category"]
+        category = MarketCategory.objects.get(categoryName=formCategory)
+
+        # Get all active listings in the selected category
+        activeItems = Market.objects.filter(isActive=True, category=category)
+
+        # Get all categories to display in the sidebar
+        allCategories = MarketCategory.objects.all()
+
+        return render(request, "market/category.html", {
+            "items": activeItems,
+            "category": allCategories
+        })
+    else:
+        # Get the selected category from the URL parameter
+        category = MarketCategory.objects.get(categoryName=category)
+        
+        # Get all active listings in the selected category
+        activeItems = Market.objects.filter(isActive=True, category=category)
+
+        # Get all categories to display in the sidebar
+        allCategories = MarketCategory.objects.all()
+
+        return render(request, "market/category.html", {
+            "items": activeItems,
+            "category": allCategories
+        })
+
+    
+
+def selectedCategories(request):
     if request.method == "POST":
         # Get the category selected by the user
         formCategory = request.POST["category"]

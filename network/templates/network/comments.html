@@ -7,9 +7,15 @@
 <ul class="list-group">
     {% for comment in posts.postComment.all|slice:":3" %}
       <li class="list-group-item">
-        <a href="{% url 'profile' user_id=posts.user.id %}">
-          <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
+        {% if comment.author.profile_pics %}
+        <a href="{% url 'profile' user_id=comment.author.id %}">
+          <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="70" height="70">
         </a>
+        {% else %}
+        <a href="{% url 'profile' user_id=comment.author.id %}">
+          <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+        </a>
+        {% endif %}
         <strong><a href="{% url 'profile' user_id=comment.author.id %}">@{{ comment.author.username }}</a> wrote:</strong>
         <div class="card-text" id="content_{{ comment.id }}">
           {% for paragraph in comment.message|split_paragraphs|slice:":8" %}

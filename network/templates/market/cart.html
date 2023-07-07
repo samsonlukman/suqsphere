@@ -1,47 +1,78 @@
 {% extends "market/layout.html" %}
 
 {% block body %}
-    <h2>Watchlist</h2>
-
+    <h2>Cart</h2>
+    <br>
+    <div class="container-fluid">
+        <div>
+                    <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+                </div>
+                <br>
+                <br>
+                <div class="form-group">
+                    <label for="currencyDropdown">Choose Currency</label>
+                    <select id="currencyDropdown" class="form-control">
+                        <option value="" selected disabled>Select Currency</option>
+                        {% for currency in flutterwaveCurrencies %}
+                            <option value="{{ currency }}">{{ currency }}</option>
+                        {% endfor %}
+                    </select>
+                </div>  
+        </div>
         <!-- Display all listings in watchlist -->
     <div class="row mx-3">
-    {% for listing in listings %}
+    {% for item in items %}
         <!-- Display each listing as a card -->
         <div class="card" style="width: 18rem;">
             <!-- Display the first listing image -->
-            {% if listing.images.exists %}
-                <img class="card-img-top" src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+            {% if item.images.exists %}
+                <img class="card-img-top" src="{{ item.images.first.image.url }}" alt="{{ item.title }}">
             {% endif %}
             <div class="card-body">
                 <!-- Display listing title and description -->
-                <p>{{listing.title}}</p>
+                <p>{{item.title}}</p>
+                
                 <!-- Display current bid price -->
-                <p class="card-text"><strong>{{ listing.currency }}{{ listing.price.bid }}</strong></p>
+                <p class="card-text"><strong>{{ item.currency }}{{ item.price }}</strong></p>
                 <!-- Link to the listing page -->
-                <a href="{% url 'closedDetails' listing.id %}" class="btn btn-primary">See listing status</a>
+                <a href="{% url 'item' item.id %}" class="btn btn-primary">View Details</a>
             </div>
         </div>
     {% endfor %}
 </div>
-<button onclick="makePayment()">Pay now</button>
+
+<div>
+{% for currency, total_amount in amount.items %}
+    <p>Total Amount ({{ currency }}): {{ total_amount }}</p>
+    <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
+{% endfor %}
+</div>
+
+
+
+
+
+
+
+      
 <script>
     let selectedCurrency;
     public_key = "{{ public_key }}"
     secret_key = "{{ secret_key }}"
 
     function makePayment() {
-        const amount = "{{ listing.price.bid }}";
+        const amount = "{{ items.price }}";
         const userEmail = "{{ user.email }}";
         const userName = "{{ user.username }}";
-        const listing_id = "{{ listing.id }}";
-        const listing_currency = "{{ listing.currency }}";
+        const listing_id = "{{ items.id }}";
+        const listing_currency = "{{ items.currency }}";
         let otp;
 
         const currencyDropdown = document.getElementById("currencyDropdown");
         const selectedCurrency = currencyDropdown.value;
 
         // Fetch the currency conversion rate from the ExchangeRate API
-        fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)
+        fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/USD`)
             .then(response => response.json())
             .then(data => {
                 // Get the conversion rate for the selected currency
@@ -141,8 +172,8 @@
 
     function updateFlutterwaveCurrency() {
         selectedCurrency = currencyDropdown.value;
-        const amount = "{{ listing.price.bid }}";
-        const listing_currency = "{{ listing.currency }}";
+        const amount = "{{ items.price }}";
+        const listing_currency = "{{ items.currency }}";
 
         // Fetch the currency conversion rate from the ExchangeRate API
         fetch(`https://v6.exchangerate-api.com/v6/c39ce07e90bde74fa5a8ac76/latest/${listing_currency}`)

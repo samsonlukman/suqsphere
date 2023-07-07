@@ -26,11 +26,13 @@ from django.contrib.auth.views import (
 )
 
 
-@login_required
+
 def index(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
-        return render(request, "network/login.html")
+        return render(request, "network/login.html", {
+            "error_message": error_message,
+        })
 
     post = Post.objects.all().order_by("id").reverse().select_related("user")
     paginator = Paginator(post, 10) # Show 10 contacts per page.

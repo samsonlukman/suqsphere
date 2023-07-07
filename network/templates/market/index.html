@@ -3,7 +3,7 @@
 {% block body %}
 <div class="section-box">
     <h2>iNetwork Market</h2>
-    <form action="{% url 'market_category' %}" method="post">
+    <form action="{% url 'selectedCategories' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
             <label for="category">Choose a category:</label>
@@ -16,96 +16,110 @@
         </div>
         <button type="submit" class="btn btn-warning">Select</button>
     </form>
-
 </div>
 
-    <div class="section-box">
-        <section class="hero">
-            <h1>Welcome to our eCommerce store!</h1>
-            <p>Discover the latest products and shop with confidence.</p>
-            <a href="/products" class="btn">Shop Now</a>
-        </section>
-    </div>
+<div class="section-box">
+    <section class="hero">
+        <h1>Welcome to our eCommerce store!</h1>
+        <p>Discover the latest products and shop with confidence.</p>
+        <a href="/products" class="btn">Shop Now</a>
+    </section>
+</div>
 
-    <div class="section-box">
-        <section class="featured-products">
-            <div class="product-list">
-                <div class="product">
-                    <h2>Featured Products</h2>
-                    <hr>
-                    <img src="/media/market_pics/featured.jpg">
-                </div>
-                <div class="product">
-                    <h2>Discount</h2>
-                    <hr>
-                    <img src="/media/market_pics/discount.jpg">
-                    </div>
-                <div class="product">
-                    <h2>Newest</h2>
-                    <hr>
-                    <img src="/media/market_pics/newest.png">
+<div class="section-box">
+    <section class="featured-products">
+        <div class="product-list">
+            <div class="product">
+                <h2>Featured Products</h2>
+                <hr>
+                <img src="/media/market_pics/featured.jpg">
             </div>
-        </section>
-    </div>
-    <div class="section-box">
-        <section class="featured-products">
-            <div class="product-list">
-                <div class="product">
-                    <h2>Phones and Laptops</h2>
-                    <hr>
-                    <img src="/media/market_pics/laptop.jpg">
-                </div>
-                <div class="product">
-                    <h2>Furnitures</h2>
-                    <hr>
-                    <img src="/media/market_pics/furniture.jpg">
-                </div>
-                <div class="product">
-                    <h2>Books</h2>
-                    <hr>
-                    <img src="/media/market_pics/books.jpg">
-                </div>
-                <div class="product">
-                    <h2>Gaming</h2>
-                    <hr>
-                    <img src="/media/market_pics/gaming.jpg">
-                </div>
-                <div class="product">
-                    <h2>Art</h2>
-                    <hr>
-                    <img src="/media/market_pics/art.jpg">
-                </div>
-                <div class="product">
-                    <h2>For the Kitchen</h2>
-                    <hr>
-                    <img src="/media/market_pics/kitchen.jpg">
-                </div>
+            <div class="product">
+                <h2>Discount</h2>
+                <hr>
+                <img src="/media/market_pics/discount.jpg">
             </div>
-        </section>
-    </div>
-    
-    <div class="section-box">
-        <section class="featured-products">
-            
-            <div class="product-list">
-                <div class="product">
-                    <h2>Home Gadgets</h2>
-                    <hr>
-                    <img src="/media/market_pics/electronics.jpg">
-                </div>
-                <div class="product">
-                    <h2>Fashion</h2>
-                    <hr>
-                    <img src="/media/market_pics/fashion.jpg">
-                </div>
-                <div class="product">
-                    <h2>Accessories</h2>
-                    <hr>
-                    <img src="/media/market_pics/accessories.jpg">
+            <div class="product">
+                <h2>Newest</h2>
+                <hr>
+                <img src="/media/market_pics/newest.png">
             </div>
-        </section>
-    </div>
-    <footer>
-        <p>&copy; 2023 My eCommerce Website. All rights reserved.</p>
-    </footer>
+        </div>
+    </section>
+</div>
+
+<div class="section-box">
+    <section class="featured-products">
+        <div class="product-list">
+            <div class="product">
+                <h2>Phones and Laptops</h2>
+                <a href="{% url 'market_category' category='Phones and Laptops' %}">
+                    <p>See all</p>
+                </a>
+                <hr>
+                <img src="/media/market_pics/laptop.jpg">
+            </div>
+            <div class="product">
+                <h2>Furnitures</h2>
+                <a href="{% url 'market_category' category='Furnitures' %}">
+                    <p>See all</p>
+                </a>
+                <hr>
+                <img src="/media/market_pics/furniture.jpg">
+            </div>
+            <div class="product">
+                <h2>Books</h2>
+                <a href="{% url 'market_category' category='Books' %}">
+                    <p>See all</p>
+                </a>
+                <hr>
+                <img src="/media/market_pics/books.jpg">
+            </div>
+            <div class="product">
+                <h2>Gaming</h2>
+                <hr>
+                <img src="/media/market_pics/gaming.jpg">
+            </div>
+            <div class="product">
+                <h2>Art</h2>
+                <a href="{% url 'market_category' category='Art' %}">
+                    <p>See all</p>
+                </a>
+                <hr>
+                <img src="/media/market_pics/art.jpg">
+            </div>
+            <div class="product">
+                <h2>For the Kitchen</h2>
+                <hr>
+                <img src="/media/market_pics/kitchen.jpg">
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="section-box">
+    <section class="featured-products">
+        <div class="product-list">
+            <div class="product">
+                <h2>Home Gadgets</h2>
+                <hr>
+                <img src="/media/market_pics/electronics.jpg">
+            </div>
+            <div class="product">
+                <h2>Fashion</h2>
+                <hr>
+                <img src="/media/market_pics/fashion.jpg">
+            </div>
+            <div class="product">
+                <h2>Accessories</h2>
+                <hr>
+                <img src="/media/market_pics/accessories.jpg">
+            </div>
+        </div>
+    </section>
+</div>
+
+<footer>
+    <p>&copy; 2023 My eCommerce Website. All rights reserved.</p>
+</footer>
 {% endblock %}

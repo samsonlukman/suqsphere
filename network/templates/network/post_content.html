@@ -8,9 +8,15 @@
   <div class="card">
     <div class="card-body">
       <div class="d-flex align-items-center">
-        <a href="{% url 'profile' user_id=posts.user.id %}">
-          <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
-        </a>
+        {% if posts.user.profile_pics %}
+      <a href="{% url 'profile' user_id=posts.user.id %}">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+      </a>
+      {% else %}
+      <a href="{% url 'profile' user_id=posts.user.id %}">
+        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+      </a>
+      {% endif %}
         <div class="ml-3">
           <h5 class="card-title mb-1">
           <!-- Display a link to the user's profile -->
@@ -30,9 +36,15 @@
         <p>{{ paragraph|urlize }}</p>
         {% endfor %}
         <div class="card-body">
-          {% if posts.post_image %}
-          <img src="{{ posts.post_image.url }}" class="img-fluid" alt="Post Image">
-          {% endif %}
+          {% if posts.user.profile_pics %}
+      <a href="{% url 'profile' user_id=posts.user.id %}">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+      </a>
+      {% else %}
+      <a href="{% url 'profile' user_id=posts.user.id %}">
+        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+      </a>
+      {% endif %}
         </div>
       </div>
 
@@ -44,9 +56,15 @@
       <ul class="list-group">
         {% for comment in posts.postComment.all %}
         <li class="list-group-item">
-          <a href="{% url 'profile' user_id=posts.user.id %}">
-            <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="50" height="50">
-          </a>
+          {% if comment.author.profile_pics %}
+      <a href="{% url 'profile' user_id=comment.author.id %}">
+        <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+      </a>
+      {% else %}
+      <a href="{% url 'profile' user_id=comment.author.id %}">
+        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+      </a>
+      {% endif %}
           <strong><a href="{% url 'profile' user_id=comment.author.id %}">@{{ comment.author.username }}</a> wrote:</strong>
           <div class="card-text" id="content_{{ comment.id }}">
             {% for paragraph in comment.message|split_paragraphs %}
