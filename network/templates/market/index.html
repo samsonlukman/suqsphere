@@ -2,7 +2,9 @@
 
 {% block body %}
 <div class="section-box">
+    <section class="hero">
     <h2>iNetwork Market</h2>
+    <br>
     <form action="{% url 'selectedCategories' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
@@ -16,6 +18,7 @@
         </div>
         <button type="submit" class="btn btn-warning">Select</button>
     </form>
+</section>
 </div>
 
 <div class="section-box">
@@ -53,45 +56,63 @@
         <div class="product-list">
             <div class="product">
                 <h2>Phones and Laptops</h2>
+                <hr>
+                <img src="/media/market_pics/laptop.jpg">
+                <br>
+                <br>
                 <a href="{% url 'market_category' category='Phones and Laptops' %}">
                     <p>See all</p>
                 </a>
-                <hr>
-                <img src="/media/market_pics/laptop.jpg">
             </div>
             <div class="product">
                 <h2>Furnitures</h2>
+                <hr>
+                <img src="/media/market_pics/furniture.jpg">
+                <br>
+                <br>
                 <a href="{% url 'market_category' category='Furnitures' %}">
                     <p>See all</p>
                 </a>
-                <hr>
-                <img src="/media/market_pics/furniture.jpg">
             </div>
             <div class="product">
                 <h2>Books</h2>
+                <hr>
+                <img src="/media/market_pics/books.jpg">
+                <br>
+                <br>
                 <a href="{% url 'market_category' category='Books' %}">
                     <p>See all</p>
                 </a>
-                <hr>
-                <img src="/media/market_pics/books.jpg">
             </div>
             <div class="product">
                 <h2>Gaming</h2>
                 <hr>
                 <img src="/media/market_pics/gaming.jpg">
+                <br>
+                <br>
+                <a href="{% url 'market_category' category='Gaming' %}">
+                    <p>See all</p>
+                </a>
             </div>
             <div class="product">
                 <h2>Art</h2>
+                <hr>
+                <img src="/media/market_pics/art.jpg">
+                <br>
+                <br>
                 <a href="{% url 'market_category' category='Art' %}">
                     <p>See all</p>
                 </a>
-                <hr>
-                <img src="/media/market_pics/art.jpg">
             </div>
             <div class="product">
                 <h2>For the Kitchen</h2>
                 <hr>
                 <img src="/media/market_pics/kitchen.jpg">
+                <br>
+                <br>
+                <a href="{% url 'market_category' category='Kitchen' %}">
+                    <p>See all</p>
+                </a>
             </div>
         </div>
     </section>
@@ -104,16 +125,31 @@
                 <h2>Home Gadgets</h2>
                 <hr>
                 <img src="/media/market_pics/electronics.jpg">
+                <br>
+                <br>
+                <a href="{% url 'market_category' category='Home Gadgets' %}">
+                    <p>See all</p>
+                </a>
             </div>
             <div class="product">
                 <h2>Fashion</h2>
                 <hr>
                 <img src="/media/market_pics/fashion.jpg">
+                <br>
+                <br>
+                <a href="{% url 'market_category' category='Fashion' %}">
+                    <p>See all</p>
+                </a>
             </div>
             <div class="product">
                 <h2>Accessories</h2>
                 <hr>
                 <img src="/media/market_pics/accessories.jpg">
+                <br>
+                <br>
+                <a href="{% url 'market_category' category='Accessories' %}">
+                    <p>See all</p>
+                </a>
             </div>
         </div>
     </section>

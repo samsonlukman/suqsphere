@@ -64,7 +64,7 @@
     </div>
 
     <p>Owner: {{ listing.owner }}</p>
-    <p>Price: {{ listing.currency }}{{ listing.price }}</p>
+    <p>Price: {{ listing.currency }}{{ listing.price|floatformat:2 }}</p>
 
     <hr>
 

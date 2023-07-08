@@ -285,9 +285,9 @@ def selectedCategories(request):
             "category": allCategories
         })
 def my_items(request):
-    items = Listing.objects.filter(owner=request.user)
-    return render(request, "market/my_listings.html", {
-        "item": items
+    own_items = Market.objects.filter(owner=request.user)
+    return render(request, "market/my_items.html", {
+        "items": own_items,
     })
 
 def login_view(request):

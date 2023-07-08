@@ -84,7 +84,8 @@ footer {
 }
 
 .section-box {
-    background-color: #f2f2f2;
+    background-color: #0a0a0af1;
+    
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 20px;

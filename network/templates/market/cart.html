@@ -33,7 +33,7 @@
                 <p>{{item.title}}</p>
                 
                 <!-- Display current bid price -->
-                <p class="card-text"><strong>{{ item.currency }}{{ item.price }}</strong></p>
+                <p class="card-text"><strong>{{ item.currency }}{{ item.price|floatformat:2 }}</strong></p>
                 <!-- Link to the listing page -->
                 <a href="{% url 'item' item.id %}" class="btn btn-primary">View Details</a>
             </div>
