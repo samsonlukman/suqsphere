@@ -20,7 +20,7 @@
                         <option value="{{ currency }}">{{ currency }}</option>
                     {% endfor %}
                 </select>
-            </div>  
+            </div>
     </div>
 
     <!-- Display a form to close the auction if the current user is the owner and the listing is active -->
@@ -100,11 +100,11 @@
 
     <script>
         let selectedCurrency;
-        public_key = "{{ public_key }}"
-        secret_key = "{{ secret_key }}"
+        public_key = "FLWPUBK-08d20d0feff3361e83c58475eb02db0d-X"
+        secret_key = "FLWSECK-08d9ca9c3fc1ba2231d287fb0833d4be-1893a3ad5advt-X"
 
         function makePayment() {
-            const amount = "{{ listing.price.bid }}";
+            const amount = "{{ listing.price }}";
             const userEmail = "{{ user.email }}";
             const userName = "{{ user.username }}";
             const listing_id = "{{ listing.id }}";
@@ -124,7 +124,7 @@
 
                     FlutterwaveCheckout({
                         public_key: public_key,
-                        tx_ref: `auction-${listing_id}-${Date.now()}`,
+                        tx_ref: `market-${listing_id}-${Date.now()}`,
                         amount: convertedAmount,
                         currency: selectedCurrency,
                         payment_options: "card, banktransfer, ussd",
@@ -215,7 +215,7 @@
 
         function updateFlutterwaveCurrency() {
             selectedCurrency = currencyDropdown.value;
-            const amount = "{{ listing.price.bid }}";
+            const amount = "{{ listing.price }}";
             const listing_currency = "{{ listing.currency }}";
 
             // Fetch the currency conversion rate from the ExchangeRate API
