@@ -32,12 +32,11 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">Add to cart</button>
                 </form>
-                {% if not isListingInWatchlist %}
                     <form action="{% url 'remove_cart' id=listing.id %}" method="POST">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">Remove from cart</button>
                     </form>
-                {% endif %}
+                
             {% endif %}
         </div>
     </div>

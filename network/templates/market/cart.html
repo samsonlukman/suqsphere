@@ -1,56 +1,62 @@
 {% extends "market/layout.html" %}
 
 {% block body %}
-    <h2>Cart</h2>
-    <br>
-    <div class="container-fluid">
-        <div>
-            <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
-        </div>
-        <br>
-        <br>
-        <div class="form-group">
-            <label for="currencyDropdown">Choose Currency</label>
-            <select id="currencyDropdown" class="form-control">
-                <option value="" selected disabled>Select Currency</option>
-                {% for currency in flutterwaveCurrencies %}
-                    <option value="{{ currency }}">{{ currency }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
-    <!-- Display all listings in watchlist -->
-    <div class="row mx-3">
-        {% for item in items %}
-            <!-- Display each listing as a card -->
-            <div class="card" style="width: 18rem;">
-                <!-- Display the first listing image -->
-                {% if item.images.exists %}
-                    <img class="card-img-top" src="{{ item.images.first.image.url }}" alt="{{ item.title }}">
-                {% endif %}
-                <div class="card-body">
-                    <!-- Display listing title and description -->
-                    <p>{{item.title}}</p>
+<h2>Cart</h2>
+<hr>
+<button style="margin-bottom: 50px;" type="button" class="btn btn-primary" onclick="openPaymentModal()">Click to pay</button>
 
-                    <!-- Display current bid price -->
-                    <p class="card-text"><strong>{{ item.currency }}{{ item.price|floatformat:2 }}</strong></p>
-                    <!-- Link to the listing page -->
-                    <a href="{% url 'item' item.id %}" class="btn btn-primary">View Details</a>
+<div id="paymentModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <button type="button" class="close" onclick="closePaymentModal()">&times;</button>
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="currencyDropdown">Choose Currency</label>
+                    <select id="currencyDropdown" class="form-control">
+                        <option value="" selected disabled>Select Currency</option>
+                        {% for currency in flutterwaveCurrencies %}
+                            <option value="{{ currency }}">{{ currency }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+                <div>
+                    <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+                    {% for currency, total_amount in amount.items %}
+                        <ul>
+                            <li>
+                                <p>Total Amount ({{ currency }}): <span id="total_amount_{{ currency }}">{{ total_amount }}</span></p>
+                                <button type="button" class="btn btn-primary" onclick="makePayment('{{ total_amount }}', '{{ currency }}')">Pay Now</button>
+                            </li>
+                        </ul>
+                    {% endfor %}
+                </div>
+                <br>
+                <br>
             </div>
-        {% endfor %}
+        </div>
     </div>
+</div>
+<!-- Display all listings in watchlist -->
+<div class="row mx-3">
+    {% for item in items %}
+        <!-- Display each listing as a card -->
+        <div class="card" style="width: 18rem;">
+            <!-- Display the first listing image -->
+            {% if item.images.exists %}
+                <img class="card-img-top" src="{{ item.images.first.image.url }}" alt="{{ item.title }}">
+            {% endif %}
+            <div class="card-body">
+                <!-- Display listing title and description -->
+                <p>{{item.title}}</p>
 
-    <div>
-        {% for currency, total_amount in amount.items %}
-        <ul>
-            <li>
-            <p>Total Amount ({{ currency }}): <span id="total_amount_{{ currency }}">{{ total_amount }}</span></p>
-            <button type="button" class="btn btn-primary" onclick="makePayment('{{ total_amount }}', '{{ currency }}')">Pay Now</button>
-        </li>
-        </ul>
-            {% endfor %}
-    </div>
+                <!-- Display current bid price -->
+                <p class="card-text"><strong>{{ item.currency }}{{ item.price|floatformat:2 }}</strong></p>
+                <!-- Link to the listing page -->
+                <a href="{% url 'item' item.id %}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 
     <script>
         let selectedCurrency;
@@ -78,11 +84,11 @@
 
                     FlutterwaveCheckout({
                         public_key: public_key,
-                        tx_ref: `auction-${listing_id}-${Date.now()}`,
+                        tx_ref: `market-${listing_id}-${Date.now()}`,
                         amount: convertedAmount,
                         currency: selectedCurrency,
                         payment_options: "card, banktransfer, ussd",
-                        redirect_url: "https://inetwork.pythonanywhere.com/auctions/pay/" + listing_id,
+                        redirect_url: "https://inetwork.pythonanywhere.com/market/cart/",
                         meta: {
                             consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
                             consumer_mac: "92a3-912ba-1192a",
@@ -182,6 +188,22 @@
 
                     document.getElementById("payment-amount").innerHTML = `Amount: ${selectedCurrency} ${convertedAmount.toFixed(2)}`;
                 });
+        }
+
+        function openPaymentModal() {
+            // Get the modal element
+            var modal = document.getElementById("paymentModal");
+
+            // Show the modal
+            modal.style.display = "block";
+        }
+
+        function closePaymentModal() {
+            // Get the modal element
+            var modal = document.getElementById("paymentModal");
+
+            // Hide the modal
+            modal.style.display = "none";
         }
     </script>
 </div>
