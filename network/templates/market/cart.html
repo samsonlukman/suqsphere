@@ -69,6 +69,7 @@
             const userEmail = "{{ user.email }}";
             const userName = "{{ user.username }}";
             const listing_id = "{{ items.id }}";
+            const id = listing_id;
             const listing_currency = currency;
             let otp;
 
@@ -81,14 +82,15 @@
                     // Get the conversion rate for the selected currency
                     const conversionRate = data.conversion_rates[selectedCurrency];
                     const convertedAmount = amount * conversionRate;
+                    const tx_ref = `market-${listing_id}-${Date.now()}`;
 
                     FlutterwaveCheckout({
                         public_key: public_key,
-                        tx_ref: `market-${listing_id}-${Date.now()}`,
+                        tx_ref: tx_ref,
                         amount: convertedAmount,
                         currency: selectedCurrency,
                         payment_options: "card, banktransfer, ussd",
-                        redirect_url: "https://inetwork.pythonanywhere.com/market/pay/",
+                        redirect_url: "https://inetwork.pythonanywhere.com/market/pay/" + tx_ref + id,
                         meta: {
                             consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
                             consumer_mac: "92a3-912ba-1192a",

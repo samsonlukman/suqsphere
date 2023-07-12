@@ -19,29 +19,44 @@ def market(request):
     context = {"item": items, "category": allCategories,}
     return render(request, "market/index.html", context)
 
-def pay(request, id):  
-    payment = Market.objects.get(id=id)
-    tx_ref = request.GET.get("tx_ref")
+def pay(request, tx_ref):
+    id = request.GET.get("id")
+    trans_ref = request.GET.get("tx_ref")
+    tx_ref = trans_ref
 
-    if tx_ref:
-        # Save the transaction reference in the database
-        payment.transaction_reference = tx_ref
-        payment.completed = True
-        payment.save()
 
-        # Display a success message to the user
-        success_message = "Payment made successfully"
+    if tx_ref and id:
+        try:
+            payment = Market.objects.get(id=id)
+            # Save the transaction reference in the database
+            payment.transaction_reference = tx_ref
+            payment.completed = True
+            payment.save()
 
-        # Redirect the user to the listing page
-        return render(request, "market/pay_success.html", {
-            "success_message": success_message,
-            "listing": payment,
-        })
+            # Delete paid items
+            paid_items = Market.objects.filter(payment=payment)
+            for item in paid_items:
+                item.delete()
+
+            # Display a success message to the user
+            success_message = "Payment made successfully"
+
+            # Redirect the user to the listing page
+            return render(request, "market/pay_success.html", {
+                "success_message": success_message,
+                "listing": payment,
+            })
+        except Market.DoesNotExist:
+            # Handle the case when the payment with the provided ID is not found
+            error_message = "Payment failed: Invalid payment ID"
+            messages.error(request, error_message)
+            return redirect('market')  # Replace 'market' with the appropriate URL name
     else:
-        # Handle the case when the transaction reference is missing or not provided
-        error_message = "Payment failed: Transaction reference not found"
+        # Handle the case when the transaction reference or payment ID is missing or not provided
+        error_message = "Payment failed: Transaction reference or payment ID not found"
         messages.error(request, error_message)
-        return redirect(market)
+        return redirect('market')  # Replace 'market' with the appropriate URL name
+
 
 
 def closedDetails(request, id):
@@ -213,7 +228,7 @@ def create_listing(request):
         categoryData = MarketCategory.objects.get(categoryName=category)
         currencyData = MarketCurrency.objects.get(currencyName=currency)
 
-        
+
 
         newItem = Market(
             title=title,
@@ -254,7 +269,7 @@ def displayCategory(request, category):
     else:
         # Get the selected category from the URL parameter
         category = MarketCategory.objects.get(categoryName=category)
-        
+
         # Get all active listings in the selected category
         activeItems = Market.objects.filter(isActive=True, category=category)
 
@@ -266,7 +281,7 @@ def displayCategory(request, category):
             "category": allCategories
         })
 
-    
+
 
 def selectedCategories(request):
     if request.method == "POST":
