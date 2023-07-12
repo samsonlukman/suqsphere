@@ -20,42 +20,19 @@ def market(request):
     return render(request, "market/index.html", context)
 
 def pay(request, tx_ref):
-    id = request.GET.get("id")
+
     trans_ref = request.GET.get("tx_ref")
     tx_ref = trans_ref
 
 
-    if tx_ref and id:
-        try:
-            payment = Market.objects.get(id=id)
-            # Save the transaction reference in the database
-            payment.transaction_reference = tx_ref
-            payment.completed = True
-            payment.save()
+        # Display a success message to the user
+    success_message = "Payment made successfully"
 
-            # Delete paid items
-            paid_items = Market.objects.filter(payment=payment)
-            for item in paid_items:
-                item.delete()
+    # Redirect the user to the listing page
+    return render(request, "market/pay_success.html", {
+        "success_message": success_message,
 
-            # Display a success message to the user
-            success_message = "Payment made successfully"
-
-            # Redirect the user to the listing page
-            return render(request, "market/pay_success.html", {
-                "success_message": success_message,
-                "listing": payment,
-            })
-        except Market.DoesNotExist:
-            # Handle the case when the payment with the provided ID is not found
-            error_message = "Payment failed: Invalid payment ID"
-            messages.error(request, error_message)
-            return redirect('market')  # Replace 'market' with the appropriate URL name
-    else:
-        # Handle the case when the transaction reference or payment ID is missing or not provided
-        error_message = "Payment failed: Transaction reference or payment ID not found"
-        messages.error(request, error_message)
-        return redirect('market')  # Replace 'market' with the appropriate URL name
+    })
 
 
 
