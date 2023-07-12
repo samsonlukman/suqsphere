@@ -41,7 +41,7 @@ def pay(request, id):
         # Handle the case when the transaction reference is missing or not provided
         error_message = "Payment failed: Transaction reference not found"
         messages.error(request, error_message)
-        return redirect("listing", id=id)
+        return redirect(market)
 
 
 def closedDetails(request, id):
