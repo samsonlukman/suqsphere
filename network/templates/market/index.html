@@ -8,7 +8,7 @@
     <form action="{% url 'selectedCategories' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
-            <label for="category">Choose a category:</label>
+            <label for="category" class="section-box">Choose a category:</label>
             <!-- Display all categories as options in the dropdown menu -->
             <select class="form-control" name="category" id="category">
                 {% for cat in category %}

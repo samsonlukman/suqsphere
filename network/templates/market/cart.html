@@ -81,10 +81,16 @@
                     // Get the conversion rate for the selected currency
                     const conversionRate = data.conversion_rates[selectedCurrency];
                     const convertedAmount = amount * conversionRate;
+                    // Generate a random string
+        const randomString = Math.random().toString(36).substring(2, 15);
+
+// Generate a unique tx_ref using the random string and current timestamp
+        const timestamp = Date.now();
+        const tx_ref = `market-${listing_id}-${randomString}-${timestamp}`;
 
                     FlutterwaveCheckout({
                         public_key: public_key,
-                        tx_ref: `market-${listing_id}-${Date.now()}`,
+                        tx_ref: tx_ref,
                         amount: convertedAmount,
                         currency: selectedCurrency,
                         payment_options: "card, banktransfer, ussd",

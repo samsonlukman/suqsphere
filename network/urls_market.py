@@ -8,7 +8,7 @@ from . import views_market
 urlpatterns = [
     # The root URL maps to the index view
     path("", views_market.market, name="market"),
-    path("pay/<int:id>", views_market.pay, name="pay"),
+   path("pay/", views_market.pay, name="pay"),
     path("login", views_market.login_view, name="market_login"),
     path("logout", views_market.logout_view, name="market_logout"),
     path("register", views_market.register, name="market_register"),

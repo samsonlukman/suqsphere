@@ -19,8 +19,8 @@ def market(request):
     context = {"item": items, "category": allCategories,}
     return render(request, "market/index.html", context)
 
-def pay(request, id):  
-    payment = Market.objects.get(id=id)
+def pay(request):  
+    id = request.GET.get("id")
     tx_ref = request.GET.get("tx_ref")
 
     if tx_ref:
@@ -28,6 +28,11 @@ def pay(request, id):
         payment.transaction_reference = tx_ref
         payment.completed = True
         payment.save()
+
+        # Delete paid items
+        paid_items = Market.objects.filter(payment=payment)
+        for item in paid_items:
+            item.delete()
 
         # Display a success message to the user
         success_message = "Payment made successfully"
