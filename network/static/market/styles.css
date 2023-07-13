@@ -1,5 +1,39 @@
+#page-title {
+    background-color: darkgray;
+    color: white;
+}
+
+.welcome-to-store {
+   
+    margin-left: 100px; /* Adjust the value as needed */
+    font-size: larger;
+    margin-top: -60px;
+  }
+ 
+  .shop-now {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .category-select {
+    margin-left: 1000px;
+    margin-top: 5px;
+    
+  }
+  
+ .cat-border select {
+  border: 2px solid black;
+}
+
+  input[type="submit"] {
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-weight: bold;
+  }
+  
+
 .header-text {
-    background-color: whi;
+    background-color: black;
     color: white;
 
 }
@@ -9,11 +43,11 @@
 }
 
 /* Reset styles */
-body, h1, h2, h3, p, ul, li {
+body {
     margin: 0;
     padding: 0;
-    background-color: black;
-    color: white;
+    background-color: white;
+    color: black;
 }
 
 /* Global styles */
@@ -96,7 +130,7 @@ footer {
 }
 
 .section-box {
-    background-color: #0a0a0af1;
+   
     
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -183,3 +217,33 @@ footer {
   .watchlist-buttons form {
     margin-right: 10px;
   }
+
+  .dropdown {
+    display: inline-block;
+    position: relative;
+    z-index: 10; /* Add a higher z-index value */
+}
+
+.dropdown-options {
+    display: none;
+    position: absolute;
+    overflow: auto;
+}
+
+.dropdown:hover .dropdown-options {
+    display: block;
+}
+
+#page-title {
+    position: relative;
+    z-index: 1;
+}
+
+.cat-head {
+    background-color: #555;
+    color: white;
+}
+
+.nav-link {
+    color: white;
+}
