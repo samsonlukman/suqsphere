@@ -120,10 +120,6 @@ def edit_profile(request, user_id):
         return render(request, "network/user_profile.html")  # Replace 'user_profile' with the appropriate URL name
 
 
-def transact(request):
-    return render(request, "network/transact.html")
-
-
 @login_required
 def post_content(request, post_id):
     post = Post.objects.get(pk=post_id)

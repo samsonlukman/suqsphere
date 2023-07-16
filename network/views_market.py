@@ -14,12 +14,17 @@ from .models import *
 # This function handles the rendering of the index page with all active listings and categories
 def market(request):
     # Get all active listings
-    items = Market.objects.filter(isActive=True)[:4]
+    items = Market.objects.filter(isActive=True)
     allCategories = MarketCategory.objects.all()
     context = {"item": items, "category": allCategories,}
     return render(request, "market/index.html", context)
 
 def pay(request, tx_ref):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
 
     trans_ref = request.GET.get("tx_ref")
     tx_ref = trans_ref
@@ -45,6 +50,12 @@ def closedDetails(request, id):
     Returns:
         An HTTP response with the listing page rendered
     """
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     # Get the listing data from the database using the provided primary key
     itemData = Market.objects.get(pk=id)
 
@@ -75,6 +86,12 @@ def closedDetails(request, id):
 
 # This function handles the removal of a listing from the current user's watchlist
 def remove_cart(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     # Get the listing data for the given id
     listingData = Market.objects.get(pk=id)
     # Get the current user
@@ -86,6 +103,12 @@ def remove_cart(request, id):
 
 # This function handles the addition of a listing to the current user's watchlist
 def add_cart(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     # Get the listing data for the given id
     listingData = Market.objects.get(pk=id)
     # Get the current user
@@ -100,6 +123,12 @@ def add_cart(request, id):
 
 
 def display_cart(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     # Get the current user making the request
     currentUser = request.user
     # Get all the items in the user's cart
@@ -130,6 +159,12 @@ def display_cart(request):
 
 # This function is responsible for adding a new comment to a listing
 def addComment(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     # Get the current user making the request
     currentUser = request.user
     # Get the listing data for the given id
@@ -159,6 +194,12 @@ def listing(request, id):
         An HTTP response with the listing page rendered
     """
     # Get the listing data from the database using the provided primary key
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     listingData = Listing.objects.get(pk=id)
 
     # Check if the current user is in the watchlist of the listing
@@ -182,7 +223,9 @@ def listing(request, id):
 def create_listing(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
-        return HttpResponse(error_message, status=401)
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
 
     if request.method == "GET":
         allCategories = MarketCategory.objects.all()
@@ -277,6 +320,12 @@ def selectedCategories(request):
             "category": allCategories
         })
 def my_items(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "market/error.html", {
+            "error": error_message,
+        })
+
     own_items = Market.objects.filter(owner=request.user)
     return render(request, "market/my_items.html", {
         "items": own_items,

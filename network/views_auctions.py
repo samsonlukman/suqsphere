@@ -22,6 +22,11 @@ def auctions(request):
 
 
 def pay(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     payment = Listing.objects.get(id=id)
     tx_ref = request.GET.get("tx_ref")
 
@@ -56,6 +61,11 @@ def closedDetails(request, id):
         An HTTP response with the listing page rendered
     """
     # Get the listing data from the database using the provided primary key
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     listingData = Listing.objects.get(pk=id)
 
     # Check if the current user is in the watchlist of the listing
@@ -83,6 +93,11 @@ def closedDetails(request, id):
     })
 
 def closed_listings(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     closed_listing = Listing.objects.filter(isActive=False)
     context = {
         "listings": closed_listing,
@@ -91,6 +106,11 @@ def closed_listings(request):
 
 # This function handles the closing of a listing and rendering the updated listing page
 def closeAuction(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the listing data for the given id
     listingData = Listing.objects.get(pk=id)
     # Set the listing to inactive
@@ -115,6 +135,11 @@ def closeAuction(request, id):
 
 # This function handles the removal of a listing from the current user's watchlist
 def removeWatchList(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the listing data for the given id
     listingData = Listing.objects.get(pk=id)
     # Get the current user
@@ -126,6 +151,11 @@ def removeWatchList(request, id):
 
 # This function handles the addition of a listing to the current user's watchlist
 def addWatchList(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the listing data for the given id
     listingData = Listing.objects.get(pk=id)
     # Get the current user
@@ -138,6 +168,11 @@ def addWatchList(request, id):
 
 # This function is responsible for displaying the watchlist page for the user
 def displayWatchList(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the current user making the request
     currentUser = request.user
     # Get all the listings that are in the user's watchlist
@@ -150,6 +185,11 @@ def displayWatchList(request):
 
 # This function is responsible for adding a new bid to a listing
 def addBid(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the new bid amount from the request
     newBid = request.POST['newBid']
     # Get the listing data for the given id
@@ -183,6 +223,11 @@ def addBid(request, id):
 
 # This function is responsible for adding a new comment to a listing
 def addComment(request, id):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     # Get the current user making the request
     currentUser = request.user
     # Get the listing data for the given id
@@ -212,6 +257,11 @@ def listing(request, id):
         An HTTP response with the listing page rendered
     """
     # Get the listing data from the database using the provided primary key
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     listingData = Listing.objects.get(pk=id)
 
     # Check if the current user is in the watchlist of the listing
@@ -235,7 +285,9 @@ def listing(request, id):
 def create_listing(request):
     if not request.user.is_authenticated:
         error_message = "You need to log in to access this page."
-        return HttpResponse(error_message, status=401)
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
 
     if request.method == "GET":
         allCategories = Category.objects.all()
@@ -281,6 +333,11 @@ def displayCategory(request):
     """
     Handles displaying items in a specific category.
     """
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     if request.method == "POST":
         # Get the category selected by the user
         formCategory = request.POST["category"]
@@ -297,6 +354,11 @@ def displayCategory(request):
             "category": allCategories
         })
 def my_listings(request):
+    if not request.user.is_authenticated:
+        error_message = "You need to log in to access this page."
+        return render(request, "auctions/error.html", {
+            "error": error_message,
+        })
     listings = Listing.objects.filter(owner=request.user)
     return render(request, "auctions/my_listings.html", {
         "listings": listings

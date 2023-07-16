@@ -1,0 +1,5 @@
+{% extends "market/layout.html" %}
+{% block body %}
+<p>{{error}}</p>
+Don't have an account? <a href="{% url 'market_register' %}">Register here.</a>
+{% endblock %}

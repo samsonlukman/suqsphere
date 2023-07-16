@@ -8,7 +8,7 @@
                 {% csrf_token %}
                 <div class="cat-border">
                     <!-- Display all categories as options in the dropdown menu -->
-                    <select class="form-control" name="category" id="category">
+                    <select name="category" id="category">
                         {% for cat in category %}
                         <option value="{{ cat }}">{{ cat }}</option>
                         {% endfor %}

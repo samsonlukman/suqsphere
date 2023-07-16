@@ -35,6 +35,7 @@
   {% endif %}
 
   {% for posts in page_post %}
+<section>
 <div class="container">
 <div class="card">
     <div class="card-body">
@@ -89,6 +90,10 @@
       {% include 'network/comments.html' %}
     </div>
 </div>
+</div>
+<br>
+</section>
+
   {% endfor %}
 
   <!-- Pagination for navigating through the posts -->
