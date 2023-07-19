@@ -243,6 +243,7 @@ def create_listing(request):
         price = request.POST["price"]
         category = request.POST["category"]
         currency = request.POST["currency"]
+        phone_number = request.POST["phone-number"]
         currentUser = request.user
 
         categoryData = MarketCategory.objects.get(categoryName=category)
@@ -257,6 +258,7 @@ def create_listing(request):
             category=categoryData,
             owner=currentUser,
             currency=currencyData,
+            phone_number=phone_number
         )
         newItem.save()
 

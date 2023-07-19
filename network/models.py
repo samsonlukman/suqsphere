@@ -13,6 +13,7 @@ class Post(models.Model):
     postContent = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     post_image = models.ImageField(upload_to='post_image/', null=True, blank=True)
+    
 
     def __str__(self):
         return f"{self.user} {self.postContent} {self.timestamp}"
@@ -153,6 +154,7 @@ class Market(models.Model):
     title = models.CharField(max_length=100)
     transaction_reference = models.CharField(max_length=100, default="aa")
     description = models.CharField(max_length=1000)
+    phone_number = models.CharField(max_length=15, default="Not Provided")
     currency = models.ForeignKey(MarketCurrency, on_delete=models.CASCADE, blank=True, null=True, related_name="market_currency")
     price = models.DecimalField(max_digits=10, decimal_places=5)
     isActive = models.BooleanField(default=True)

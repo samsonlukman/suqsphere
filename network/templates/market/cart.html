@@ -12,7 +12,7 @@
             <div class="container-fluid">
                 <div class="form-group">
                     <label for="currencyDropdown">Choose Currency</label>
-                    <select id="currencyDropdown" class="form-control">
+                    <select id="currencyDropdown" class="form-control" required>
                         <option value="" selected disabled>Select Currency</option>
                         {% for currency in flutterwaveCurrencies %}
                             <option value="{{ currency }}">{{ currency }}</option>
@@ -21,6 +21,12 @@
                 </div>
                 <div>
                     <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                     {% for currency, total_amount in amount.items %}
                         <ul>
                             <li>

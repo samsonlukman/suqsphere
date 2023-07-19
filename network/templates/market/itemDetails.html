@@ -46,6 +46,7 @@
     </div>
 
     <p>Owner: {{ listing.owner }}</p>
+    <p>Owners Contact: {{listing.phone_number}}</p>
     <p>Price: {{ listing.currency }}{{ listing.price|floatformat:2 }}</p>
 
     <hr>
@@ -63,7 +64,7 @@
         </div>
         <div class="form-group">
             <!-- Button to submit the new comment -->
-            <button type="submit" class="btn btn-success">Add</button>
+            <button type="submit" class="btn btn-success">Post</button>
         </div>
     </form>
     {% endif %}
