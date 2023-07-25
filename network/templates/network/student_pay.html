@@ -1,48 +1,79 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-<h2>Python</h2>
-<div>
-    <input id="student_name" name="first_name" placeholder="Enter name">
-    <input id="student_email" name="email" type="email" placeholder="Enter email"> 
-    <input id="student_phonenumber" name="phone_number" placeholder="Enter Phone Number">
-</div>
+<h2 style="text-align: center;">Tink-Tech Python Course Registration</h2>
 <hr>
-<button style="margin-bottom: 50px;" type="button" class="btn btn-primary" onclick="openPaymentModal()">Click to pay</button>
-
-<div id="paymentModal" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <button type="button" class="close" onclick="closePaymentModal()">&times;</button>
-            <div class="container-fluid">
-                <div class="form-group">
-                    <label for="currencyDropdown">Choose Currency</label>
-                    <select id="currencyDropdown" class="form-control" required>
-                        <option value="" selected disabled>Select Currency</option>
-                        {% for currency in flutterwaveCurrencies %}
-                            <option value="{{ currency }}">{{ currency }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+<div class="topfd_body">
+    <div class="container">
+        <h2>Tink-Tech Python Course Registration</h2>
+        <hr>
+        <form>
+            <div>
+                <input id="student_name" name="first_name" placeholder="Enter name">
+                <input id="student_email" name="email" type="email" placeholder="Enter email"> 
+                <input id="student_phonenumber" name="phone_number" placeholder="Enter Phone Number">
+            </div>
+            <hr>
+            <button type="button" class="btn btn-primary" onclick="openPaymentModal()">Click to pay</button>
+            You will receive your registration info in your provided email and phone number
+        </form>
+        <div id="paymentModal" class="modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <button type="button" class="close" onclick="closePaymentModal()">&times;</button>
+                    <div class="container-fluid">
+                        <div class="form-group">
+                            <p style="background-color: red;">Select the currency you are paying in, then, click on apply currency, then Pay Now</p>
+                            <label for="currencyDropdown">Choose Currency</label>
+                            <select id="currencyDropdown" class="form-control" required>
+                                <option value="" selected disabled>Select Currency</option>
+                                {% for currency in flutterwaveCurrencies %}
+                                    <option value="{{ currency }}">{{ currency }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <button onclick="updateFlutterwaveCurrency()" class="btn btn-primary">Apply Currency</button>
+                        </div>
+                        <br>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-                    
-                               
-                                <button type="button" class="btn btn-primary" onclick="makePayment()">Pay Now</button>
-                           
-                </div>
-                <br>
-                <br>
-            </div>
+    <div class="course_body">
+        <div class="container">
+            <h1 style="text-align: center;">Python Course Registration</h1>
+            <p>Registration is open until August 28, 2023. The class starts on September 1st, 2023 and runs for three months.
+                Early registration fee is $60 (Regular fee: $65).</p>
+            <p>Students will earn a certificate from Tink Techy and Harvard's CS50P certificate.</p>
+
+            <h2 style="text-align: center;">Course Details</h2>
+            <ul class="contents-list">
+                <li>Course Curriculum: Harvard's CS50p</li>
+                <li>Course Duration: 3 months</li>
+                <li>Fee: $65 (Early registration: $60)</li>
+                <li>Quizzes: Over 30 coding quizzes</li>
+                <li>Problem Sets: 9 challenging problem sets</li>
+                <li>Final Project: One final project</li>
+                <li>Python Topics Covered:
+                    <ul>
+                        <li>Loops</li>
+                        <li>Variables</li>
+                        <li>Functions</li>  
+                        <li>Exceptions</li>  
+                        <li>Regular Expressions</li>
+                        <li>Objected-Oriented Programming</li>
+                        <li>Libraries</li>
+                        <li>File I/O</li>
+                        <li>Unit Tests, Debugging, Et Cetera</li>
+                    </ul></li>
+            </ul>
         </div>
     </div>
-</div>
+</body>
 
 
     <script>
@@ -60,7 +91,7 @@
             const userName = student_name.value;
             const userPhone = student_phonenumber.value
             const symbol = money
-            const amount = 1
+            const amount = 60
             let otp;
 
             const selectedCurrency = currencyDropdown.value;
@@ -85,7 +116,7 @@
                         amount: convertedAmount,
                         currency: selectedCurrency,
                         payment_options: "card, banktransfer, ussd",
-                        redirect_url: "https://tinktechy.com/py_pay/" + tx_ref,
+                        redirect_url: "https://tinktechy.com/pay/" + tx_ref,
                         meta: {
                             consumer_id: "YOUR_CONSUMER_ID", // Replace "YOUR_CONSUMER_ID" with the actual value
                             consumer_mac: "92a3-912ba-1192a",
@@ -203,5 +234,99 @@
             modal.style.display = "none";
         }
     </script>
+<style>
+.top_body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    color: #007bff;
+}
+
+h2 {
+    margin-top: 20px;
+}
+
+p {
+    color: #333;
+}
+
+form {
+    margin-bottom: 50px;
+}
+
+form div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.btn {
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+}
+
+.contents-list li::before {
+    content: "✓";
+    margin-right: 10px;
+    color: #007bff;
+}
+
+.modal-dialog {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal .close {
+    align-self: flex-end;
+    cursor: pointer;
+}
+
+.course_body {
+    margin-top: 30px;
+}
+
+.contents-list {
+    list-style: none;
+    padding: 0;
+}
+
+.contents-list li {
+    margin-bottom: 10px;
+}
+
+</style>
 </div>
 {% endblock %}
