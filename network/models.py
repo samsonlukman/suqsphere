@@ -8,16 +8,6 @@ class User(AbstractUser):
     about = models.TextField(null=True, blank=True)
 
 
-class Student(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    phone_number = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="post_user")
     postContent = models.TextField(blank=True)

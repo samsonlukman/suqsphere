@@ -53,47 +53,21 @@ def index(request):
     })
 
 def python_course(request):
-    if request.method == "POST":
-        # If the request is a POST request, process the form data
-        first_name = request.POST["sfirst_name"]
-        last_name = request.POST["slast_name"]
-        email = request.POST["semail"]
-        phone_number = request.POST["sphone_number"]
-
-        # Create a new Student instance and save it to the database
-        python_student = Student(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number)
-        python_student.save()
-
-        # Redirect to a different page after saving the data
-        return redirect("python_pay") 
-
-    # If the request is a GET request or there is no form data submitted yet, render the form template
-    return render(request, "network/python_reg.html")
-
-def student_pay(request):
-    student = Student.objects.all()
-    print(student.first_name)
-    # Calculate the total amount for each currency in the cart
     currencies = [
         "AED", "ARS", "AUD", "BRL", "CAD", "CHF", "CZK", "ETB", "EUR", "GBP",
         "GHS", "ILS", "INR", "JPY", "KES", "MAD", "MUR", "MYR", "NGN", "NOK",
         "NZD", "PEN", "PLN", "RUB", "RWF", "SAR", "SEK", "SGD", "SLL", "TZS",
         "UGX", "USD", "XAF", "XOF", "ZAR", "ZMK", "ZMW", "MWK"
     ]
-
-    context = {
-        "student": student,
-        "flutterwaveCurrencies": currencies,
-        
-    }
-
-    # Render the cart page, passing in the items and amount to display
-    return render(request, "network/student_pay.html", context)
-
+    return render(request, "network/student_pay.html", {
+        "flutterwaveCurrencies": currencies
+    })
 
 def pay(request, tx_ref):
     trans_ref = request.GET.get("tx_ref")
     tx_ref = trans_ref
+
+
         # Display a success message to the user
     success_message = "Payment made successfully"
 
@@ -102,7 +76,6 @@ def pay(request, tx_ref):
         "success_message": success_message,
 
     })
-        
 
 @login_required
 def like_count(request):
@@ -111,8 +84,6 @@ def like_count(request):
         "posts": post
     })
 
-def terms(request):
-    return render(request, "network/terms.html")
 
 @login_required
 def profile(request, user_id):
@@ -554,6 +525,9 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+def terms(request):
+    return render(request, "network/terms.html")
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
