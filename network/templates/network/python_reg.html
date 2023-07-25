@@ -1,0 +1,59 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+
+    <h3>Register</h3>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <button style="margin-top: 20px;" type="button" class="btn btn-primary" onclick="openRegisterModal()">Click here to register</button>
+
+    <!-- Unique Register Modal -->
+    <div class="modal fade" id="registerModalUnique" tabindex="-1" aria-labelledby="registerModalUniqueLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalUniqueLabel">Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerFormUnique" action="{% url 'python_course' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input class="form-control" type="text" name="sfirst_name" placeholder="First Name: " required>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="text" name="slast_name" placeholder="Last Name: " required>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="email" name="semail" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" name="sphone_number" placeholder="Your Phone Number" required>
+                        </div>
+                        
+                        <input class="btn btn-primary" type="submit" value="Register">
+                        <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openRegisterModal() {
+            var modal = document.getElementById('registerModalUnique');
+            modal.classList.add('show');
+            modal.style.display = 'block';
+        }
+
+        function closeRegisterModal() {
+            var modal = document.getElementById('registerModalUnique');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        }
+    </script>
+
+{% endblock %}
