@@ -1,0 +1,19 @@
+<div style="z-index: 15000;" class="modal" id="group-share-modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 style="color: blue;" class="modal-title">Share to Group</h5>
+          <button type="button" class="close" data-dismiss="modal" onclick="closeModal('group-share-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            {% for group in groups_i_joined %}
+            <br>
+              <li>{{ group.name }} <button onclick="share({{ request.user.id }}, {{ group.id }}, {{ posts.id}})">Share</button></li>
+              
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>

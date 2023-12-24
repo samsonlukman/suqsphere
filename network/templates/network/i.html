@@ -1,0 +1,465 @@
+{% extends "network/layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% load my_filters %}
+{% block body %}
+
+{% include 'network/sidebar.html' %}
+<div class="content">
+  <div class="post">
+{% if user == userProfile %}
+<!-- My Groups Modal -->
+<div class="modal" id="my-groups-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 style="color: blue;" class="modal-title">My Groups</h5>
+        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('my-groups-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          {% for group in my_groups %}
+            <li><a style="color: blue" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
+              <form method="post" action="{% url 'delete_group' group.id %}">
+                {% csrf_token %}
+                <button class="btn btn-danger" type="submit">Delete Group</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Groups I Joined Modal -->
+<div class="modal" id="groups-i-joined-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 style="color: blue;" class="modal-title">Groups I Have Joined</h5>
+        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('groups-i-joined-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          {% for group in groups_i_joined %}
+            <li><a style="color: blue;" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
+              <form method="post" action="{% url 'exit_group' group.id %}">
+                {% csrf_token %}
+                <button class="btn btn-danger" type="submit">Exit Group</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function closeModal(modalId) {
+    var modal = document.getElementById(modalId);
+    modal.style.display = 'none'; /* Hide the modal */
+  }
+</script>
+{% endif %}
+
+<div>
+  <div class="row mb-3">
+    <div class="col-6 text-center">
+      <h5 class="text-black">Following: {{ following.count }}</h5>
+    </div>
+    <div class="col-6 text-center">
+      <h5 class="text-black">Followers: {{ follower.count }}</h5>
+    </div>
+  </div>
+  {% if user.is_authenticated %}
+    {% if user != userProfile %}
+      {% if isFollowing %}
+      <form action="{% url 'unfollow' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="followUser" value="{{ userProfile }}" />
+        <button class="btn btn-primary w-100" style="background-color: #dc3545; border-color: #dc3545;">
+          <i class="fas fa-user-minus"></i> Unfollow
+        </button>
+      </form>
+    {% else %}
+      <form action="{% url 'follow' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="followUser" value="{{ userProfile }}" />
+        <button class="btn btn-primary w-100">
+          <i class="fas fa-user-plus"></i> Follow
+        </button>
+      </form>
+      {% endif %}
+        {% endif %}
+          {% endif %}
+</div>
+
+
+<!-- Modal -->
+<div id="editBioModal" class="custom-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Bio</h5>
+        <button type="button" class="close" onclick="closeEditBioModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'edit_profile' user_id=user.id %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="firstNameInput">First Name:</label>
+            <input type="text" class="form-control" id="firstNameInput" name="1" placeholder="Enter your first name" value="{{ user.first_name }}">
+          </div>
+          <div class="form-group">
+            <label for="lastNameInput">Last Name:</label>
+            <input type="text" class="form-control" id="lastNameInput" name="2" placeholder="Enter your last name" value="{{ user.last_name }}">
+          </div>
+          <div class="form-group">
+            <label for="aboutTextarea">About:</label>
+            <textarea class="form-control" id="aboutTextarea" name="3" rows="3" placeholder="Tell us about yourself">{{ user.about }}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="emailInput">Email:</label>
+            <input type="email" class="form-control" id="emailInput" name="4" value="{{ user.email }}" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label for="phoneInput">Phone Number:</label>
+            <input type="tel" class="form-control" id="phoneInput" name="5" value="{{ user.phone_number }}" placeholder="Enter your phone number">
+          </div>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeEditBioModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-modal {
+    display: none;
+  }
+</style>
+
+<script>
+
+function openMyGroupsModal() {
+    // Initialize the modal
+    var modal = document.getElementById('my-groups-modal');
+    modal.style.display = 'block';
+  }
+
+  function openGroupsIJoinedModal() {
+    // Initialize the modal
+    var modal = document.getElementById('groups-i-joined-modal');
+    modal.style.display = 'block';
+  }
+  function openEditBioModal() {
+    var modal = document.getElementById('editBioModal');
+    modal.style.display = 'block';
+  }
+
+  function closeEditBioModal() {
+    var modal = document.getElementById('editBioModal');
+    modal.style.display = 'none';
+  }
+</script>
+
+<div class="">
+<div class="post">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex align-items-center">
+        {% if userProfile.profile_pics %}
+          <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
+          {% else %} 
+          <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
+          {% endif %}
+        <div class="ml-3">
+          <h4 class="">
+            {{ userProfile.first_name }} {{ userProfile.last_name }}
+          </h4>
+          <p class="mb-0">
+           Username: {{ userProfile.username }}
+          </p>
+          <br>
+          
+          <!-- Button to open the modal -->
+{% if user == userProfile %}
+<button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
+{% endif %}
+        </div>
+      </div>
+      <hr>
+      <div>
+        <p>
+           Email: {{ userProfile.email }}
+          </p>
+          <p class="">
+            Phone Number: {{ userProfile.phone_number }}
+          </p>
+        {% if userProfile.about %}
+        <p>{{ userProfile.about|urlize }}</p>
+      {% else %}
+        <p>About: ...</p>
+      {% endif %}
+      
+        {% if user == userProfile %}
+        <br>
+        <button id="popit" onclick="pop()" class="btn-primary">Groups Info</button>
+        <br>
+        <div>
+<button href="#" id="my-groups-btn" class="btn btn-primary">My Groups</button>
+<br>
+<button href="#" id="groups-i-joined-btn" class="btn btn-primary">Joined Groups</button>
+<br>
+<button onclick="navigateToAllGroups()" class="btn btn-primary" id="all-btn">Check other groups</button>
+        </div>
+</div>
+{% endif %}
+        
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
+
+<div id="posts">
+  {% for posts in page_post %}
+  <br>
+  <section>
+    <div>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            {% if posts.user.profile_pics %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+              </a>
+            {% else %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+              </a>
+            {% endif %}
+            <div class="ml-3">
+              <h5 class="card-title mb-1">
+                <!-- Display a link to the user's profile -->
+                <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
+              </h5>
+              <p class="mb-0">
+                <p>@{{posts.user.username}}</p>
+              </p>
+            </div>
+          </div>
+          <br>
+          <br>
+          <div class="card-text" id="content_{{ posts.id }}">
+            {% for paragraph in posts.postContent|split_paragraphs|slice:":5" %} {# Limit to 5 paragraphs #}
+              <p>{{ paragraph|urlize }}</p>
+            {% endfor %}
+            {% if posts.postContent|split_paragraphs|length >= 5 %}
+              <a href="{% url 'post_content' post_id=posts.id %}">
+                <p class="read-more" data-post="{{ posts.id }}">Read full content >>></p>
+              </a>
+            {% endif %}
+            {% if posts.post_images.all %}
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+              <ol class="carousel-indicators">
+                {% for image in posts.post_images.all %}
+                  <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                {% endfor %}
+              </ol>
+              <div class="carousel-inner">
+                {% for image in posts.post_images.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img class="d-block w-100" src="{{ image.post_image.url }}" alt="Post Image">
+                  </div>
+                {% endfor %}
+              </div>
+              <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+            {% endif %}
+
+        </div>
+        <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
+ {% if request.user == posts.user %}
+        <button class="delete-post" data-delete-post-id="{{ posts.id }}">Delete</button>
+        {% endif %}
+        <!-- Display the number of likes for the post -->
+        {% include 'network/likes.html' %}
+        <hr style="border-color: black;">
+
+        <!--Urlize comments, read more comments, and display comments-->
+        {% include 'network/comments.html' %}
+      </div>
+    </div>
+  </div>
+  </section>
+{% endfor %}
+</div>
+</div>
+</div>
+
+
+{% include 'network/newpost-modal.html' %}
+  <style>
+    #my-groups-btn {
+      display: none;
+    }
+  
+    #groups-i-joined-btn {
+      display: none;
+    }
+  
+    #all-btn {
+      display: none;
+    }
+
+    
+  </style>
+  
+  <script>
+  myGroups = document.getElementById('my-groups-btn');
+  joined = document.getElementById('groups-i-joined-btn');
+  aller = document.getElementById('all-btn');
+  
+   function navigateToAllGroups() {
+    window.location.href = '{% url "all_groups" %}';
+  }
+
+  function pop() {
+    myGroups.style.display = 'block';
+    joined.style.display = 'block';
+    aller.style.display = 'block';
+  }
+    
+    $(document).ready(function() {
+      // Initialize the modals
+      var myGroupsModal = document.getElementById('my-groups-modal');
+      var groupsIJoinedModal = document.getElementById('groups-i-joined-modal');
+  
+      myGroupsModal.style.display = 'none';
+      groupsIJoinedModal.style.display = 'none';
+  
+      // Open the modal when the button is clicked
+      $('#my-groups-btn').click(function() {
+        myGroupsModal.style.display = 'none';
+      });
+  
+      $('#groups-i-joined-btn').click(function() {
+        groupsIJoinedModal.style.display = 'none';
+      });
+    });
+  
+    $(document).ready(function() {
+    // Initialize the modals
+    var myGroupsModal = document.getElementById('my-groups-modal');
+    var groupsIJoinedModal = document.getElementById('groups-i-joined-modal');
+  
+    myGroupsModal.style.display = 'none';
+    groupsIJoinedModal.style.display = 'none';
+  
+    // Open the modal when the button is clicked
+    $('#my-groups-btn').click(function() {
+      myGroupsModal.style.display = 'block';
+    });
+  
+    $('#groups-i-joined-btn').click(function() {
+      groupsIJoinedModal.style.display = 'block';
+    });
+  
+    
+  });
+  
+  </script>
+  <style>
+  /* Additional CSS for mobile responsiveness */
+  #my-groups-btn,
+  #groups-i-joined-btn,
+  #all-btn {
+    display: none;
+    margin-top: 10px;
+  }
+
+  #popit {
+    margin-top: 10px;
+  }
+
+  
+</style>
+  
+  {% include "network/share.html" %}
+<!-- Add pagination links -->
+<div class="pagination">
+  <span class="step-links">
+    {% if page_post.has_previous %}
+      <a class="btn btn-primary" href="?page=1">&laquo; first</a>
+      <a class="btn btn-primary" href="?page={{ page_post.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current-page">
+      Page {{ page_post.number }} of {{ page_post.paginator.num_pages }}.
+    </span>
+
+    {% if page_post.has_next %}
+      <a class="btn btn-primary" href="?page={{ page_post.next_page_number }}">next</a>
+      <a class="btn btn-primary" href="?page={{ page_post.paginator.num_pages }}">last &raquo;</a>
+    {% endif %}
+  </span>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const deletePostButtons = document.querySelectorAll('.delete-post');
+
+    deletePostButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const post_id = button.getAttribute('data-delete-post-id');
+
+        fetch(`/post/${post_id}/delete/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // post deleted successfully
+            const postElement = button.parentElement;
+            if (postElement) {
+              postElement.remove();
+            }
+          } else {
+            // Display error message (data.message) if deletion was not successful
+            console.log(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('An error occurred:', error);
+        });
+      });
+    });
+  });
+
+
+</script>
+
+
+  {% endblock %}

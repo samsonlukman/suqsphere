@@ -1,0 +1,59 @@
+{% extends "network/layout.html" %}
+{% block body %}
+{% load static %}
+
+
+<div class="container">
+{% include 'network/sidebar.html' %}
+
+<div class="content">
+    <div class="post">
+        <div class="general-border announcement-button">
+            <div style="background-color: white" class="card">
+                <div class="card-body">
+                    <h1> Welcome to the General Library</h1>
+                    <hr>
+                    <div class="library-upload">
+                        <p>Upload Document</p>
+                        <form method="post" enctype="multipart/form-data" action="{% url 'upload_document' %}">
+                            {% csrf_token %}
+                            {{ doc_form.as_p }}
+                            <button type="submit">Upload</button>
+                        </form>
+
+                        <p>Upload Video</p>
+                        <form method="post" enctype="multipart/form-data" action="{% url 'upload_video' %}">
+                            {% csrf_token %}
+                            {{ vid_form.as_p }}
+                            <button type="submit">Upload</button>
+                        </form>
+                    </div>
+
+                    <hr>
+                    <h2>Categories:</h2>
+                    <br>
+                    <div class="category-list">
+                        {% for category in categories %}
+                            <div class="category-item">
+                                <img src="{{ category.libraryimage_set.first.post_image.url }}" class="rounded-circle" width="40" height="40" alt="{{ category.categoryName }} Image">
+                                <a class="cat-text" href="{% url 'category_detail' category_name=category.categoryName %}">{{ category.categoryName }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+</div>
+<style>
+    .share-thought {
+      visibility: hidden;
+    }
+    
+  </style>
+{% endblock %}

@@ -2,60 +2,61 @@
 
 {% block body %}
 
-    <h3>Register</h3>
 
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
-
-    <button style="margin-top: 20px;" type="button" class="btn btn-primary" onclick="openRegisterModal()">Click here to register</button>
+<div class="intro-container">
+    <div class="circle-container">
+      <img src="media/post_image/chatlogo.jpg" alt="Chat Logo" class="circle-image">
+    </div>
+    <div class="intro-text-container">
+      <p style="font-weight: 500; font-size: large; font-family: 'Times New Roman', Times, serif;">Don't have an account?</p>
+      <button class="signup-button" onclick="openRegisterModal()">Sign-up</button>
+      <br>
+      <div class="login-text-space">
+      <p style="font-weight: 500; font-size: large; font-family: 'Times New Roman', Times, serif;">Already have an account?</p>
+      <button class="login-button"><a href="{% url 'network_login' %}">Login</a></button>
+    </div>
+    </div>
+  </div>
+  
 
     <!-- Unique Register Modal -->
-    <div class="modal fade" id="registerModalUnique" tabindex="-1" aria-labelledby="registerModalUniqueLabel" aria-hidden="true">
+    <div style="color: black;" class="modal fade" id="registerModalUnique" tabindex="-1" aria-labelledby="registerModalUniqueLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="registerModalUniqueLabel">Register</h5>
+                    {% if form.errors %}
+        <div class="alert">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="registerFormUnique" action="{% url 'register' %}" method="post" enctype="multipart/form-data">
+                    <form id="registerFormUnique" action="{% url 'network_register' %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <div class="form-group">
-                            <input class="form-control" type="text" name="first_name" placeholder="First Name: " required>
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="text" name="last_name" placeholder="Last Name: " required>
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" autofocus type="text" name="username" placeholder="Username" required>
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="email" name="email" placeholder="Email Address" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="image">Select Profile Picture</label>
-                            <input type="file" name="profile_pic" class="form-control" accept="image/*">
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="password" name="password" placeholder="Password" required>
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password" required>
-                        </div>
+                        {{ form.as_p }}
                         <input class="btn btn-primary" type="submit" value="Register">
                         <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <p>Already have an account? <a href="{% url 'login' %}">Log In here.</a></p>
-                </div>
-                <div class="modal-footer">
-                    <p>By registering, you agree to our <a href="{% url 'terms' %}">terms and policy.</a></p>
-                </div>
             </div>
         </div>
     </div>
+    <footer>
+        <div class="intro-footer-buttons">
+          <button class="intro-footer-button">About Us</button>
+          <button class="intro-footer-button">Terms and Conditions</button>
+          <button class="intro-footer-button">Privacy</button>
+          <button class="intro-footer-button">Contact Us</button>
+        </div>
+      </footer>
+      
+
 
     <script>
         function openRegisterModal() {

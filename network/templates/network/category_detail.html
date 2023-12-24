@@ -1,0 +1,57 @@
+{% extends "network/layout.html" %}
+{% block body %}
+
+<div class="container">
+{% include 'network/sidebar.html' %}
+
+<div class="content" style="color: black;">
+<div class="post">
+<div id="category-border" class="announcement-button">
+<div class="card-body">
+<h3>{{category_name}} Category</h3>
+
+        <hr style="border-color: black;">
+        <h2>Documents</h2>
+        {% for document in documents %}
+            <div class="document-border">
+                <p>Uploaded by {{ document.uploader.username }} on {{ document.upload_date }}</p>
+                <a href="{% url 'view_document' document.id %}">TITLE: {{document.title}}</a>
+                <br>
+                <p>Views: {{ document.views }}</p>
+                    <a href="{% url 'add_to_favorites' item_id=document.id item_type='document' %}"><span> Add to Favorites</span></a>
+                    <button class="btn-primary" onclick="shareFile('https:\//mintechy.pythonanywhere.com{{ document.file.url }}')">Share</button>
+           
+            </div>
+        {% endfor %} 
+
+        <h2>Videos</h2>
+        {% for video in videos %}
+        <a href="{% url 'view_video' video.id %}">
+            <div class="video-border">
+                <p>{{ video.title }} - {{ video.uploader.username }} {{ video.upload_date }}</p>
+                
+                <video width="400" height="240" controls>
+                    <source src="{{ video.file.url }}" type="video/mp4">
+                    <source src="{{ video.file.webm }}" type="video/webm">
+                    <source src="{{ video.file.ogg }}" type="video/ogg">
+                    Your browser does not support the video tag.
+                </video>
+            </a>
+                <p>Views: {{ video.views }}</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_to_favorites' item_id=video.id item_type='video' %}"><span>Add to Favorites</span></a>
+                    <button class="btn-primary" onclick="shareFiles('https:\//mintechy.pythonanywhere.com{{ video.file.url }}')">Share</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<!-- Modal for Sharing -->
+{% include "network/share.html" %}
+</div>
+<style>
+    .share-thought {
+      visibility: hidden;
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "network/layout.html" %}
+{% load custom_tags %}
+{% load my_filters %}
+{% load static %}
+{% block body %}
+
+
+{% if user.is_authenticated %}
+<!-- Check if the user is authenticated -->
+<div class="input-group mb-3" id="create-post-field-container">
+  {% if user.profile_pics %}
+    <a href="{% url 'profile' user_id=user.id %}">
+      <img src="{{ user.profile_pics.url }}" class="rounded-circle" width="70" height="70"> 
+    </a> 
+  {% else %}
+    <a href="{% url 'profile' user_id=user.id %}">
+      <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70"> 
+    </a> 
+  {% endif %}
+  <input style="margin-top: 10px; height: 50px; border-radius: 1rem;" type="text" id="create-post-field" placeholder="Share a thought" onclick="openModal()">
+</div>
+
+<!-- Modal -->
+<div id="postModal" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <form action="{% url 'newPost' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <textarea style="height: 300px;" id="new-post" class="form-control" name="post_content" placeholder="Share a thought..." required></textarea>
+        </div>
+        <div class="form-group">
+          <input type="file" name="post_image[]" class="form-control-file" accept="image/*" multiple>
+        </div>
+        <div class="text-right">
+          <button id="post-btn" type="submit" class="btn btn-primary">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div id="posts">
+  {% for posts in page_post %}
+  <section>
+    <div class="container">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            {% if posts.user.profile_pics %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+              </a>
+            {% else %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+              </a>
+            {% endif %}
+            <div class="ml-3">
+              <h5 class="card-title mb-1">
+                <!-- Display a link to the user's profile -->
+                <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
+              </h5>
+              <p class="mb-0">
+                <p>@{{posts.user.username}}</p>
+              </p>
+            </div>
+          </div>
+          <br>
+          <br>
+          <div class="card-text" id="content_{{ posts.id }}">
+            {% for paragraph in posts.postContent|split_paragraphs|slice:":5" %} {# Limit to 5 paragraphs #}
+              <p>{{ paragraph|urlize }}</p>
+            {% endfor %}
+            {% if posts.postContent|split_paragraphs|length >= 5 %}
+              <a href="{% url 'post_content' post_id=posts.id %}">
+                <p class="read-more" data-post="{{ posts.id }}">Read full content >>></p>
+              </a>
+            {% endif %}
+          
+           {% if posts.post_images.all %}
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+              <ol class="carousel-indicators">
+                {% for image in posts.post_images.all %}
+                  <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                {% endfor %}
+              </ol>
+              <div class="carousel-inner">
+                {% for image in posts.post_images.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img class="d-block w-100" src="{{ image.post_image.url }}" alt="Post Image">
+                  </div>
+                {% endfor %}
+              </div>
+              <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+            {% endif %}
+            
+            {% if request.user == posts.user %}
+        <button class="delete-post" data-delete-post-id="{{ posts.id }}">Delete</button>
+        {% endif %}
+          
+
+
+
+          
+        </div>
+        <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
+        
+        <!-- Display the number of likes for the post -->
+        {% include 'network/likes.html' %}
+        <hr style="border-color: #FFCF70;">
+        
+        <!--Urlize comments, read more comments, and display comments-->
+        {% include 'network/comments.html' %}
+        
+      </div>
+    </div>
+  </div>
+  </section>
+{% endfor %}
+</div>
+
+{% include "network/share.html" %}
+<script src="{% static 'network/post_scroll.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const deletePostButtons = document.querySelectorAll('.delete-post');
+
+    deletePostButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const post_id = button.getAttribute('data-delete-post-id');
+
+        fetch(`/post/${post_id}/delete/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // post deleted successfully
+            const postElement = button.parentElement;
+            if (postElement) {
+              postElement.remove();
+            }
+          } else {
+            // Display error message (data.message) if deletion was not successful
+            console.log(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('An error occurred:', error);
+        });
+      });
+    });
+  });
+
+
+</script>
+{% endblock %}

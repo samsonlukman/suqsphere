@@ -1,0 +1,36 @@
+{% extends "network/layout.html" %}
+{% load custom_tags %}
+{% load my_filters %}
+{% load static %}
+{% block body %}
+{% include 'network/sidebar.html' %}
+<div style="margin-top: 20px; z-index: 1000;" class="container">
+    <div class="row">
+        {% for group in groups_not_belonged %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <a href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
+                    </h3>
+                    <p class="crd-text">
+                        {% if group.description %}
+                        {% for paragraph in group.description|split_paragraphs %}
+                            {{ paragraph|urlize|safe }}
+                        {% endfor %}
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'join_group' group_id=group.id %}" class="btn btn-primary">Join Group</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .index-container{
+        visibility: hidden;
+    }
+</style>
+{% endblock %}

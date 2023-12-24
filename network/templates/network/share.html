@@ -1,0 +1,77 @@
+<div id="shareModals" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('shareModals')">&times;</button>
+        <h3 style="color: black;">Share File</h3>
+        <button onclick="copyLink()">Copy Link</button>
+        <hr>
+    
+        <div id="linkCopiedAlert" style="display: none;">Link Copied to Clipboard!</div>
+       
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="shareModal" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('shareModal')">&times;</button>
+        <h3 style="color: black;">Share File</h3>
+        <button onclick="copyLink()">Copy Link</button>
+        <hr>
+        <button onclick="openModal('friend-modal')">Share With Friend</button>
+        <hr>
+        <button onclick="openModal('group-share-modal')">Share With Group</button>
+        <div id="linkCopiedAlert" style="display: none;">Link Copied to Clipboard!</div>
+       
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="z-index: 15000;" class="modal" id="group-share-modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 style="color: blue;" class="modal-title">Share to Group</h5>
+          <button type="button" class="close" data-dismiss="modal" onclick="closeModal('group-share-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            {% for group in groups_i_joined %}
+            <br>
+              <li>{{ group.name }} <button onclick="groupShare({{ group.id }})">Share</button></li>
+              
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  <div style="z-index: 15000;" class="modal" id="friend-modal">
+    <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 style="color: blue;" class="modal-title">Friends</h5>
+        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('friend-modal')">&times;</button>
+        </div>
+       
+       
+        <div class="modal-body">
+        {% for friend in friends %}
+        <ul>
+          <li>
+        {{friend}}<button onclick="friendShare({{ friend.id }})">Share</button>
+      </li>
+        </ul>
+        {% endfor %}
+        </div>
+    </div>
+    </div>
+</div>

@@ -61,22 +61,25 @@ function closesModal(postId) {
   modal.style.display = 'none'; /* Hide the modal */
 }
 
-function openModal() {
-  var modal = document.getElementById('postModal');
-  var createPostFieldContainer = document.getElementById('create-post-field-container');
-  modal.style.display = 'block'; /* Show the modal */
-  createPostFieldContainer.style.display = 'none';
+
+function openModal(modalId) {
+  // Close any open modals (if needed)
+  closeModal();
+
+  // Open the specified modal
+  const modal = document.getElementById(modalId);
+  if (modal) {
+      modal.style.display = "block";
+  }
 }
 
 function closeModal() {
-  var modal = document.getElementById('postModal');
-  var createPostFieldContainer = document.getElementById('create-post-field-container');
-  modal.style.display = 'none'; /* Hide the modal */
-  createPostFieldContainer.style.display = 'block';
+  // Close all modals
+  const modals = document.querySelectorAll(".modal");
+  modals.forEach((modal) => {
+      modal.style.display = "none";
+  });
 }
-
-
-
 
 
 
@@ -101,9 +104,20 @@ mainButton.addEventListener('mousedown', () => {
 
 
 
+function showColumn(columnId) {
+  const column = document.getElementById(columnId);
+  if (column.style.display === 'block') {
+    column.style.display = 'none';
+  } else {
+    column.style.display = 'block';
+  }
+}
+    
+document.getElementById('shareId').addEventListener('click', () => withFriend());
 
-
-
+   function withFriend(){
+    console.log("HI")
+   }
 // This function gets the value of the cookie with the specified name
 function getCookie(name){
             const value = `; ${document.cookie}`;
@@ -111,3 +125,4 @@ function getCookie(name){
             if(parts.length == 2) return parts.pop().split(';').shift();
         }
 
+      

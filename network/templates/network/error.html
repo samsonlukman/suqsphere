@@ -1,0 +1,25 @@
+{% extends "network/layout.html" %} 
+{% block body %}
+  <div class="container" style="margin-top: 80px;">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1 class="display-4">Oops! Something went wrong.</h1>
+        <p class="lead">We encountered an error while processing your request.</p>
+        <p>Please try again later or contact support for assistance.</p>
+        <p><a href="{% url 'index' %}" class="btn btn-primary">Go to Home</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <p>Already have an account? <a href="{% url 'network_login' %}">Log In here.</a></p>
+
+<p>Don't have an account? <a href="{% url 'network_register' %}">Register here.</a></p>
+</div>
+  <script>
+    // JavaScript alert to display an error message
+    window.onload = function() {
+      alert('Oops! Something went wrong. Please try again later or contact support for assistance.');
+    };
+  </script>
+
+{% endblock %}

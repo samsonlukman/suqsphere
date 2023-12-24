@@ -1,0 +1,72 @@
+{% extends "network/layout.html" %}
+{% block body %}
+{% load static %}
+
+<span>{% include 'network/open-sidebar.html' %}</span>
+<div class="container">
+<h1>Forum</h1>
+
+
+
+<div style="margin-top: 10px;" class="content">
+    <div class="post">
+        <div id="posts">
+          <h3>
+            <a href="{% url 'create_topic' %}">Create New Topic</a>
+          </h3>
+            {% for topic in page_topics %}
+            <section>
+                <br>
+                <div class="card" style="color: black;">
+                    <div class="card-body">
+                        <strong><a class="card-title" href="{% url 'view_topic' topic.id %}">{{ topic.title }}</a></strong>
+                        <div class="topic-details">
+                            <small>Created by {{ topic.creator.username }} on {{ topic.created_at }}</small>
+                        </div>
+                        <br>
+                        {% if topic.forum_topic_post_images.exists %}
+                        <div class="image-container">
+                            {% for image in topic.forum_topic_post_images.all %}
+                            {% if forloop.first %}
+                            <br>
+                            <img src="{{ image.post_image.url }}" class="img-fluid desktop-image" alt="Topic Image">
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+<div class="pagination">
+    <span class="step-links">
+        {% if page_topics.has_previous %}
+        <a class="btn btn-primary" href="?page=1"> <<<< </a>
+        <a class="btn btn-primary" href="?page={{ page_topics.previous_page_number }}">&raquo;</a>
+        {% endif %}
+        
+        {% if page_topics.has_next %}
+        <a class="btn btn-primary" href="?page={{ page_topics.next_page_number }}">&laquo;</a>
+        <a class="btn btn-primary" href="?page={{ page_topics.paginator.num_pages }}">>>>></a>
+        {% endif %}
+    </span>
+  </div>
+</div>
+
+
+<style>
+    .topic-details {
+        margin-top: 10px;
+    }
+
+    .head-shot,
+    .index-container {
+      visibility: hidden;
+    }
+</style>
+
+{% endblock %}

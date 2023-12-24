@@ -1,0 +1,80 @@
+{% extends "network/layout.html" %}
+{% load custom_tags %}
+{% load my_filters %}
+{% load static %}
+{% block body %}
+{% include 'network/open-sidebar.html' %}
+
+<div class="container">
+<div class="topic-card">
+  <div class="card-body">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <h1>{{ topic.title }}</h1>
+      
+      <p>Created by <a href="{% url 'profile' user_id=topic.creator.id %}">{{ topic.creator.username }}</a> on {{ topic.created_at }}</p>
+    </div>
+      {% if topic.forum_topic_post_images.exists %}
+      <hr>
+        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+          <ol class="carousel-indicators">
+            {% for image in topic.forum_topic_post_images.all %}
+              <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+            {% endfor %}
+          </ol>
+          <div class="carousel-inner">
+            {% for image in topic.forum_topic_post_images.all %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img class="d-block w-100" src="{{ image.post_image.url }}" alt="Post Image">
+              </div>
+            {% endfor %}
+          </div>
+          <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+          </a>
+        </div>
+      {% endif %}
+
+      
+    </div>
+    <hr>
+    {% for post in posts %}
+    <div class="container">
+      <div class="card">
+        <div class="card-body">
+          <div class="align-items-center">
+            {% for paragraph in post.content|split_paragraphs %}
+              <p>{{ paragraph|urlize }}</p>
+            {% endfor %}
+
+            <p>Posted by <a href="{% url 'profile' user_id=post.creator.id %}">{{ post.creator.username }}</a> on {{ post.created_at }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <hr>
+    <form method="post" action="{% url 'add_forum_post' topic_id=topic.id %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <span class="comment-field">
+          <textarea type="text" id="new-comment" name="forum_post_content" class="form-control rounded-0 shadow-none" rows="3" placeholder="Write a comment..."></textarea>
+        </span>
+      </div>
+
+      <span class="btn-comment">
+        <button class="submit-button" type="submit" id="comment-btn">
+          Comment
+        </button>
+      </span>
+    </form>
+    <a href="{% url 'forum' %}">Back to Forum</a>
+  </div>
+</div>
+</div>
+
+{% endblock %}

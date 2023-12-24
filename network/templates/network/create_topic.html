@@ -1,0 +1,26 @@
+<!-- forum/create_topic.html -->
+{% extends "network/layout.html" %}
+{% block body %}
+
+
+<div class="container">
+  <h1>Create New Topic</h1>
+  <br>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="">
+    
+    <label for="title">Title:</label>
+    <input type="text" name="title" required><br>
+    <textarea style="height: 300px; width: 500px;" name="post_forum_content" placeholder="Write new topic content..." required></textarea><br>
+    <div class="form-group">
+      <input type="file" name="forum_image[]" class="form-control-file" accept="image/*" multiple>
+    </div>
+    <button type="submit">Create Topic</button>
+  
+  </form>
+  <a href="{% url 'forum' %}">Back to Forum</a>
+</div>
+</div>
+
+{% endblock %}

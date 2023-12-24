@@ -1,0 +1,29 @@
+{% extends 'network/layout.html' %}
+
+{% block body %}
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <div class="align-items-center">
+  <h1>My Groups</h1>
+  {% if groups %}
+    <ul>
+      {% for group in groups %}
+      <br>
+        <li>
+          <a style="color: white;" href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
+          <form method="post" action="{% url 'delete_group' group.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No groups created by you.</p>
+  {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

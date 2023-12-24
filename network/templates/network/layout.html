@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}Social Network{% endblock %}</title>
+    <title>{% block title %}SuqSphere{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -14,58 +14,130 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
         integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
         crossorigin="anonymous"></script>
-    <script src="https://checkout.flutterwave.com/v3.js"></script>
-    <script src="https://api.flutterwave.com/v3/otps"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="{% static '/network/like.js' %}"></script>
+    <script src="{% static '/network/share.js' %}"></script>
     <link rel="icon" type="image/png" href="{% static 'network/favicon.png' %}">
 
-    
 </head>
 
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}">iNetwork</a>
-
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-            
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Actions
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        {% if user.is_authenticated %}
-                        <a class="dropdown-item" href="{% url 'profile' user_id=user.id %}"><strong>{{ user.username }}</strong></a>
-                        {% endif %}
-                        <a class="dropdown-item" href="{% url 'index' %}">All Posts</a>
-                        {% if user.is_authenticated %}
-                        <a class="dropdown-item" href="{% url 'following' %}">Following</a>
-                        <a class="dropdown-item" href="{% url 'auctions' %}">Auctions</a>
-                        <a class="dropdown-item" href="{% url 'market' %}">Market</a>
-                        <a class="dropdown-item" href="{% url 'network_logout' %}">Log Out</a>
-                        {% else %}
-                        <a class="dropdown-item" href="{% url 'network_login' %}">Log In</a>
-                        <a class="dropdown-item" href="{% url 'network_register' %}">Register</a>
-                        {% endif %}
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
+<body id="body">
+    {% if user.is_authenticated %}
+    <button id="menu-link" class="rotated-text">Open Menu</button>
+    {% endif %}
     <div class="body">
         {% block body %}{% endblock %}
     </div>
+</div>
+
+<script>
+    const body = document.getElementById('body');
+const toggleSwitch = document.getElementById('toggleSwitch');
+const headShot = document.getElementById('head-shot');
+const cards = document.querySelectorAll('.card'); // Select all elements with class "card"
+const listGroups = document.querySelectorAll('.list-group-item'); // Select all elements with class "list-group"
+const hrElements = document.querySelectorAll('hr'); // Select all <hr> elements
+const modals = document.querySelectorAll('.modal'); // Select all elements with class "modal"
+
+function toggleBackgroundColor() {
+    if (toggleSwitch.checked) {
+        // Set background color to black
+        const newBackgroundColor = 'black';
+        const newTextColor = 'white';
+        
+        body.style.backgroundColor = newBackgroundColor;
+        body.style.color = newTextColor;
+        headShot.style.backgroundColor = newBackgroundColor;
+        headShot.style.color = newTextColor;
+
+        // Apply styles to all elements with class "card"
+        cards.forEach((card) => {
+            card.style.backgroundColor = newBackgroundColor;
+            card.style.color = newTextColor;
+            card.style.borderColor = newTextColor; // Set border color to white
+        });
+
+        // Apply styles to all elements with class "list-group"
+        listGroups.forEach((listGroup) => {
+            listGroup.style.backgroundColor = newBackgroundColor;
+            listGroup.style.color = newTextColor;
+        });
+
+        // Apply styles to all <hr> elements
+        hrElements.forEach((hr) => {
+            hr.style.borderColor = newTextColor; // Change hr border color to white
+        });
+
+        // Apply styles to all elements with class "modal"
+        modals.forEach((modal) => {
+            modal.style.backgroundColor = newBackgroundColor;
+            modal.style.color = newTextColor;
+        });
+
+        localStorage.setItem('backgroundColor', newBackgroundColor);
+    } else {
+        // Set background color to white
+        const newBackgroundColor = 'white';
+        const newTextColor = 'black';
+
+        body.style.backgroundColor = newBackgroundColor;
+        body.style.color = newTextColor;
+        headShot.style.backgroundColor = newBackgroundColor;
+        headShot.style.color = newTextColor;
+
+        // Apply styles to all elements with class "card"
+        cards.forEach((card) => {
+            card.style.backgroundColor = newBackgroundColor;
+            card.style.color = newTextColor;
+            card.style.borderColor = newTextColor; // Set border color to black
+        });
+
+        // Apply styles to all elements with class "list-group"
+        listGroups.forEach((listGroup) => {
+            listGroup.style.backgroundColor = newBackgroundColor;
+            listGroup.style.color = newTextColor;
+        });
+
+        // Apply styles to all <hr> elements
+        hrElements.forEach((hr) => {
+            hr.style.borderColor = newTextColor; // Change hr border color to black
+        });
+
+        // Apply styles to all elements with class "modal"
+        modals.forEach((modal) => {
+            modal.style.backgroundColor = newBackgroundColor;
+            modal.style.color = newTextColor;
+        });
+
+        localStorage.setItem('backgroundColor', newBackgroundColor);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedBackgroundColor = localStorage.getItem('backgroundColor');
+
+    if (savedBackgroundColor === 'black') {
+        toggleSwitch.checked = true;
+    }
+    
+    toggleBackgroundColor(); // Call the function to apply initial styles
+
+    toggleSwitch.addEventListener('change', toggleBackgroundColor);
+});
+
+
+    
+        const menuLink = document.querySelector('#menu-link');
+        const sidebar = document.getElementById('sidebar');
+
+        menuLink.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    
+</script>
 </body>
 
 </html>

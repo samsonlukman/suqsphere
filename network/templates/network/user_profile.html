@@ -1,9 +1,13 @@
 {% extends "network/layout.html" %}
 {% load static %}
+{% load custom_tags %}
 {% load my_filters %}
 {% block body %}
 
 <div class="container">
+{% include 'network/sidebar.html' %}
+<div class="content">
+  <div class="post">
   <div class="row mb-3">
     <div class="col-6 text-center">
       <h5 class="text-black">Following: {{ following.count }}</h5>
@@ -37,9 +41,9 @@
 
 
 <!-- Modal -->
-<div id="editBioModal" class="custom-modal">
+<div id="editBioModal" class="modal">
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div style="background-color: black; color: white;" class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Edit Bio</h5>
         <button type="button" class="close" onclick="closeEditBioModal()">
@@ -86,6 +90,7 @@
 </style>
 
 <script>
+  
   function openEditBioModal() {
     var modal = document.getElementById('editBioModal');
     modal.style.display = 'block';
@@ -97,28 +102,25 @@
   }
 </script>
 
-<div class="container">
+<div class="">
+<div class="post">
   <div class="card">
     <div class="card-body">
       <div class="d-flex align-items-center">
-        {% if userProfile.profile.pics %}
+        {% if userProfile.profile_pics %}
           <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
           {% else %} 
-          <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+          <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
           {% endif %}
         <div class="ml-3">
-          <h4 class="card-title mb-0">
+          <h4 class="">
             {{ userProfile.first_name }} {{ userProfile.last_name }}
           </h4>
           <p class="mb-0">
            Username: {{ userProfile.username }}
           </p>
-          <p class="mb-0">
-           Email: {{ userProfile.email }}
-          </p>
-          <p class="mb-0">
-            Phone Number: {{ userProfile.phone_number }}
-          </p>
+          <br>
+          
           <!-- Button to open the modal -->
 {% if user == userProfile %}
 <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
@@ -127,11 +129,22 @@
       </div>
       <hr>
       <div>
-       {% if userProfile.about %}
-        <p>{{ userProfile.about }}</p>
-        {% else %}
+        <p>
+           Email: {{ userProfile.email }}
+          </p>
+          <p class="">
+            Phone Number: {{ userProfile.phone_number }}
+          </p>
+        {% if userProfile.about %}
+        <p>{{ userProfile.about|urlize }}</p>
+      {% else %}
         <p>About: ...</p>
-        {%endif%}
+      {% endif %}
+      
+       
+</div>
+
+        
       </div>
     </div>
   </div>
@@ -139,84 +152,236 @@
 <br>
 <br>
 
-{% for posts in page_post %}
-<div class="container">
-<div class="card">
-    <div class="card-body">
-        <div class="d-flex align-items-center">
-          {% if posts.user.profile_pics %}
-          <a href="{% url 'profile' user_id=posts.user.id %}">
-            <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
-          </a>
-          {% else %}
-          <a href="{% url 'profile' user_id=posts.user.id %}">
-            <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
-          </a>
-          {% endif %}
-      <div class="ml-3">
-        <h5 class="card-title mb-1">
-        <!-- Display a link to the user's profile -->
-        <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
-        </h5>
-        <p class="mb-0">
-          <p>@{{posts.user.username}}</p>
-        </p>
-      </div>
-        </div>
-        <br>
-        <br>
-        <!-- Display the content of the post -->
-        <div class="card-text" id="content_{{ posts.id }}">
-          {% for paragraph in posts.postContent|split_paragraphs %}
-  {% if forloop.counter <= 10 %}
-    <p>{{ paragraph|urlize }}</p>
-  {% endif %}
-{% endfor %}
-{% if posts.postContent|split_paragraphs|length > 2 %}
-<a href="{% url 'post_content' post_id=posts.id %}">
-  <p class="btn btn-link read-more" data-post="{{ posts.id }}">Read full content >>></p>
-</a>
+<div class="shae-thought">
+  {% if user.profile_pics %}
+  <a href="{% url 'profile' user_id=user.id %}">
+      <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
+  </a>
+{% else %}
+  <a href="{% url 'profile' user_id=user.id %}">
+      <img src="/media/post_image/nodp.jpg" class="index-post-circle-image">
+  </a>
 {% endif %}
-
-        </div>
+  <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
+</div>
+<div id="posts">
+  {% for posts in page_post %}
+  <br>
+  <section>
+    <div>
+      <div class="d-flex align-items-center">
+        {% if posts.sharepost_set.all %}
+          {% with sharer=posts.sharepost_set.all.0.sharer %}
+            {% if sharer.profile_pics %}
+              <a href="{% url 'profile' user_id=sharer.id %}">
+                <img src="{{ sharer.profile_pics.url }}" class="rounded-circle" width="30" height="30">
+              </a>
+            {% else %}
+              <a href="{% url 'profile' user_id=sharer.id %}">
+                <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="30" height="30">
+              </a>
+            {% endif %}
+            <div class="ml-3">
+              <h5 class="card-title mb-1">
+                <!-- Display a link to the sharer's profile -->
+                <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=sharer.id %}">{{ sharer.first_name }} {{ sharer.last_name }} shared a post</a>
+                <small><p>{{ posts.sharepost_set.all.0.timestamp }}</p></small>
+              </h5>
+              
+            </div>
+          {% endwith %}
+        {% endif %}
+        <hr>
+      </div>
+      <div class="card">
         <div class="card-body">
-          {% if posts.post_image %}
-          <div class="image-container">
-  <img src="{{ posts.post_image.url }}" class="img-fluid desktop-image" alt="Post Image">
-</div>
+          <div class="d-flex align-items-center">
+            
+            {% if posts.user.profile_pics %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="40" height="40">
+              </a>
+            {% else %}
+              <a href="{% url 'profile' user_id=posts.user.id %}">
+                <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="40" height="40">
+              </a>
+            {% endif %}
+            <div class="ml-3">
+              <h5 class="card-title mb-1">
+                <!-- Display a link to the user's profile -->
+                <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
+              </h5>
+              <div class="mb-0">
+                {% if posts.user.username|length > 15 %}
+                <p>@{{posts.user.username | slice:":15"}}...</p>
+                {% else %}
+                <p>@{{posts.user.username}} <small class="text-muted">{{ posts.timestamp }}</small> </p>
+                {% endif %}
+            </div>
+            </div>
+          </div>
+          <br>
+          <br>
+          <div class="card-text" id="content_{{ posts.id }}">
+            {% for paragraph in posts.postContent|split_paragraphs|slice:":5" %} {# Limit to 5 paragraphs #}
+              <p>{{ paragraph|urlize }}</p>
+            {% endfor %}
+            {% if posts.postContent|split_paragraphs|length >= 5 %}
+              <a href="{% url 'post_content' post_id=posts.id %}">
+                <p class="read-more" data-post="{{ posts.id }}">Read full content >>></p>
+              </a>
+            {% endif %}
+            {% if posts.post_images.all %}
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+              <ol class="carousel-indicators">
+                {% for image in posts.post_images.all %}
+                  <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                {% endfor %}
+              </ol>
+              <div class="carousel-inner">
+                {% for image in posts.post_images.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img class="d-block w-100" src="{{ image.post_image.url }}" alt="Post Image">
+                  </div>
+                {% endfor %}
+              </div>
+              <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+            {% endif %}
 
-          
-          {% endif %}
         </div>
+        <!-- Add a delete button for each post -->
+       
+          {% if request.user == posts.user %} 
+          {% include 'network/delete-post.html' %}</p>
+          {% endif %}
+        <!-- Display the number of likes for the post -->
+        {% include 'network/likes.html' %}
+        <hr>
+
+        <!--Urlize comments, read more comments, and display comments-->
+        {% include 'network/comments.html' %}
+      </div>
+    </div>
+  </div>
+  </section>
+{% endfor %}
 </div>
-<p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
-
-<!-- Display the number of likes for the post -->
-{% include 'network/likes.html' %}
-
-<!--Urlize comments, read more commets and display comments-->
-{% include 'network/comments.html' %}
-        
-</div>    
-  </div>
-  </div>
-  </div>
-  <!-- End of the for loop -->
-  {% endfor %}
+</div>
+</div>
 
 
-  <!-- Pagination for navigating through the posts -->
-  <nav aria-label="Page navigation example">
-  <ul class="pagination d-flex justify-content-center">
-  {% if page_post.has_previous %}
-  <!-- If there is a previous page, display a "previous" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.previous_page_number}}">Previous</a></li>
-  {% endif %}
-  {% if page_post.has_next %}
-  <!-- If there is a next page, display a "next" button -->
-  <li class="page-item"><a class="page-link" href="?page={{page_post.next_page_number}}">Next</a></li>
-  {% endif %}
-  </ul>
-  </nav>
+{% include 'network/newpost-modal.html' %}
+  <style>
+    #my-groups-btn {
+      display: none;
+    }
+  
+    #groups-i-joined-btn {
+      display: none;
+    }
+  
+    #all-btn {
+      display: none;
+    }
+
+    
+  </style>
+  
+  <script>
+  myGroups = document.getElementById('my-groups-btn');
+  joined = document.getElementById('groups-i-joined-btn');
+  aller = document.getElementById('all-btn');
+  
+   function navigateToAllGroups() {
+    window.location.href = '{% url "all_groups" %}';
+  }
+
+  function pop() {
+    myGroups.style.display = 'block';
+    joined.style.display = 'block';
+    aller.style.display = 'block';
+  }
+    
+    $(document).ready(function() {
+      // Initialize the modals
+      var myGroupsModal = document.getElementById('my-groups-modal');
+      var groupsIJoinedModal = document.getElementById('groups-i-joined-modal');
+  
+      myGroupsModal.style.display = 'none';
+      groupsIJoinedModal.style.display = 'none';
+  
+      // Open the modal when the button is clicked
+      $('#my-groups-btn').click(function() {
+        myGroupsModal.style.display = 'none';
+      });
+  
+      $('#groups-i-joined-btn').click(function() {
+        groupsIJoinedModal.style.display = 'none';
+      });
+    });
+  
+    $(document).ready(function() {
+    // Initialize the modals
+    var myGroupsModal = document.getElementById('my-groups-modal');
+    var groupsIJoinedModal = document.getElementById('groups-i-joined-modal');
+  
+    myGroupsModal.style.display = 'none';
+    groupsIJoinedModal.style.display = 'none';
+  
+    // Open the modal when the button is clicked
+    $('#my-groups-btn').click(function() {
+      myGroupsModal.style.display = 'block';
+    });
+  
+    $('#groups-i-joined-btn').click(function() {
+      groupsIJoinedModal.style.display = 'block';
+    });
+  
+    
+  });
+  
+  </script>
+  <style>
+  /* Additional CSS for mobile responsiveness */
+  #my-groups-btn,
+  #groups-i-joined-btn,
+  #all-btn {
+    display: none;
+    margin-top: 10px;
+  }
+
+  #popit {
+    margin-top: 10px;
+  }
+
+  
+</style>
+  
+  {% include "network/share.html" %}
+<!-- Add pagination links -->
+<div class="pagination">
+  <span class="step-links">
+      {% if page_post.has_previous %}
+      <a class="btn btn-primary" href="?page=1"> <<<< </a>
+      <a class="btn btn-primary" href="?page={{ page_post.previous_page_number }}">&raquo;</a>
+      {% endif %}
+      
+      {% if page_post.has_next %}
+      <a class="btn btn-primary" href="?page={{ page_post.next_page_number }}">&laquo;</a>
+      <a class="btn btn-primary" href="?page={{ page_post.paginator.num_pages }}">>>>></a>
+      {% endif %}
+  </span>
+</div>
+
+</div>
+
 
   {% endblock %}

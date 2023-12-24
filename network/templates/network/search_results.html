@@ -1,0 +1,479 @@
+{% load static %}
+{% load custom_tags %}
+{% load my_filters %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mintech</title>
+
+    
+        <!-- Add custom CSS -->
+        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+    
+        <!-- Add Font Awesome CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+        <!-- Add jQuery (required for Bootstrap JS) -->
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    
+        <!-- Add the Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    
+        <!-- Add custom JS -->
+        <script src="{% static '/network/like.js' %}"></script>
+    
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="{% static 'network/favicon.png' %}">
+    </head>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'index' %}">M I N T E C H</a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+            
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        {% if user.is_authenticated %}
+                        <a class="dropdown-item" href="{% url 'profile' user_id=user.id %}"><strong>{{ user.username }}</strong></a>
+                        {% endif %}
+                        <a class="dropdown-item" href="{% url 'index' %}">Home</a>
+                        {% if user.is_authenticated %}
+                        <a class="dropdown-item" href="{% url 'following' %}">Following</a>
+                        
+                        <a class="dropdown-item" href="{% url 'network_logout' %}">Log Out</a>
+                        {% else %}
+                        <a class="dropdown-item" href="{% url 'network_login' %}">Log In</a>
+                        <a class="dropdown-item" href="{% url 'network_register' %}">Register</a>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="cotainer">
+        <h1>Search Results for "{{ query }}"</h1>
+    
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#usersModal">Users</button>
+        </h3>
+        {% if users %}
+    <!-- Users Modal -->
+    <div class="modal fade" id="usersModal" tabindex="-1" role="dialog" aria-labelledby="usersLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usersLabel">Users</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    {% for user in users %}
+                    <div class="d-flex align-items-center">
+                        {% if user.profile_pics %}
+                        <a href="{% url 'profile' user_id=user.id %}">
+                            <img src="{{ user.profile_pics.url }}" class="rounded-circle" width="40" height="40">
+                        </a>
+                        {% else %}
+                        <a href="{% url 'profile' user_id=user.id %}">
+                            <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="40" height="40">
+                        </a>
+                        {% endif %}
+                        <div class="ml-3">
+                            <h5 class="card-title mb-1">
+                                <!-- Display a link to the user's profile -->
+                                <a class="" style="text-decoration: none;" href="{% url 'profile' user_id=user.id %}"><span style="color: black;">{{user.first_name}} {{user.last_name}}</span>
+                            </h5>
+                            <p class="mb-0">
+                                <p style="color: black;">@{{user.username}}</p></a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <p>No users found</p>
+{% endif %}
+
+<br>
+
+       
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#postsModal">Posts</button>
+        </h3>
+        {% if posts %}
+        <!-- Posts Modal -->
+        <div class="modal fade" id="postsModal" tabindex="-1" role="dialog" aria-labelledby="postsLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="postsLabel">Posts</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        
+                            {% for post in posts %}
+                            <div class="container">
+                                <div class="card">
+                                    <div class="card-body" style="color: #000000;">
+                                        <div class="d-flex align-items-center">
+                                            {% if post.user.profile_pics %}
+                                            <a href="{% url 'profile' user_id=post.user.id %}">
+                                                <img src="{{ post.user.profile_pics.url }}" class="rounded-circle" width="40" height="40">
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'profile' user_id=post.user.id %}">
+                                                <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="40" height="40">
+                                            </a>
+                                            {% endif %}
+                                            <div class="ml-3">
+                                                <h5 class="card-title mb-1">
+                                                    <!-- Display a link to the user's profile -->
+                                                    <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=post.user.id %}">
+                                                        {{ post.user.first_name }} {{ post.user.last_name }}
+                                                    </a>
+                                                </h5>
+                                                <p class="mb-0">
+                                                    <p>@{{ post.user.username }}</p>
+                                                </p>
+                                                <br>
+                                                 <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+                                            </div>
+                                            <!-- Display the timestamp of the post -->
+                                       
+                                        </div>
+                                        <br>
+                                        <br>
+    
+                                        <!-- Display the content of the post -->
+                                        <div class="card-text" id="content_{{ post.id }}">
+                                            <br>
+                                            {% for paragraph in post.postContent|split_paragraphs %}
+                                            <p>{{ paragraph|urlize }}</p>
+                                            {% endfor %}
+    
+                                            
+                                        </div>
+    
+                                        
+                                        <a href="{% url 'post_content' post.id %}">View Post</a>
+    
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                       
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>No posts found</p>
+    {% endif %}
+    
+       
+        <br>
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#GroupSearchModal">Groups</button>
+        </h3>
+        {% if groups %}
+            <!-- Library Documents Modal -->
+            <div class="modal fade" id="GroupSearchModal" tabindex="-1" role="dialog" aria-labelledby="GroupSearchLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="Group SearchLabel">Groups</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                {% for group in groups %}
+                                <br>
+                                    <li>
+                                        <h5>{{ group.name }}</h5>
+                                        
+                                        <a href="{% url 'group_detail' group.id %}">View Group</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No Group Found</p>
+        {% endif %}
+    
+    <br>
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#groupPostsModal">Group Posts</button>
+        </h3>
+        {% if group_posts %}
+            <!-- Group Posts Modal -->
+            <div class="modal fade" id="groupPostsModal" tabindex="-1" role="dialog" aria-labelledby="groupPostsLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="groupPostsLabel">Group Posts</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                {% for post in group_posts %}
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="card-body" style="color: #000000;">
+                                            <div class="d-flex align-items-center">
+                                                {% if post.user.profile_pics %}
+                                                <a href="{% url 'profile' user_id=post.user.id %}">
+                                                    <img src="{{ post.user.profile_pics.url }}" class="rounded-circle" width="40" height="40">
+                                                </a>
+                                                {% else %}
+                                                <a href="{% url 'profile' user_id=post.user.id %}">
+                                                    <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="40" height="40">
+                                                </a>
+                                                {% endif %}
+                                                <div class="ml-3">
+                                                    <h5 class="card-title mb-1">
+                                                        <!-- Display a link to the user's profile -->
+                                                        <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=post.user.id %}">
+                                                            {{ post.user.first_name }} {{ post.user.last_name }}
+                                                        </a>
+                                                        
+                                            
+                                                    </h5>
+                                                   <br>
+                                                    <p class="card-text"><small class="text-muted">{{ post.timestamp }}</small></p>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <br>
+        
+                                            <!-- Display the content of the post -->
+                                            <div class="card-text" id="content_{{ post.id }}">
+                                                {% for paragraph in post.postContent|split_paragraphs %}
+                                                <p>{{ paragraph|urlize }}</p>
+                                                {% endfor %}
+        
+                                                
+                                            </div>
+        
+                                            
+                                            <a href="{% url 'group_post_content' post.id %}">View Post</a>
+        
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                        
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No forum posts found</p>
+        {% endif %}
+    
+        <br>
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#announcementsModal">Announcements</button>
+        </h3>
+        {% if announcements %}
+            <!-- Announcements Modal -->
+            <div class="modal fade" id="announcementsModal" tabindex="-1" role="dialog" aria-labelledby="announcementsLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="announcementsLabel">Announcements</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            
+                                {% for announcement in announcements %}
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="card-body" style="color: #000000;">
+                                            <div class="align-items-center">
+                                        <h5>{{ announcement.poster.username }}</h5>
+                                        <p>{{ announcement.content }}</p>
+                                        <p>Posted on: {{ announcement.created_at }}</p>
+                                        <a href="{% url 'announcements' %}">View Announcement</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No announcements found</p>
+        {% endif %}
+    
+        <br>
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#libraryDocumentsModal">Library Documents</button>
+        </h3>
+        {% if library_documents %}
+            <!-- Library Documents Modal -->
+            <div class="modal fade" id="libraryDocumentsModal" tabindex="-1" role="dialog" aria-labelledby="libraryDocumentsLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="libraryDocumentsLabel">Library Documents</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            
+                                {% for library_document in library_documents %}
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="card-body" style="color: #000000;">
+                                            <div class="align-items-center">
+                                        <h5>{{ library_document.title }}</h5>
+                                        
+                                        <p>Uploaded by: <a href="{% url 'profile' user_id=library_document.uploader.id %}">{{ library_document.uploader.username }}</p>
+                                    </a>
+                                        <a href="{{ library_document.file.url }}">See Document</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                           
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No library documents found</p>
+        {% endif %}
+
+        <br>
+        <h3>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#videoModal">Videos</button>
+        </h3>
+        {% if videos %}
+            <!-- Library Documents Modal -->
+            <div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="videoLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="videoLabel">Videos</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            
+                                {% for video in videos %}
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="card-body" style="color: #000000;">
+                                            <div class="align-items-center">
+                                                
+                                                <div class="video-border">
+                                                    <p>{{ video.title }} - Uploaded by: <a href="{% url 'profile' user_id=video.uploader.id %}">{{ video.uploader.username }}
+                                                    </a>
+                                                    <br>
+                                                    <video width="250" height="200" controls>
+                                                        <source src="{{ video.file.url }}" type="video/mp4">
+                                                        <source src="{{ video.file.webm }}" type="video/webm">
+                                                        <source src="{{ video.file.ogg }}" type="video/ogg">
+                                                        <style>
+                                                          video {
+                                                            width: 100%;
+                                                            height: 100%;
+                                                          }
+                                                      
+                                                          @media (max-width: 768px) {
+                                                            video {
+                                                              width: 100%;
+                                                              height: 100%;
+                                                            }
+                                                          }
+                                                        </style>
+                                                        Your browser does not support the video tag.
+                                                      </video>
+                                                    {{ video.upload_date }}
+                                        
+                                        
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                {% endfor %}
+                           
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No library Videos found</p>
+        {% endif %}
+    </div>
+</div>
+
+
+</body>
+</html>
+
+
+

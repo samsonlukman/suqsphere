@@ -1,0 +1,52 @@
+{% extends "network/layout.html" %}
+{% block body %}
+{% load static %}
+
+
+<div class="container">
+{% include 'network/sidebar.html' %}
+<div class="content" style="color: black;">
+    <div class="post">
+        <div id="library-border" class="announcement-button">
+            <div class="card-body">
+<h3>My Library</h3>
+<hr>
+
+<h3>Favorite Documents</h3>
+{% for favorite_document in favorite_documents %}
+<div class="document-border">
+    <p>Uploaded by {{ favorite_document.document.uploader.username }} on {{ favorite_document.document.upload_date }}</p>
+    <a href="{{ favorite_document.document.file.url }}"><span>TITLE: {{ favorite_document.document.title }}</span></a>
+    <br>
+    <p>Views: {{ favorite_document.document.views }}</p>
+    <button class="btn-primary" onclick="shareFile('https:\//mintechy.pythonanywhere.com{{ favorite_document.document.file.url }}')">Share</button>
+</div>
+{% endfor %}
+
+<h3>Favorite Videos</h3>
+{% for favorite_video in favorite_videos %}
+<div class="video-border">
+    <p>{{ favorite_video.video.title }} - {{ favorite_video.video.uploader.username }} {{favorite_video.video.upload_date}}</p>
+    <video width="400" height="240" controls>
+        <source src="{{ favorite_video.video.file.url }}" type="video/mp4">
+        <source src="{{ favorite_video.video.file.webm }}" type="video/webm">
+        <source src="{{ favorite_video.video.file.ogg }}" type="video/ogg">
+        Your browser does not support the video tag.
+    </video>
+    <p>Views: {{ favorite_video.video.views }}</p>
+    <button class="btn-primary" onclick="shareFiles('https:\//mintechy.pythonanywhere.com{{ favorite_video.video.file.url }}')">Share</button>
+</div>
+{% endfor %}
+</div>
+</div>
+    </div>
+</div>
+<!-- Modal for Sharing -->
+{% include "network/share.html" %}
+</div>
+<style>
+    .share-thought {
+      visibility: hidden;
+    }
+  </style>
+{% endblock %}

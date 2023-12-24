@@ -1,0 +1,21 @@
+<div style="z-index: 15000;" class="modal" id="groups-i-joined-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 style="color: blue;" class="modal-title">Groups</h5>
+                <button type="button" class="close" data-dismiss="modal" onclick="closeModal('groups-i-joined-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="GET">
+                    <input type="text" name="q" placeholder="Search groups">
+                    <button type="submit">Search</button>
+                </form>
+                <ul>
+                    {% for group in groups_joined %}
+                        <li><a style="color: blue;" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

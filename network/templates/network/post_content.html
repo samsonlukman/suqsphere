@@ -3,28 +3,35 @@
 {% load my_filters %}
 {% load static %}
 {% block body %}
+{% include 'network/sidebar.html' %}
 
-<div class="container">
+<div style="z-index: 1000;" class="container">
+<div class="contnt" style="width: 500%;">
+  <div class="post">
   <div class="card">
     <div class="card-body">
       <div class="d-flex align-items-center">
         {% if posts.user.profile_pics %}
       <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="30" height="30">
       </a>
       {% else %}
       <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+        <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="30" height="30">
       </a>
       {% endif %}
         <div class="ml-3">
           <h5 class="card-title mb-1">
           <!-- Display a link to the user's profile -->
-          <a class="card-title" style="text-decoration: none; color: black;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}
+          <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}
           </h5>
-          <p class="mb-0">
-            <p>@{{posts.user.username}}</p></a>
-          </p>
+          <div class="mb-0">
+            {% if posts.user.username|length > 15 %}
+            <p>@{{posts.user.username | slice:":15"}}...</p>
+            {% else %}
+            <p>@{{posts.user.username}} <small class="text-muted">{{ posts.timestamp }}</small> </p>
+            {% endif %}
+        </div>
         </div>
           </div>
           <br>
@@ -35,45 +42,66 @@
         {% for paragraph in posts.postContent|split_paragraphs %}
         <p>{{ paragraph|urlize }}</p>
         {% endfor %}
-        <div class="card-body">
-          {% if posts.user.profile_pics %}
-      <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
-      </a>
-      {% else %}
-      <a href="{% url 'profile' user_id=posts.user.id %}">
-        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
-      </a>
-      {% endif %}
-        </div>
-      </div>
+        
+        {% if posts.post_images.all %}
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+              <ol class="carousel-indicators">
+                {% for image in posts.post_images.all %}
+                  <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                {% endfor %}
+              </ol>
+              <div class="carousel-inner">
+                {% for image in posts.post_images.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img class="d-block w-100" src="{{ image.post_image.url }}" alt="Post Image">
+                  </div>
+                {% endfor %}
+              </div>
+              <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+            {% endif %}
+      
 
-      <!-- Display the timestamp of the post -->
-      <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
+      <!-- Add a delete button for each post -->
+      
+        {% if request.user == posts.user %} 
+        {% include 'network/delete-post.html' %}</p>
+        {% endif %}
       <!--display post reactions-->
       {% include 'network/likes.html' %}
 
       <ul class="list-group">
         {% for comment in posts.postComment.all %}
         <li class="list-group-item">
+         
           {% if comment.author.profile_pics %}
       <a href="{% url 'profile' user_id=comment.author.id %}">
-        <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+        <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="30" height="30">
       </a>
       {% else %}
       <a href="{% url 'profile' user_id=comment.author.id %}">
-        <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+        <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="30" height="30">
       </a>
       {% endif %}
-          <strong><a href="{% url 'profile' user_id=comment.author.id %}">@{{ comment.author.username }}</a> wrote:</strong>
-          <div class="card-text" id="content_{{ comment.id }}">
+          <strong style="color: black;"><a href="{% url 'profile' user_id=comment.author.id %}"><span style="color: black;">@{{ comment.author.username }}</span></a> wrote:</strong>
+          {% if request.user == comment.author or request.user == posts.user %}
+          <button style="width: 50px; padding: 2px 5px; font-size: 8px;" class="btn btn-danger delete-comment" data-comment-id="{{ comment.id }}">Delete</button>
+          {% endif %}
+          <div id="content_{{ comment.id }}">
             {% for paragraph in comment.message|split_paragraphs %}
-            <p>{{ paragraph|urlize }}</p>
+            <p><small>{{ paragraph|urlize }}</small></p>
             {% endfor %}
           </div>
         </li>
         {% empty %}
-        <li class="list-group-item">No comments yet.</li>
+        <li class="list-group-item" style="color: black;">No comment yet.</li>
         {% endfor %}
       </ul>
 
@@ -95,7 +123,15 @@
         </div>
       </form>
       {% endif %}
+    </div>
+  </div>
 
-      
-
+    {% include "network/share.html" %}    
+  </div>
+  <style>
+    .index-container{
+      visibility: hidden;
+    }
+  </style>
 {% endblock %}
+

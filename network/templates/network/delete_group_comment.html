@@ -1,0 +1,38 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const deleteCommentButtons = document.querySelectorAll('.delete-group-comment');
+  
+      deleteCommentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const group_comment_id = button.getAttribute('data-comment-id');
+  
+          fetch(`/group_post_comment/${group_comment_id}/delete/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Comment deleted successfully
+              const commentElement = button.parentElement;
+              if (commentElement) {
+                commentElement.remove();
+              }
+            } else {
+              // Display error message (data.message) if deletion was not successful
+              console.log(data.message);
+            }
+          })
+          .catch(error => {
+            console.error('An error occurred:', error);
+          });
+        });
+      });
+    });
+  
+  
+  </script>  
