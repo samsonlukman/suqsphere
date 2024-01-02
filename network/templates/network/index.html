@@ -5,7 +5,7 @@
 {% block body %}
 
 
-<div class="shae-thought">
+<div class="s">
     {% if user.profile_pics %}
     <a href="{% url 'profile' user_id=user.id %}">
         <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
