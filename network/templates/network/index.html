@@ -4,6 +4,37 @@
 {% load static %}
 {% block body %}
 
+<!-- Top page items design -->
+<div style="background-color: rgb(248, 245, 241);" class="container-fluid">
+    <div class="row">
+        <div class="col-md-1">
+            <img src="/media/post_image/suqlogo.png" id="index-suqlogo">
+        </div>
+        <div class="col-md-3">
+            <div>
+                <form action="{% url 'search' %}" method="get">
+                    <input id="search-button" type="text" name="q" placeholder="Search" />
+                </form>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <!-- Content for Column 3 -->
+            <i class="fas fa-home top-page-color"></i>
+        </div>
+        <div class="col-md-2">
+            <!-- Content for Column 4 -->
+            <i class="fas fa-users top-page-color"></i>
+        </div>
+        <div class="col-md-2">
+            <!-- Content for Column 5 -->
+            <p>Column 5</p>
+        </div>
+        <div class="col-md-2">
+            <!-- Content for Column 6 -->
+        <i class="fas fa-bell top-page-color"></i>
+        </div>
+    </div>
+</div>
 
 <div class="s">
     {% if user.profile_pics %}
@@ -98,7 +129,7 @@
                           {% endif %}
 
                         <!-- Display the number of likes for the post -->
-                        {% include 'network/likes.html' %}
+                        <!-- {% include 'network/likes.html' %} -->
                         <hr>
 
                         <!-- Urlize comments, read more comments, and display comments -->
