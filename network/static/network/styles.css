@@ -5,8 +5,29 @@
   height: 70px;
 }
 
-.top-page-color {
+.top-page {
   color: darkolivegreen;
+  position: fixed;
+  z-index: 1000;
+  background-color: #BABABA;
+}
+
+#news-and-trends-line {
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom: 0;
+  border-top: 1px solid #333;
+}
+
+#news-and-trends {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  position: relative;
+  top: 30px; /* Adjust the vertical position as needed */
+  /* Adjust the background color of the text container */
+  padding: 0 16px; /* Adjust the padding as needed */
+  display: inline-block; /* Ensures that the background color only covers the text */
 }
 
 .general-border {
@@ -52,15 +73,21 @@
 }
 
 
-.card {
- 
-  
-  border-color: black;
-  border-radius: 30px;
-  width: 100%;
+
+.post-card {
+ margin-top: -20px;
+  background-color: #E2EFFF;
+  border-radius: 20px;
+  width: 70%;
 }
 
-
+/* css for create post border and margin */
+.createpost-margin {
+  background-color: #E2EFFF;
+  border-radius: 20px;
+  width: 70%;
+  margin-top: 90px;
+}
 .card-text {
   margin-top: -30px;
 }
@@ -149,6 +176,21 @@ input:checked + .slider:before {
 /* followers and follow count */
 .text-black{
   margin-top: 20px;
+}
+
+/* removes styling from media button */
+.media-button {
+  border: none; /* Remove the border */
+        padding: 0; /* Remove padding */
+        background-color: transparent; /* Make the background transparent */
+        cursor: pointer;
+  border: none; margin-left: 400px;
+}
+
+#media-icon {
+  width: 30px; /* Adjust the width as needed */
+        height: auto;
+  margin-top: -40px;
 }
 /* CSS for Reaction Buttons */
 
@@ -407,9 +449,7 @@ input:checked + .slider:before {
 
 
 
-.container {
-  margin-bottom: 20px;
-}
+
 
 .horizontal-container {
   display: flex;
@@ -662,24 +702,29 @@ input:checked + .slider:before {
 
 
 .index-post-circle-image {
-  width: 80px;
-  height: 60px;
-  border: 0.5px solid #0805c1;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #4B9CD3;
+  margin-top: 10px;
   padding: 0; /* Remove padding */
-  margin-right: -10px; /* Adjust margin to overlap the input field */
+  margin-left: 20px; /* Adjust margin to overlap the input field */
   position: relative; /* Add relative positioning to the circle */
-  z-index: 2; /* Ensure the circle is above the input field */
+ 
 }
 
 .s {
   margin-left: 30%;
+    
+  background-color: #E2EFFF;
+  border-radius: 20px;
+  width: 43%;
+  /* Additional styling as needed */
 }
+
 #create-post-field {
-  background-color: #4B9CD3;
-  border: 0.5px solid #0805c1;
+  background-color: white;
+  border: 0.5px solid white;
   border-radius: 20px;
   padding: 2px 150px;
   font-size: 14px;
@@ -690,7 +735,7 @@ input:checked + .slider:before {
 }
 
 #create-post-field::placeholder {
-  color: white; /* Set the color to white or any other desired color */
+  color: bla; /* Set the color to white or any other desired color */
 }
 
 .feed-button::placeholder {
@@ -881,7 +926,7 @@ footer {
  
   padding: 10px;
   box-sizing: border-box;
-  margin-left: 120px;
+  margin-left: 300px;
   width: 200%;
 }
 
@@ -897,28 +942,48 @@ footer {
   
 }
 
-/* New styles for sliding sidebar */
-.sidebar {
+
+/* css for left sidebar */
+.left-sidebar-items {
+  margin-top: 80px;
   position: fixed;
-  margin-top: 2px;
-  margin-left: 0px;
-  left: -70%; /* Start with the sidebar off-screen */
-  width: 20%;
+  top: 0;
+  left: -1px; 
+  width: 30%;
+  height: calc(100vh - 80px); /* Adjusted height to include margin-top */
   background-color: #4B9CD3;
   color: white;
   border: 0.5px solid #0805c1;
-  text-align: center;
-  border-radius: 10%;
+  overflow-y: auto; /* Allow vertical scrolling */
   transition: left 0.3s ease;
-  font-family:Arial, Helvetica, sans-serif;
-  z-index: 2000;
-  
+  font-family: Arial, Helvetica, sans-serif;
+  border: none;
+
+}
+
+/* css for right sidebar */
+.right-sidebar-items {
+  margin-top: 80px;
+  position: fixed;
+  top: 0;
+  right: -1px; 
+  width: 25%;
+  height: calc(100vh - 80px); /* Adjusted height to include margin-top */
+  background-color: #4B9CD3;
+  color: white;
+  border: 0.5px solid #0805c1;
+  overflow-y: auto; /* Allow vertical scrolling */
+  transition: left 0.3s ease;
+  font-family: Arial, Helvetica, sans-serif;
+  border: none;
+
 }
 
 
-.sidebar.open {
-  left: 0; /* Slide the sidebar into view */
+.navbar-nav {
+  padding: 10px;
 }
+
 
 .menu-link {
   cursor: pointer;
@@ -1070,7 +1135,7 @@ footer {
     background-color: #4B9CD3;
     border: 0.5px solid #0805c1;
     border-radius: 10px;
-    padding: 2px 5px;
+    ;
     font-size: 12px;
     font-family: Arial, sans-serif;
     margin: 0; /* Remove margin */
@@ -1267,13 +1332,6 @@ footer {
       font-size: larger;
       z-index: 10000;
       
-  }
-
-  .card {
-    
-
-    border-radius: 30px;
-    width: 100%;
   }
 
   .rounded-circle {

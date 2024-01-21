@@ -19,7 +19,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.contrib import messages
 from django.http import JsonResponse
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from .models import *
 from django.db.models import Count
 from django.shortcuts import redirect, render, get_object_or_404
@@ -49,7 +49,6 @@ def index(request):
 
     # Find users who both follow the current user and are followed by the current user
     friends = set(following).intersection(followers)
-    print(friends)
     # Get the posts by the users who are friends with the current user
     post = Post.objects.filter(user__in=friends).order_by('-timestamp')
 
@@ -488,6 +487,69 @@ def group_post_content(request, post_id):
         
     })
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+def post_add_or_remove_reaction(request, post_id, reaction_type):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User not authenticated"}, status=401)
+
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
+    if request.method == 'POST':
+        try:
+            # Get the corresponding ReactionModel based on reaction_type
+            reaction_model = {
+                'love': Love,
+                'haha': Haha,
+                'like': Like,
+                'shock': Shock,
+                'sad': Sad,
+            }[reaction_type]
+
+            # Try to get the existing reaction for the user and post
+            reaction = reaction_model.objects.get(post=post, user=user)
+
+            # Reaction exists, delete it
+            reaction.delete()
+            success = False
+        except ObjectDoesNotExist:
+            # Reaction does not exist, create it
+            reaction = reaction_model.objects.create(post=post, user=user)
+            success = True
+
+        # Update the post instance to reflect the new counts
+        post.refresh_from_db()
+
+        # Calculate the total count of all reactions
+        total_count = (
+            post.postLove.count() +
+            post.postHaha.count() +
+            post.post_like.count() +
+            post.postShock.count() +
+            post.postSad.count()
+        )
+
+        # Send the updated counts to the client
+        data = {
+            'post_love': post.postLove.count(),
+            'post_haha': post.postHaha.count(),
+            'post_like': post.post_like.count(),
+            'post_shock': post.postShock.count(),
+            'post_sad': post.postSad.count(),
+            'total_count': total_count,
+            'success': success,
+            'post_id': post.id
+        }
+
+        return JsonResponse({"data": data})
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
 
 def group_add_or_remove_reaction(request, post_id, reaction_type):
     if not request.user.is_authenticated:
@@ -496,28 +558,54 @@ def group_add_or_remove_reaction(request, post_id, reaction_type):
     user = request.user
 
     if request.method == 'POST':
-        if reaction_type == 'love':
-            ReactionModel = GroupLove
-        elif reaction_type == 'haha':
-            ReactionModel = GroupHaha
-        elif reaction_type == 'like':
-            ReactionModel = GroupLike
-        elif reaction_type == 'shock':
-            ReactionModel = GroupShock
-        elif reaction_type == 'sad':
-            ReactionModel = GroupSad
-        else:
-            raise Http404("Invalid reaction type.")
-
         try:
-            reaction = ReactionModel.objects.get(post=post, user=user)
-            reaction.delete()
-            messages.success(request, f'You removed {reaction_type} reaction on this post.')
-        except ReactionModel.DoesNotExist:
-            reaction = ReactionModel.objects.create(post=post, user=user)
-            messages.success(request, f'You added {reaction_type} reaction on this post.')
+            # Get the corresponding ReactionModel based on reaction_type
+            reaction_model = {
+                'love': GroupLove,
+                'haha': GroupHaha,
+                'like': GroupLike,
+                'shock': GroupShock,
+                'sad': GroupSad,
+            }[reaction_type]
 
-        return HttpResponseRedirect(reverse('group_post_content', kwargs={'post_id': post_id}))
+            # Try to get the existing reaction for the user and post
+            reaction = reaction_model.objects.get(post=post, user=user)
+
+            # Reaction exists, delete it
+            reaction.delete()
+            success = False
+        except ObjectDoesNotExist:
+            # Reaction does not exist, create it
+            reaction = reaction_model.objects.create(post=post, user=user)
+            success = True
+
+        # Update the post instance to reflect the new counts
+        post.refresh_from_db()
+
+        # Calculate the total count of all reactions
+        total_count = (
+            post.group_postLove.count() +
+            post.group_postHaha.count() +
+            post.group_post_like.count() +
+            post.group_postShock.count() +
+            post.group_postSad.count()
+        )
+
+        # Send the updated counts to the client
+        data = {
+            'post_love': post.group_postLove.count(),
+            'post_haha': post.group_postHaha.count(),
+            'post_like': post.group_post_like.count(),
+            'post_shock': post.group_postShock.count(),
+            'post_sad': post.group_postSad.count(),
+            'total_count': total_count,
+            'success': success,
+            'post_id': post.id
+        }
+
+        return JsonResponse({"data": data})
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
 
@@ -892,156 +980,6 @@ def newPost(request):
         
         return HttpResponseRedirect(reverse("profile", args=[user.id]))
 
-
-@login_required
-def remove_love(request, post_id):
-    if not request.user.is_authenticated:
-        return render(request, "network/error.html")
-    post = get_object_or_404(Post, id=post_id)
-    try:
-        maashaa = Love.objects.get(post=post, user=request.user)
-        maashaa.delete()
-    except Love.DoesNotExist:
-        messages.error(request, 'You have not liked this post.')
-    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-
-
-@login_required
-def add_love(request, post_id):
-    if not request.user.is_authenticated:
-        return render(request, "network/error.html")
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            maa = Love.objects.get(post=post, user=user)
-            maa.delete()
-        except Love.DoesNotExist:
-            haha = Love.objects.create(post=post, user=user)
-        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
-
-
-@login_required
-def remove_haha(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    try:
-        haha = Haha.objects.get(post=post, user=request.user)
-        haha.delete()
-    except Haha.DoesNotExist:
-        messages.error(request, 'You have not liked this post.')
-    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-
-
-@login_required
-def add_haha(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            haha = Haha.objects.get(post=post, user=user)
-            haha.delete()
-        except Haha.DoesNotExist:
-            haha = Haha.objects.create(post=post, user=user)
-        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
-
-
-@login_required
-def remove_like(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    try:
-        like = Like.objects.get(post=post, user=request.user)
-        like.delete()
-        messages.success(request, 'You unliked this post.')
-    except Like.DoesNotExist:
-        messages.error(request, 'You have not liked this post.')
-
-    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-
-
-@login_required
-def add_like(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            like = Like.objects.get(post=post, user=user)
-            like.delete()
-            messages.success(request, 'You unliked this post.')
-        except Like.DoesNotExist:
-            like = Like.objects.create(post=post, user=user)
-            messages.success(request, 'You liked this post.')
-
-        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
-
-
-
-@login_required
-def add_shock(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            like = Shock.objects.get(post=post, user=user)
-            like.delete()
-            messages.success(request, 'You unliked this post.')
-        except Shock.DoesNotExist:
-            like = Shock.objects.create(post=post, user=user)
-            messages.success(request, 'You liked this post.')
-
-        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
-
-
-
-@login_required
-def remove_shock(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    try:
-        like = Shock.objects.get(post=post, user=request.user)
-        like.delete()
-        messages.success(request, 'You unliked this post.')
-    except Shock.DoesNotExist:
-        messages.error(request, 'You have not liked this post.')
-
-    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-
-@login_required
-def add_sad(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == 'POST':
-        user = request.user
-        try:
-            like = Sad.objects.get(post=post, user=user)
-            like.delete()
-            messages.success(request, 'You unliked this post.')
-        except Sad.DoesNotExist:
-            like = Sad.objects.create(post=post, user=user)
-            messages.success(request, 'You liked this post.')
-
-        return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
-    else:
-        raise Http404("Method not allowed")
-
-
-
-@login_required
-def remove_sad(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    try:
-        like = Sad.objects.get(post=post, user=request.user)
-        like.delete()
-        messages.success(request, 'You unliked this post.')
-    except Sad.DoesNotExist:
-        messages.error(request, 'You have not liked this post.')
-
-    return HttpResponseRedirect(reverse(post_content, kwargs={'post_id': post_id}))
 
 
 

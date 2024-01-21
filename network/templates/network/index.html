@@ -4,39 +4,44 @@
 {% load static %}
 {% block body %}
 
+
 <!-- Top page items design -->
-<div style="background-color: rgb(248, 245, 241);" class="container-fluid">
+<div class="container-fluid top-page">
     <div class="row">
-        <div class="col-md-1">
-            <img src="/media/post_image/suqlogo.png" id="index-suqlogo">
+        <div class="col-l">
+            <img src="/media/post_image/suqlogo.png" id="index-suqlogo" style="margin-top: 10px;">
         </div>
         <div class="col-md-3">
             <div>
-                <form action="{% url 'search' %}" method="get">
+                <form action="{% url 'search' %}" method="get" style="margin-top: 10px;">
                     <input id="search-button" type="text" name="q" placeholder="Search" />
                 </form>
             </div>
         </div>
         <div class="col-md-2">
             <!-- Content for Column 3 -->
-            <i class="fas fa-home top-page-color"></i>
+            <i class="fas fa-home top-page" style="margin-top: 10px;"></i>
         </div>
         <div class="col-md-2">
             <!-- Content for Column 4 -->
-            <i class="fas fa-users top-page-color"></i>
+            <i class="fas fa-users top-page" style="margin-top: 10px;"></i>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2" style="margin-top: 10px;">
             <!-- Content for Column 5 -->
             <p>Column 5</p>
         </div>
         <div class="col-md-2">
             <!-- Content for Column 6 -->
-        <i class="fas fa-bell top-page-color"></i>
+        <i class="fas fa-bell top-page" style="margin-top: 10px;"></i>
         </div>
     </div>
 </div>
 
-<div class="s">
+
+<div class="container">
+<div class="content">
+<div class="card createpost-margin">
+    <div>
     {% if user.profile_pics %}
     <a href="{% url 'profile' user_id=user.id %}">
         <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
@@ -47,11 +52,22 @@
     </a>
   {% endif %}
     <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
+<br>
+<br>
+<div>
+    <button class="media-button" onclick="openModal('postModal')">
+        <img id="media-icon" src="/media/post_image/media-icon.png" alt="upload media icon">
+    </button>
+</div>
+</div>
   </div>
-<div class="container">
-    
-{% include 'network/sidebar.html' %}
+</div>
+</div>
 
+{% include 'network/left-sidebar.html' %}
+{% include 'network/right-sidebar.html' %}
+  
+<div class="container">
 
 <div class="content"> 
     <div class="post">  
@@ -59,7 +75,7 @@
             {% for posts in page_post %}
             <section>
                 <br>
-                <div class="card">
+                <div class="card post-card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             {% if posts.user.profile_pics %}
@@ -128,8 +144,35 @@
                           {% include 'network/delete-post.html' %}</p>
                           {% endif %}
 
+                           <div class="reactions-container" data-post-id="{{ posts.id }}">
+                            <button class="react-button" data-reaction="love">Love</button>
+                            <button class="react-button" data-reaction="like">Like</button>
+                            <button class="react-button" data-reaction="sad">Sad</button>
+                            <button class="react-button" data-reaction="haha">Haha</button>
+                            <button class="react-button" data-reaction="shock">Shock</button>
+                        
+                            <!-- Display individual reaction counts -->
+                            <div>
+                                <p>Love: <span class="post_love_count">{{posts.postLove.count}}</span></p>
+                                <p>Like: <span class="post_like_count"></span></p>
+                                <p>Sad: <span class="post_sad_count"></span></p>
+                                <p>Haha: <span class="post_haha_count"></span></p>
+                                <p>Shock: <span class="post_shock_count"></span></p>
+                            </div>
+                        
+                            <!-- Display total count -->
+                            {% with total_count=posts.postLove.count|add:posts.postHaha.count|add:posts.postSad.count|add:posts.postShock.count|add:posts.post_like.count %}
+                          {% if total_count > 0 %}
+                          <p>Total Count: <span class="total_count">{{total_count}}</span></p>
+                          {% else %}
+                            <p>Total Count: <span class="total_count"></span></p>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        
+
                         <!-- Display the number of likes for the post -->
-                        <!-- {% include 'network/likes.html' %} -->
+                        {% include 'network/likes.html' %}
                         <hr>
 
                         <!-- Urlize comments, read more comments, and display comments -->
@@ -165,4 +208,47 @@
 </div>
 </div>
 
+<script>
+
+// Attach a click event listener to each reaction button
+document.querySelectorAll('.react-button').forEach(button => {
+    button.addEventListener('click', () => handleReaction(button));
+});
+
+// Function to handle reactions
+function handleReaction(button) {
+    const postContainer = button.closest('.reactions-container');
+    const post_id = postContainer.dataset.postId;
+    const reactionType = button.dataset.reaction;
+
+    // Fetch URL for your Django view
+    const url = `/post_add_or_remove_reaction/${post_id}/${reactionType}/`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the HTML based on the server's response
+        postContainer.querySelector(`.post_${reactionType}_count`).textContent = data.data[`post_${reactionType}`];
+
+        // Update the total count
+        postContainer.querySelector('.total_count').textContent = data.data.total_count;
+
+        // Optionally, you can handle the success flag to show a message or perform additional actions
+        if (data.data.success) {
+            console.log(`Reaction ${reactionType} added`);
+        } else {
+            console.log(`Reaction ${reactionType} removed`);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+</script>
 {% endblock %}

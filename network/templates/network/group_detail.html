@@ -189,6 +189,34 @@
             {% include 'network/delete_group_post.html' %}</p>
             {% endif %}
 
+            <div class="group-reactions-container" data-post-id="{{ posts.id }}">
+              <button class="group-react-button" data-reaction="love">Love</button>
+              <button class="group-react-button" data-reaction="like">Like</button>
+              <button class="group-react-button" data-reaction="sad">Sad</button>
+              <button class="group-react-button" data-reaction="haha">Haha</button>
+              <button class="group-react-button" data-reaction="shock">Shock</button>
+          
+              <!-- Display individual reaction counts -->
+              <div>
+                  <p>Love: <span class="group_post_love_count">{{posts.group_postLove.count}}</span></p>
+                  <p>Like: <span class="group_post_like_count"></span></p>
+                  <p>Sad: <span class="group_post_sad_count"></span></p>
+                  <p>Haha: <span class="group_post_haha_count"></span></p>
+                  <p>Shock: <span class="group_post_shock_count"></span></p>
+              </div>
+          
+              <!-- Display total count -->
+              {% with total_count=posts.group_postLove.count|add:posts.group_postHaha.count|add:posts.group_postSad.count|add:posts.group_postShock.count|add:posts.group_post_like.count %}
+            {% if total_count > 0 %}
+            <p>Total Count: <span class="group_total_count">{{total_count}}</span></p>
+            {% else %}
+              <p>Total Count: <span class="group_total_count"></span></p>
+              {% endif %}
+              {% endwith %}
+          </div>
+          
+
+
           <!-- Display the number of likes for the post -->
           {% include 'network/group_likes.html' %}
           <hr>
@@ -281,5 +309,48 @@
       }
     </style>
 </div>
+
+<script>
+
+  // Attach a click event listener to each reaction button
+  document.querySelectorAll('.group-react-button').forEach(button => {
+      button.addEventListener('click', () => handleReaction(button));
+  });
   
+  // Function to handle reactions
+  function handleReaction(button) {
+      const postContainer = button.closest('.group-reactions-container');
+      const post_id = postContainer.dataset.postId;
+      const reactionType = button.dataset.reaction;
+  
+      // Fetch URL for your Django view
+      const url = `/group_add_or_remove_reaction/${post_id}/${reactionType}/`;
+  
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+          },
+      })
+      .then(response => response.json())
+      .then(data => {
+          // Update the HTML based on the server's response
+         console.log(postContainer.querySelector(`.group_post_${reactionType}_count`).textContent = data.data[`post_${reactionType}`]);
+  
+          // Update the total count
+          postContainer.querySelector('.group_total_count').textContent = data.data.total_count;
+  
+          // Optionally, you can handle the success flag to show a message or perform additional actions
+          if (data.data.success) {
+              console.log(`Reaction ${reactionType} added`);
+          } else {
+              console.log(`Reaction ${reactionType} removed`);
+          }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+  </script>
 {% endblock %}
