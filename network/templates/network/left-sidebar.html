@@ -81,13 +81,13 @@
         </div>
         -->
         
-        <div class="left-sidebar-items" id="sidebar">
+        <div class="left-sidebar-items" id="sidebar" style="font-family: 'Times New Roman', Times, serif;">
             <!-- Sidebar content here -->
             <ul class="navbar-nav ml-auto">
                 
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'index' %}">Home</a>
+                  
                   </li> 
                   
                 <li class="nav-item">
@@ -108,35 +108,27 @@
                         {% endif %}
                     </a>
                 </li>
+               
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'market' %}">Market</a>
+                   <div style="background-color: white; border-radius: 20px; margin-left: 5%; padding: 15px; box-shadow: 0 4px 8px red; background-clip: padding-box; position: relative; z-index: 0;" class="joined-groups">
+    <h3>Users You're Following</h3>
+    {% if following %}
+        <div class="followed-users">
+            {% for user_followed in following %}
+                <a href="{% url 'profile' user_followed.following.id %}">
+                    <img src="{{ user_followed.following.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle" style="width: 20%; height: 20%;">
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You're not following any users yet.</p>
+    {% endif %}
+</div>
+
+                
+                
+                
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'auctions' %}">Auctions</a>
-            </li>
-                <br>
-                <li class="nav-item">
-                    <label class="switch-label">
-                      Dark/Light
-                      <label class="switch">
-                        <input onclick="toggleBackgroundColor()" type="checkbox" id="toggleSwitch">
-                        <span class="slider round"></span>
-                      </label>
-                    </label>
-                  </li>
-                  <li class="nav-item">
-                  <a href="{% url 'following' %}" class="nav-link">Following</a>
-                </li>
-                <li class="nav-item">
-                <div class="search-form">
-                  <form action="{% url 'search' %}" method="get">
-                      <input class="mav-link" type="text" name="q" placeholder="Search" />
-                  </form>
-              </div>
-                </li>
-                  <li class="nav-item">
-                <a class="nav-link" id="my-groups-btn" href="#">My Groups</a>
-                </li>
                 <li class="nav-item">
                 <a class="nav-link" id="groups-i-joined-btn" href="#">Joined Groups</a>
                 </li>
@@ -146,30 +138,22 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'create_group' %}">Create Group</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'general_library' %}">General Library</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'my_library' %}">My Library</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'announcements' %}">Announcements</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'forum' %}">Forum</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'network_logout' %}">Logout</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'network_login' %}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'network_register' %}">Register</a>
-                </li>
-                {% endif %}
-                <!-- Add more sidebar items here -->
+                
+                <hr>
+                <div style="background-color: white; border-radius: 20px; margin-left: 5%; padding: 15px; box-shadow: 0 4px 8px rgba(238, 75, 5, 0.92); background-clip: padding-box; position: relative; z-index: -1;" class="joined-groups">
+                  <h3>Groups</h3>
+                  {% if groups_i_joined %}
+                      <ul style="list-style-type: none; padding: 0; margin: 0;">
+                          {% for group in groups_i_joined %}
+                              <li><i class="fas fa-users" style="margin-right: 5px;"></i>  {{ group.name | truncatechars:20 }}</li>
+                          {% endfor %}
+                      </ul>
+                  {% else %}
+                      <p>No group joined yet.</p>
+                  {% endif %}
+              </div>
+              {% endif %}
+
             </ul>
         </div>
 

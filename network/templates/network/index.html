@@ -5,38 +5,6 @@
 {% block body %}
 
 
-<!-- Top page items design -->
-<div class="container-fluid top-page">
-    <div class="row">
-        <div class="col-l">
-            <img src="/media/post_image/suqlogo.png" id="index-suqlogo" style="margin-top: 10px;">
-        </div>
-        <div class="col-md-3">
-            <div>
-                <form action="{% url 'search' %}" method="get" style="margin-top: 10px;">
-                    <input id="search-button" type="text" name="q" placeholder="Search" />
-                </form>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <!-- Content for Column 3 -->
-            <i class="fas fa-home top-page" style="margin-top: 10px;"></i>
-        </div>
-        <div class="col-md-2">
-            <!-- Content for Column 4 -->
-            <i class="fas fa-users top-page" style="margin-top: 10px;"></i>
-        </div>
-        <div class="col-md-2" style="margin-top: 10px;">
-            <!-- Content for Column 5 -->
-            <p>Column 5</p>
-        </div>
-        <div class="col-md-2">
-            <!-- Content for Column 6 -->
-        <i class="fas fa-bell top-page" style="margin-top: 10px;"></i>
-        </div>
-    </div>
-</div>
-
 
 <div class="container">
 <div class="content">
@@ -144,30 +112,45 @@
                           {% include 'network/delete-post.html' %}</p>
                           {% endif %}
 
+                         
                            <div class="reactions-container" data-post-id="{{ posts.id }}">
-                            <button class="react-button" data-reaction="love">Love</button>
-                            <button class="react-button" data-reaction="like">Like</button>
-                            <button class="react-button" data-reaction="sad">Sad</button>
-                            <button class="react-button" data-reaction="haha">Haha</button>
-                            <button class="react-button" data-reaction="shock">Shock</button>
+
+                            <button class="react-button" data-reaction="like">
+                                <img src="/media/post_image/black.png" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="Like post"/>
+                            </button>
+                            
+                            <button class="react-button" data-reaction="love">
+                                <img src="/media/post_image/mashaa.gif" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="love post"/>
+                            </button>
+            
+                            <button class="react-button" data-reaction="sad">
+                                <img src="/media/post_image/sad_emoji.gif" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="sad reaction"/>
+                            </button>
+                            <button class="react-button" data-reaction="haha">
+                                <img src="/media/post_image/funny.gif" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="haha at post"/>
+                            
+                            </button>
+                            <button class="react-button" data-reaction="shock">
+                                <img src="/media/post_image/shock-emoji.gif" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="shock reaction"/>
+                            </button>
                         
-                            <!-- Display individual reaction counts -->
+                            <!-- Display individual reaction counts 
                             <div>
-                                <p>Love: <span class="post_love_count">{{posts.postLove.count}}</span></p>
+                                <p>Love: <span class="post_love_count"></span></p>
                                 <p>Like: <span class="post_like_count"></span></p>
                                 <p>Sad: <span class="post_sad_count"></span></p>
                                 <p>Haha: <span class="post_haha_count"></span></p>
                                 <p>Shock: <span class="post_shock_count"></span></p>
-                            </div>
+                            </div> -->
                         
-                            <!-- Display total count -->
+                            <!-- Display total count 
                             {% with total_count=posts.postLove.count|add:posts.postHaha.count|add:posts.postSad.count|add:posts.postShock.count|add:posts.post_like.count %}
                           {% if total_count > 0 %}
-                          <p>Total Count: <span class="total_count">{{total_count}}</span></p>
+                          <p>Total Count: <span id="total_count" class="total_count">{{total_count}}</span></p>
                           {% else %}
-                            <p>Total Count: <span class="total_count"></span></p>
+                            <p>Total Count: <span id="total_count" class="total_count"></span></p>
                             {% endif %}
-                            {% endwith %}
+                            {% endwith %}-->
                         </div>
                         
 

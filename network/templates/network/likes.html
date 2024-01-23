@@ -2,106 +2,15 @@
 {% load my_filters %}
 {% load static %}
 
+<br>
+<br>
 <hr style="border-color: black;">
-<div class="img-fluid react_space" id="react_space">
-    <div class="reaction-button" id="reaction-buttons-{{ posts.id }}">
-      {% if user.is_authenticated %}
-        {% if request.user in posts.user_like.all %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='like' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='like' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}"/>
-            <button style="background: none; border: none;">
-              <img src="/media/post_image/black.png" class="rounded-circle" style="background-color: white;" width="30" height="30" alt="Maa Shaa Allah"/>
-            </button>
-          </form>
-        {% endif %}
-  
-        {% if request.user in posts.userLove.all %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='love' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='love' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}" />
-            <button style="background: none; border: none;">
-              <img src="/media/post_image/mashaa.gif" class="rounded-circle" width="50" height="50" alt="Maa Shaa Allah"/>
-            </button>
-          </form>
-        {% endif %}
-  
-        {% if request.user in posts.userSad.all %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='sad' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlike_sad" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='sad' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}" />
-            <button style="background: none; border: none;">
-              <img src="/media/post_image/sad_emoji.gif" class="rounded-circle" width="50" height="50" alt="Allah akbar"/>
-            </button>
-          </form>
-        {% endif %}
-  
-        {% if request.user in posts.userHaha.all %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='haha' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlikePost" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='haha' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="likePost" value="{{ posts.id }}" />
-            <button style="background: none; border: none;">
-              <img src="/media/post_image/funny.gif" class="rounded-circle" width="50" height="50" alt="Maa Shaa Allah"/>
-            </button>
-          </form>
-        {% endif %}
-  
-        {% if request.user in posts.userShock.all %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='shock' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="unlike_shock" value="{{ posts.id }}" />
-            <button>
-              <i class="fa fa-thumbs-down"></i> Unlike
-            </button>
-          </form>
-        {% else %}
-          <form action="{% url 'post_add_or_remove_reaction' post_id=posts.id reaction_type='shock' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="shockPost" value="{{ posts.id }}" />
-            <button style="background: none; border: none;">
-              <img src="/media/post_image/shock-emoji.gif" class="rounded-circle" width="50" height="50" alt="Subhanallah"/>
-            </button>
-          </form>
-        {% endif %}
-      {% endif %}
-    </div>
+
   
     <div class="horizontal-container">
       <div class="">
         <button class="like-btn" data-post-id="{{ posts.id }}" style="background: none; border: none; padding: 0; width: 30px; height: 40px;">
-          <img src="/media/post_image/black.png" width="100%" height="100%" alt="reaction-button" title="reaction">
+          <img src="/media/post_image/cool.png" width="100%" height="100%" alt="reaction-button" title="reaction">
         </button>
       </div>
 
@@ -116,7 +25,7 @@
     
   </h3>
   <button style="background: none; border: none; padding: 0; width: 24px; height: 35px;" onclick="shareFile('https:\//suqspehere.com/post_content/{{ posts.id }}')">
-    <img src="/media/post_image/shareblack.png" width="100%" height="100%" alt="Share" title="Share">
+    <img src="/media/post_image/share.png" width="100%" height="100%" alt="Share" title="Share">
   </button>
 {% endwith %}
     </div>

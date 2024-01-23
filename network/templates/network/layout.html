@@ -27,13 +27,65 @@
 </head>
 
 <body id="body">
-    {% if user.is_authenticated %}
-    <button id="menu-link" class="rotated-text">Open Menu</button>
-    {% endif %}
-    <div class="body">
-        {% block body %}{% endblock %}
+    {% if request.user.is_authenticated %}
+    <div class="container-fluid top-page">
+        <div class="row">
+            <div class="col-l">
+                <img src="/media/post_image/suqlogo.png" id="index-suqlogo">
+            </div>
+            <div class="col-md-3">
+                <div id="search-icon">
+                    <form action="{% url 'search' %}" method="get" style="margin-top: 10px;">
+                        <i class="fas fa-search"></i>
+                        <input id="search-button" type="text" name="q" placeholder="Search" />
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <!-- Content for Column 3 -->
+                <a href="{% url 'index' %}">
+                <i class="fas fa-home top-page" style="margin-top: 10px;"></i>
+            </a>
+                
+            </div>
+            <div class="col-md-2">
+                <!-- Content for Column 4 -->
+                <a href="{% url 'network_logout' %}">
+                <i class="fas fa-sign-out-alt top-page" style="margin-top: 10px;"></i>
+                </a>
+            </div>
+            <div class="col-md-2" style="margin-top: 10px;">
+                <!-- Content for Column 5 -->
+                <p><label class="switch-label">
+                    <i id="mode-icon" class="fas fa-sun"></i>
+                     <label class="switch">
+                       <input onclick="toggleBackgroundColor()" type="checkbox" id="toggleSwitch">
+                       <span class="slider round"></span>
+                     </label>
+                   </label></p>
+            </div>
+            <div class="col-md-2">
+                <!-- Content for Column 6 -->
+            <i class="fas fa-bell top-page" style="margin-top: 10px;"></i>
+            </div>
+        </div>
     </div>
-</div>
+
+    <div class="side-cards-container">
+        <a href="{% url 'market' %}">
+        <button id="market-side-card" class="rotated-text">Market</button>
+        </a>
+        <a href="{% url 'auctions' %}">
+        <button id="auctions-side-card" class="rotated-text">Auctions</button>
+        </a>
+        <a href="{% url 'index' %}">
+        <button id="intellectual-hub-side-card" class="rotated-text">Intellectual Hub</button>
+        </a>
+    </div>
+    {% endif %}
+    
+        {% block body %}{% endblock %}
+    
 
 <script>
     const body = document.getElementById('body');

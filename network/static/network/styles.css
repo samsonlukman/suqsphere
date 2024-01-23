@@ -1,15 +1,37 @@
+body {
+  background-color:#f0f3f5; 
+}
+
+/* css for the search button at the top page */
+#search-icon {
+  z-index: 2; /* Higher z-index to appear on top */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Box shadow for the "lifted" effect */
+            border-radius: 10px;
+            border: 5px solid white;
+           
+           
+}
+
+#search-button {
+  border: none;
+}
+
+
+
 /* css for suqsphere logo on top page */
 #index-suqlogo {
   border-radius: 50%;
-  width: 70px; 
-  height: 70px;
+  width: 30px; 
+  height: 30px;
 }
 
 .top-page {
-  color: darkolivegreen;
+  background-color: white;
+  color: black;
   position: fixed;
   z-index: 1000;
-  background-color: #BABABA;
+  box-shadow: 0 10px 20px black;
+  border-radius: 20px;
 }
 
 #news-and-trends-line {
@@ -76,17 +98,20 @@
 
 .post-card {
  margin-top: -20px;
-  background-color: #E2EFFF;
+  background-color: white;
   border-radius: 20px;
   width: 70%;
+  z-index: 500;
+  box-shadow: 0 10px 20px black;
 }
 
 /* css for create post border and margin */
 .createpost-margin {
-  background-color: #E2EFFF;
   border-radius: 20px;
   width: 70%;
   margin-top: 90px;
+  z-index: 500;
+  box-shadow: 0 10px 20px black;
 }
 .card-text {
   margin-top: -30px;
@@ -97,6 +122,7 @@
   display: inline-block;
   width: 60px;
   height: 20px;
+  margin-left: 10px;
 }
 
 .switch input {
@@ -192,7 +218,12 @@ input:checked + .slider:before {
         height: auto;
   margin-top: -40px;
 }
+
 /* CSS for Reaction Buttons */
+.react-button {
+  background: none; border: none;
+}
+
 
 .reaction-columns {
   display: flex;
@@ -458,6 +489,7 @@ input:checked + .slider:before {
   background-color: white;
 }
 
+
 /* CSS for cropping the image from the right */
   .crop-image-from-right {
     overflow: hidden;
@@ -575,21 +607,52 @@ input:checked + .slider:before {
   font-weight: bold;
 }
 
+/* styling for auctions, market and intellectual hub by the side */
+
 .rotated-text {
   transform: rotate(270deg);
   background-color: white;
     color: #333;
     position: fixed;
-    border-radius: 10px;
-    top: 50%;
-    right: 5px;
-    background-color:rgb(50, 3, 56);
+    width: 10%;
+    display: flex;
     color: white;
     font-family:Arial, Helvetica, sans-serif;
     cursor: pointer;
     font-size: larger;
     z-index: 4000;
+    justify-content: center;
+    border-radius: 10px;
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    
+    
 }
+
+#market-side-card {
+  top: 71%;
+  right: -50px;
+  background-color: red;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 5000;
+}
+
+#intellectual-hub-side-card {
+  right: -65px;
+  top: 48%;
+  width: 12%;
+  background-color: #486006;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+#auctions-side-card {
+  right: -50px;
+  top: 25%;
+  background-color: green;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+
 
 /* Adjust the image size for larger screens if needed */
 @media (min-width: 992px) {
@@ -724,7 +787,7 @@ input:checked + .slider:before {
 
 #create-post-field {
   background-color: white;
-  border: 0.5px solid white;
+  border: 0.5px solid black;
   border-radius: 20px;
   padding: 2px 150px;
   font-size: 14px;
@@ -744,7 +807,6 @@ input:checked + .slider:before {
 
 
 .feed-button,
-.search-button,
 .thought-button {
   background-color: #4B9CD3;
   border: 0.5px solid #0805c1;
@@ -951,8 +1013,6 @@ footer {
   left: -1px; 
   width: 30%;
   height: calc(100vh - 80px); /* Adjusted height to include margin-top */
-  background-color: #4B9CD3;
-  color: white;
   border: 0.5px solid #0805c1;
   overflow-y: auto; /* Allow vertical scrolling */
   transition: left 0.3s ease;
