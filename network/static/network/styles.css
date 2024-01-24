@@ -26,6 +26,7 @@ body {
 }
 
 .top-page {
+  top: 0;
   background-color: white;
   color: black;
   position: fixed;
@@ -34,23 +35,7 @@ body {
   border-radius: 20px;
 }
 
-#news-and-trends-line {
-  width: 100%;
-  margin-top: 30px;
-  margin-bottom: 0;
-  border-top: 1px solid #333;
-}
 
-#news-and-trends {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
-  position: relative;
-  top: 30px; /* Adjust the vertical position as needed */
-  /* Adjust the background color of the text container */
-  padding: 0 16px; /* Adjust the padding as needed */
-  display: inline-block; /* Ensures that the background color only covers the text */
-}
 
 .general-border {
   margin-top: -140px; 
@@ -108,10 +93,15 @@ body {
 /* css for create post border and margin */
 .createpost-margin {
   border-radius: 20px;
-  width: 70%;
   margin-top: 90px;
   z-index: 500;
   box-shadow: 0 10px 20px black;
+  flex: 1;
+ 
+  padding: 10px;
+  box-sizing: border-box;
+  margin-left: 350px;
+  width: 600px;
 }
 .card-text {
   margin-top: -30px;
@@ -630,7 +620,7 @@ input:checked + .slider:before {
 
 #market-side-card {
   top: 71%;
-  right: -50px;
+  left: 1260px;
   background-color: red;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   z-index: 5000;
@@ -983,13 +973,14 @@ footer {
   margin-top: -120px; z-index: 2000; position: fixed;margin-left: 130px;
 }
 
-.content {
+/* design for post border */
+.post-border-position {
   flex: 1;
  
   padding: 10px;
   box-sizing: border-box;
-  margin-left: 300px;
-  width: 200%;
+  margin-left: 330px;
+  width: 900px;
 }
 
 .rounded-circle {
@@ -1010,14 +1001,15 @@ footer {
   margin-top: 80px;
   position: fixed;
   top: 0;
-  left: -1px; 
-  width: 30%;
+  left: 40px; 
+  width: 300px;
   height: calc(100vh - 80px); /* Adjusted height to include margin-top */
   border: 0.5px solid #0805c1;
   overflow-y: auto; /* Allow vertical scrolling */
   transition: left 0.3s ease;
   font-family: Arial, Helvetica, sans-serif;
   border: none;
+  background-color: red;
 
 }
 
@@ -1026,8 +1018,8 @@ footer {
   margin-top: 80px;
   position: fixed;
   top: 0;
-  right: -1px; 
-  width: 25%;
+  left: 970px; 
+  width: 350px;
   height: calc(100vh - 80px); /* Adjusted height to include margin-top */
   background-color: #4B9CD3;
   color: white;
