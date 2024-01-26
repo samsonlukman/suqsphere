@@ -1,0 +1,23 @@
+<!--This page contains the create post container-->
+
+<div class="container createpost-margin">
+    <div class="">
+    {% if user.profile_pics %}
+    <a href="{% url 'profile' user_id=user.id %}">
+        <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
+    </a>
+  {% else %}
+    <a href="{% url 'profile' user_id=user.id %}">
+        <img src="/media/post_image/nodp.jpg" class="index-post-circle-image">
+    </a>
+  {% endif %}
+    <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
+<br>
+<br>
+<div>
+    <button class="media-button" onclick="openModal('postModal')">
+        <img id="media-icon" src="/media/post_image/media-icon.png" alt="upload media icon">
+    </button>
+</div>
+</div>
+  </div>

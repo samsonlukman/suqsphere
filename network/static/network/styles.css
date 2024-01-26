@@ -31,7 +31,7 @@ body {
   color: black;
   position: fixed;
   z-index: 1000;
-  box-shadow: 0 10px 20px black;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
   border-radius: 20px;
 }
 
@@ -82,14 +82,56 @@ body {
 
 
 .post-card {
- margin-top: -20px;
-  background-color: white;
+  background-color: #f0f8ff;
   border-radius: 20px;
-  width: 70%;
+  width: 55%;
+  margin-left: 250px;
   z-index: 500;
   box-shadow: 0 10px 20px black;
+  
+}
+.center {
+  margin: auto;
+  width: 82%;
+  background-color: #f0f8ff;
+  padding: 10px;
+  text-align: center;
+  position: relative; /* Important for z-index to work */
 }
 
+.center > div {
+  display: inline-block;
+  text-align: left;
+}
+
+.image-profile {
+  position: absolute;
+  top: -120px; /* Adjust the value based on your design */
+  left: 15%;
+  transform: translateX(-50%);
+  z-index: 1; /* Ensure it appears above other elements */
+}
+
+.user-details {
+  margin-left: 300px; /* Adjust the margin as needed */
+}
+
+#editBioBtn{
+  margin-left: 700px;
+  margin-top: -100px;
+}
+
+.post-cards {
+  margin-top: -20px;
+   background-color: #f0f8ff;
+   border-top-left-radius: 0; /* adjust the value as needed */
+  border-top-right-radius: 0; /* adjust the value as needed */
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+   width: 65%;
+   z-index: 500;
+
+ }
 /* css for create post border and margin */
 .createpost-margin {
   border-radius: 20px;
@@ -97,14 +139,18 @@ body {
   z-index: 500;
   box-shadow: 0 10px 20px black;
   flex: 1;
- 
+ background-color: #f0f8ff;
   padding: 10px;
   box-sizing: border-box;
-  margin-left: 350px;
   width: 600px;
 }
 .card-text {
   margin-top: -30px;
+}
+
+/* design for user profile cover */
+.user-profile-cover{
+
 }
 /* Slider with left and right motion */
 .switch {
@@ -620,14 +666,14 @@ input:checked + .slider:before {
 
 #market-side-card {
   top: 71%;
-  left: 1260px;
+  left: 68%; /* Adjust as needed */
   background-color: red;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   z-index: 5000;
 }
 
 #intellectual-hub-side-card {
-  right: -65px;
+  left: 67%; /* Adjust as needed */
   top: 48%;
   width: 12%;
   background-color: #486006;
@@ -635,12 +681,13 @@ input:checked + .slider:before {
 }
 
 #auctions-side-card {
-  right: -50px;
+  left: 68%; /* Adjust as needed */
   top: 25%;
   background-color: green;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
+
 
 
 
@@ -975,12 +1022,7 @@ footer {
 
 /* design for post border */
 .post-border-position {
-  flex: 1;
- 
-  padding: 10px;
-  box-sizing: border-box;
-  margin-left: 330px;
-  width: 900px;
+
 }
 
 .rounded-circle {
@@ -1005,31 +1047,40 @@ footer {
   width: 300px;
   height: calc(100vh - 80px); /* Adjusted height to include margin-top */
   border: 0.5px solid #0805c1;
+  border: none;
   overflow-y: auto; /* Allow vertical scrolling */
   transition: left 0.3s ease;
   font-family: Arial, Helvetica, sans-serif;
-  border: none;
-  background-color: red;
-
+  scrollbar-width: thin; /* "thin" for a subtle scrollbar, "none" to completely hide it */
+  scrollbar-color: transparent transparent;
 }
 
-/* css for right sidebar */
-.right-sidebar-items {
-  margin-top: 80px;
-  position: fixed;
-  top: 0;
-  left: 970px; 
-  width: 350px;
-  height: calc(100vh - 80px); /* Adjusted height to include margin-top */
-  background-color: #4B9CD3;
-  color: white;
-  border: 0.5px solid #0805c1;
-  overflow-y: auto; /* Allow vertical scrolling */
-  transition: left 0.3s ease;
-  font-family: Arial, Helvetica, sans-serif;
-  border: none;
-
+.left-sidebar-items::-webkit-scrollbar {
+  width: 6px; /* Set the width of the scrollbar */
 }
+
+.left-sidebar-items::-webkit-scrollbar-thumb {
+  background-color: transparent; /* Make the scrollbar thumb transparent */
+}
+
+.followed-users {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.followed-users a {
+  flex: 0 0 calc(30% - 10px); /* Three images per row with spacing */
+  margin-bottom: 10px; /* Adjust as needed */
+  box-sizing: border-box;
+}
+
+.followed-users img {
+  width: 70%;
+  height: auto;
+}
+
+
 
 
 .navbar-nav {

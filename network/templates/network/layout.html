@@ -71,17 +71,6 @@
         </div>
     </div>
 
-    <div class="side-cards-container">
-        <a href="{% url 'market' %}">
-        <button id="market-side-card" class="rotated-text">Market</button>
-        </a>
-        <a href="{% url 'auctions' %}">
-        <button id="auctions-side-card" class="rotated-text">Auctions</button>
-        </a>
-        <a href="{% url 'index' %}">
-        <button id="intellectual-hub-side-card" class="rotated-text">Intellectual Hub</button>
-        </a>
-    </div>
     {% endif %}
     
         {% block body %}{% endblock %}

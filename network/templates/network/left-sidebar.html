@@ -68,13 +68,8 @@
     </div>
   </div> 
 
-  
- 
 
-        <br>
-        
-
-    <div class="">
+    <div class="container">
         <!-- hidden open menu
         <div class="nav-item">
             <button  class="nav-link menu-link">Open Menu</button>
@@ -91,13 +86,12 @@
                   </li> 
                   
                 <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'profile' user_id=user.id %}">
-                        {% if user.first_name|length > 15 %}
-                        {{ user.first_name | slice:":15"}}...
-                        {% else %}
-                        {{ user.first_name }}
-                        {% endif %}
-                    </a>
+                  <a class="nav-link" href="{% url 'profile' user_id=user.id %}">
+                    {% if user.first_name and user.last_name %}
+                        {{ user.first_name }} {{ user.last_name|truncatechars:10 }}
+                    {% endif %}
+                </a>
+                
                 </li>
                 <li class="nav-item">
                     <a class="nav-link"  href="{% url 'profile' user_id=user.id %}">
@@ -108,27 +102,27 @@
                         {% endif %}
                     </a>
                 </li>
-               
-                <li class="nav-item">
-                   <div style="background-color: white; border-radius: 20px; margin-left: 5%; padding: 15px; box-shadow: 0 4px 8px red; background-clip: padding-box; position: relative; z-index: 0;" class="joined-groups">
-    <h3>Users You're Following</h3>
-    {% if following %}
-        <div class="followed-users">
-            {% for user_followed in following %}
-                <a href="{% url 'profile' user_followed.following.id %}">
-                    <img src="{{ user_followed.following.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle" style="width: 20%; height: 20%;">
-                </a>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>You're not following any users yet.</p>
-    {% endif %}
-</div>
-
-                
-                
-                
-              </li>
+               <hr>
+               <li class="nav-item">
+                <div class="sidebar-following">
+                    <small>Users You're Following</small>
+                    <br>
+                    <br>
+                    {% if following %}
+                        <div class="followed-users">
+                            {% for user_followed in following %}
+                                <a href="{% url 'profile' user_followed.following.id %}">
+                                  <br>
+                                    <img src="{{ user_followed.following.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle">
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <small>You're not following any users yet.</small>
+                    {% endif %}
+                </div>
+            </li>
+            <hr>
                 <li class="nav-item">
                 <a class="nav-link" id="groups-i-joined-btn" href="#">Joined Groups</a>
                 </li>
@@ -140,23 +134,24 @@
                 </li>
                 
                 <hr>
-                <div style="background-color: white; border-radius: 20px; margin-left: 5%; padding: 15px; box-shadow: 0 4px 8px rgba(238, 75, 5, 0.92); background-clip: padding-box; position: relative; z-index: -1;" class="joined-groups">
-                  <h3>Groups</h3>
+                <div class="sidebar-groups">
+                  <h4>Groups</h4>
                   {% if groups_i_joined %}
                       <ul style="list-style-type: none; padding: 0; margin: 0;">
                           {% for group in groups_i_joined %}
-                              <li><i class="fas fa-users" style="margin-right: 5px;"></i>  {{ group.name | truncatechars:20 }}</li>
+                              <li><i class="fas fa-users" style="margin-right: 5px;"></i><small>  {{ group.name | truncatechars:20 }} </small></li>
                           {% endfor %}
                       </ul>
                   {% else %}
-                      <p>No group joined yet.</p>
+                      <small>No group joined yet.</small>
                   {% endif %}
               </div>
               {% endif %}
 
             </ul>
         </div>
-
+    </div>
+    
        
             
           

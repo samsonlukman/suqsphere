@@ -5,43 +5,22 @@
 {% block body %}
 
 
+<!--The create post container, border and button-->
+{% include 'network/create-post.html' %}
 
-<div class="">
-<div class="">
-<div class="card createpost-margin">
-    <div>
-    {% if user.profile_pics %}
-    <a href="{% url 'profile' user_id=user.id %}">
-        <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
-    </a>
-  {% else %}
-    <a href="{% url 'profile' user_id=user.id %}">
-        <img src="/media/post_image/nodp.jpg" class="index-post-circle-image">
-    </a>
-  {% endif %}
-    <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
-<br>
-<br>
-<div>
-    <button class="media-button" onclick="openModal('postModal')">
-        <img id="media-icon" src="/media/post_image/media-icon.png" alt="upload media icon">
-    </button>
-</div>
-</div>
-  </div>
-</div>
-</div>
-
+<!--The sidebar on the left-->
 {% include 'network/left-sidebar.html' %}
+
+<!--The sidebar on the right-->
 {% include 'network/right-sidebar.html' %}
   
-<div class="">
 
-<div class="post-border-position"> 
-    <div class="post">  
-        <div id="posts">
+
+
             {% for posts in page_post %}
-            <section>
+            <br>
+            
+            <section class="container">
                 <br>
                 <div class="card post-card">
                     <div class="card-body">
@@ -169,9 +148,9 @@
                 </div>
             </section>
             {% endfor %}
-        </div>
-    </div>
-</div>
+        
+
+
 
 <!-- Your pagination code here -->
 {% include 'network/newpost-modal.html' %}

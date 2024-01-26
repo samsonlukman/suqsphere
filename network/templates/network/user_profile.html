@@ -4,6 +4,8 @@
 {% load my_filters %}
 {% block body %}
 
+
+<!--
 <div class="container">
 <div class="content">
   <div class="post">
@@ -37,7 +39,7 @@
         {% endif %}
           {% endif %}
 </div>
-
+-->
 
 <!-- Modal -->
 <div id="editBioModal" class="modal">
@@ -101,16 +103,50 @@
   }
 </script>
 
-<div class="">
+<div class="container" style="margin-top: 100px; position: relative;">
+  {% if userProfile.profile_pics %}
+      <img src="/media/post_image/ttta.png" width="1110" height="180"> 
+  {% else %} 
+      <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
+  {% endif %}
+</div>
+
+<div class="container center">
+<div class="image-profile">
+  {% if userProfile.profile_pics %}
+  <img src="{{ userProfile.profile_pics.url }}" width="200" height="200" class="rounded-circle" style="border: 8px solid rgb(4, 81, 247)">
+  {% else %} 
+      <img src="/media/post_image/nodp.jpg"width="150" height="150" class="rounded-circle" style="border: 8px solid rgb(4, 81, 247)">
+  {% endif %}
+  </div>
+<div class="user-details">
+  <h2 style="color: #1b0fbb;">@{{ user.username }}</h2>
+  {% if userProfile.about %}
+    <p style="color: #1b0fbb;"><strong>About: </strong> <small>{{ userProfile.about|urlize }}</small></p>
+  {% else %}
+    <p>About: ...</p>
+  {% endif %}
+  <p style="color: #1b0fbb;"><strong>Email: </strong> <small> {{ userProfile.email|urlize }} <small></p>
+  <p style="color: #1b0fbb;"><strong>Phone Number:</strong> <small>{{ userProfile.phone_number|urlize }} </small></p>
+  <a href="">
+    <strong style="color: #1b0fbb;">See details</strong>
+  </a>
+  {% if user == userProfile %}
+  <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">
+    Edit <i class="fas fa-edit"></i>
+  </button>
+  {% endif %}
+</div>
+</div>
+
+
+<div class="container">
 <div class="post">
-  <div class="card">
+  <div class="post-car" style="width: 820; height: 312;">
     <div class="card-body">
       <div class="d-flex align-items-center">
-        {% if userProfile.profile_pics %}
-          <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
-          {% else %} 
-          <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
-          {% endif %}
+        
+          <!---
         <div class="ml-3">
           <h4 class="">
             {{ userProfile.first_name }} {{ userProfile.last_name }}
@@ -120,28 +156,15 @@
           </p>
           <br>
           
-          <!-- Button to open the modal -->
+         
 {% if user == userProfile %}
 <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
 {% endif %}
         </div>
+        -->
       </div>
-      <hr>
-      <div>
-        <p>
-           Email: {{ userProfile.email }}
-          </p>
-          <p class="">
-            Phone Number: {{ userProfile.phone_number }}
-          </p>
-        {% if userProfile.about %}
-        <p>{{ userProfile.about|urlize }}</p>
-      {% else %}
-        <p>About: ...</p>
-      {% endif %}
       
-       
-</div>
+     
 
         
       </div>
@@ -151,48 +174,15 @@
 <br>
 <br>
 
-<div class="shae-thought">
-  {% if user.profile_pics %}
-  <a href="{% url 'profile' user_id=user.id %}">
-      <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
-  </a>
-{% else %}
-  <a href="{% url 'profile' user_id=user.id %}">
-      <img src="/media/post_image/nodp.jpg" class="index-post-circle-image">
-  </a>
-{% endif %}
-  <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
+<div style="position: relative; top: -140px;">
+  {% include 'network/create-post.html' %}
 </div>
-<div id="posts">
+
+
   {% for posts in page_post %}
   <br>
-  <section>
-    <div>
-      <div class="d-flex align-items-center">
-        {% if posts.sharepost_set.all %}
-          {% with sharer=posts.sharepost_set.all.0.sharer %}
-            {% if sharer.profile_pics %}
-              <a href="{% url 'profile' user_id=sharer.id %}">
-                <img src="{{ sharer.profile_pics.url }}" class="rounded-circle" width="30" height="30">
-              </a>
-            {% else %}
-              <a href="{% url 'profile' user_id=sharer.id %}">
-                <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="30" height="30">
-              </a>
-            {% endif %}
-            <div class="ml-3">
-              <h5 class="card-title mb-1">
-                <!-- Display a link to the sharer's profile -->
-                <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=sharer.id %}">{{ sharer.first_name }} {{ sharer.last_name }} shared a post</a>
-                <small><p>{{ posts.sharepost_set.all.0.timestamp }}</p></small>
-              </h5>
-              
-            </div>
-          {% endwith %}
-        {% endif %}
-        <hr>
-      </div>
-      <div class="card">
+  <section class="container" style="position: relative; top: -140px;">
+      <div class="card post-card">
         <div class="card-body">
           <div class="d-flex align-items-center">
             
@@ -272,9 +262,7 @@
   </div>
   </section>
 {% endfor %}
-</div>
-</div>
-</div>
+
 
 
 {% include 'network/newpost-modal.html' %}
