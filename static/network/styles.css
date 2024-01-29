@@ -1,10 +1,41 @@
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  z-index: 20000;
- 
+  background-color:#f0f3f5; 
 }
+
+/* css for the search button at the top page */
+#search-icon {
+  z-index: 2; /* Higher z-index to appear on top */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Box shadow for the "lifted" effect */
+            border-radius: 10px;
+            border: 5px solid white;
+           
+           
+}
+
+#search-button {
+  border: none;
+}
+
+
+
+/* css for suqsphere logo on top page */
+#index-suqlogo {
+  border-radius: 50%;
+  width: 30px; 
+  height: 30px;
+}
+
+.top-page {
+  top: 0;
+  background-color: white;
+  color: black;
+  position: fixed;
+  z-index: 1000;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+}
+
+
 
 .general-border {
   margin-top: -140px; 
@@ -14,7 +45,6 @@ body {
   height: 1000px;
   width: 45.5%;
 }
-
 
 
 .search-form {
@@ -50,17 +80,103 @@ body {
 }
 
 
-.card {
- 
+/* index page post margin styling */
+.post-card {
+  background-color: #f0f8ff;
+  border-radius: 20px;
+  width: 55%;
+  margin-left: 250px;
+  z-index: 500;
+ /* box-shadow: 0 10px 20px black; */
   
-  border-color: black;
-  border-radius: 30px;
-  width: 100%;
+}
+/* profile page post margin styling */
+.profile-posts-margin {
+  background-color: #f0f8ff;
+  border-radius: 20px;
+  width: 55%;
+  margin-left: 400px;
+}
+.center {
+  margin: auto;
+  width: 82%;
+  background-color: #f0f8ff;
+  padding: 10px;
+  text-align: center;
+  position: relative; /* Important for z-index to work */
 }
 
+.center > div {
+  display: inline-block;
+  text-align: left;
+}
+
+.image-profile {
+  position: absolute;
+  top: -120px; /* Adjust the value based on your design */
+  left: 15%;
+  transform: translateX(-50%);
+  z-index: 1; /* Ensure it appears above other elements */
+}
+
+.user-details {
+  margin-left: 300px; /* Adjust the margin as needed */
+}
+
+#editBioBtn{
+  margin-left: 700px;
+  margin-top: -100px;
+}
+
+.post-cards {
+  margin-top: -20px;
+   background-color: #f0f8ff;
+   border-top-left-radius: 0; /* adjust the value as needed */
+  border-top-right-radius: 0; /* adjust the value as needed */
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+   width: 65%;
+   z-index: 500;
+
+ }
+/* css for create post border and margin */
+.createpost-margin {
+  border-radius: 20px;
+  margin-top: 90px;
+  z-index: 500;
+ /* box-shadow: 0 10px 20px black; */
+  flex: 1;
+ background-color: #f0f8ff;
+  padding: 10px;
+  box-sizing: border-box;
+  width: 600px;
+}
+
+.profile-createpost-margin {
+  border-radius: 20px;
+  margin-top: 90px;
+  z-index: 500;
+ /* box-shadow: 0 10px 20px black; */
+ background-color: #f0f8ff;
+  padding: 10px;
+  box-sizing: border-box;
+  width: 600px;
+  margin-left: 400px;
+}
+
+/* Add styles for the sidebar container */
+.sidebar-container {
+  position: relative;
+  top: -120px; /* Adjust the value as needed */
+}
 
 .card-text {
   margin-top: -30px;
+}
+
+/* design for user profile cover */
+.user-profile-cover{
+
 }
 /* Slider with left and right motion */
 .switch {
@@ -68,6 +184,7 @@ body {
   display: inline-block;
   width: 60px;
   height: 20px;
+  margin-left: 10px;
 }
 
 .switch input {
@@ -148,7 +265,27 @@ input:checked + .slider:before {
 .text-black{
   margin-top: 20px;
 }
+
+/* removes styling from media button */
+.media-button {
+  border: none; /* Remove the border */
+        padding: 0; /* Remove padding */
+        background-color: transparent; /* Make the background transparent */
+        cursor: pointer;
+  border: none; margin-left: 400px;
+}
+
+#media-icon {
+  width: 30px; /* Adjust the width as needed */
+        height: auto;
+  margin-top: -40px;
+}
+
 /* CSS for Reaction Buttons */
+.react-button {
+  background: none; border: none;
+}
+
 
 .reaction-columns {
   display: flex;
@@ -405,9 +542,7 @@ input:checked + .slider:before {
 
 
 
-.container {
-  margin-bottom: 20px;
-}
+
 
 .horizontal-container {
   display: flex;
@@ -415,6 +550,7 @@ input:checked + .slider:before {
   gap: 10px;
   background-color: white;
 }
+
 
 /* CSS for cropping the image from the right */
   .crop-image-from-right {
@@ -533,21 +669,53 @@ input:checked + .slider:before {
   font-weight: bold;
 }
 
+/* styling for auctions, market and intellectual hub by the side */
+
 .rotated-text {
   transform: rotate(270deg);
   background-color: white;
     color: #333;
     position: fixed;
-    border-radius: 10px;
-    top: 50%;
-    right: 5px;
-    background-color:rgb(50, 3, 56);
+    width: 10%;
+    display: flex;
     color: white;
     font-family:Arial, Helvetica, sans-serif;
     cursor: pointer;
     font-size: larger;
     z-index: 4000;
+    justify-content: center;
+    border-radius: 10px;
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    
+    
 }
+
+#market-side-card {
+  top: 71%;
+  left: 68%; /* Adjust as needed */
+  background-color: red;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 5000;
+}
+
+#intellectual-hub-side-card {
+  left: 67%; /* Adjust as needed */
+  top: 48%;
+  width: 12%;
+  background-color: #486006;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+#auctions-side-card {
+  left: 68%; /* Adjust as needed */
+  top: 25%;
+  background-color: green;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+
+
 
 /* Adjust the image size for larger screens if needed */
 @media (min-width: 992px) {
@@ -619,6 +787,26 @@ input:checked + .slider:before {
   margin-left: -300px;
 }
 
+/* styling for profile page friend sidebar image */
+.friend-image {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .friend-image a {
+    flex: 0 0 calc(30% - 10px); /* Three images per row with spacing */
+    margin-bottom: 10px; /* Adjust as needed */
+    box-sizing: border-box;
+  }
+  
+  .friend-image img {
+    width: 120%;
+    height: 80%;
+    border-radius: 10px;
+  }
+  
+
 .button-container {
   display: flex;
   flex-direction: column;
@@ -637,6 +825,20 @@ input:checked + .slider:before {
   border: 0.5px solid #0805c1;
   border-radius: 50%;
   overflow: hidden;
+}
+
+.friend-profile {
+  flex-grow: 1;
+  flex-basis: calc(33.33% - 20px);
+  margin-right: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.friend-profile img {
+  width: 100%;
+  height: 80%;
+  border-radius: 20px;
 }
 
 
@@ -660,21 +862,29 @@ input:checked + .slider:before {
 
 
 .index-post-circle-image {
-  width: 80px;
-  height: 60px;
-  border: 0.5px solid #0805c1;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #4B9CD3;
+  margin-top: 10px;
   padding: 0; /* Remove padding */
-  margin-right: -10px; /* Adjust margin to overlap the input field */
+  margin-left: 20px; /* Adjust margin to overlap the input field */
   position: relative; /* Add relative positioning to the circle */
-  z-index: 2; /* Ensure the circle is above the input field */
+ 
+}
+
+.s {
+  margin-left: 30%;
+    
+  background-color: #E2EFFF;
+  border-radius: 20px;
+  width: 43%;
+  /* Additional styling as needed */
 }
 
 #create-post-field {
-  background-color: #4B9CD3;
-  border: 0.5px solid #0805c1;
+  background-color: white;
+  border: 0.5px solid black;
   border-radius: 20px;
   padding: 2px 150px;
   font-size: 14px;
@@ -685,7 +895,7 @@ input:checked + .slider:before {
 }
 
 #create-post-field::placeholder {
-  color: white; /* Set the color to white or any other desired color */
+  color: bla; /* Set the color to white or any other desired color */
 }
 
 .feed-button::placeholder {
@@ -694,7 +904,6 @@ input:checked + .slider:before {
 
 
 .feed-button,
-.search-button,
 .thought-button {
   background-color: #4B9CD3;
   border: 0.5px solid #0805c1;
@@ -871,13 +1080,9 @@ footer {
   margin-top: -120px; z-index: 2000; position: fixed;margin-left: 130px;
 }
 
-.content {
-  flex: 1;
-  margin-top: 25%;
-  padding: 10px;
-  box-sizing: border-box;
-  margin-left: 120px;
-  width: 200%;
+/* design for post border */
+.post-border-position {
+
 }
 
 .rounded-circle {
@@ -892,28 +1097,56 @@ footer {
   
 }
 
-/* New styles for sliding sidebar */
-.sidebar {
+
+/* css for left sidebar */
+.left-sidebar-items {
+  margin-top: 80px;
   position: fixed;
-  margin-top: 2px;
-  margin-left: 0px;
-  left: -70%; /* Start with the sidebar off-screen */
-  width: 20%;
-  background-color: #4B9CD3;
-  color: white;
+  top: 0;
+  left: 40px; 
+  width: 300px;
+  height: calc(100vh - 80px); /* Adjusted height to include margin-top */
   border: 0.5px solid #0805c1;
-  text-align: center;
-  border-radius: 10%;
+  border: none;
+  overflow-y: auto; /* Allow vertical scrolling */
   transition: left 0.3s ease;
-  font-family:Arial, Helvetica, sans-serif;
-  z-index: 2000;
-  
+  font-family: Arial, Helvetica, sans-serif;
+  scrollbar-width: thin; /* "thin" for a subtle scrollbar, "none" to completely hide it */
+  scrollbar-color: transparent transparent;
+}
+
+.left-sidebar-items::-webkit-scrollbar {
+  width: 6px; /* Set the width of the scrollbar */
+}
+
+.left-sidebar-items::-webkit-scrollbar-thumb {
+  background-color: transparent; /* Make the scrollbar thumb transparent */
+}
+
+.followed-users {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.followed-users a {
+  flex: 0 0 calc(30% - 10px); /* Three images per row with spacing */
+  margin-bottom: 10px; /* Adjust as needed */
+  box-sizing: border-box;
+}
+
+.followed-users img {
+  width: 70%;
+  height: auto;
 }
 
 
-.sidebar.open {
-  left: 0; /* Slide the sidebar into view */
+
+
+.navbar-nav {
+  padding: 10px;
 }
+
 
 .menu-link {
   cursor: pointer;
@@ -1065,7 +1298,7 @@ footer {
     background-color: #4B9CD3;
     border: 0.5px solid #0805c1;
     border-radius: 10px;
-    padding: 2px 5px;
+    ;
     font-size: 12px;
     font-family: Arial, sans-serif;
     margin: 0; /* Remove margin */
@@ -1119,7 +1352,7 @@ footer {
   
   .content {
     flex: 1;
-    margin-top: 25%;
+    
     padding: 10px;
     box-sizing: border-box;
     margin-left: 0px;
@@ -1262,13 +1495,6 @@ footer {
       font-size: larger;
       z-index: 10000;
       
-  }
-
-  .card {
-    
-
-    border-radius: 30px;
-    width: 100%;
   }
 
   .rounded-circle {

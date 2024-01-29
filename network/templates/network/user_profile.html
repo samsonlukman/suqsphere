@@ -6,7 +6,7 @@
 
 
 <!--
-<div class="container">
+<div class="container" style="margin-top: 20px;">
 <div class="content">
   <div class="post">
   <div class="row mb-3">
@@ -38,6 +38,8 @@
       {% endif %}
         {% endif %}
           {% endif %}
+</div>
+</div>
 </div>
 -->
 
@@ -103,7 +105,7 @@
   }
 </script>
 
-<div class="container" style="margin-top: 100px; position: relative;">
+<div class="container" style="margin-top: 100px;">
   {% if userProfile.profile_pics %}
       <img src="/media/post_image/ttta.png" width="1110" height="180"> 
   {% else %} 
@@ -139,50 +141,94 @@
 </div>
 </div>
 
-
-<div class="container">
-<div class="post">
-  <div class="post-car" style="width: 820; height: 312;">
-    <div class="card-body">
-      <div class="d-flex align-items-center">
-        
-          <!---
-        <div class="ml-3">
-          <h4 class="">
-            {{ userProfile.first_name }} {{ userProfile.last_name }}
-          </h4>
-          <p class="mb-0">
-           Username: {{ userProfile.username }}
-          </p>
-          <br>
-          
-         
-{% if user == userProfile %}
-<button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
+<!--Create post box-->
+<div class="container" style="margin-top: -20px;">
+  <div class="profile-createpost-margin">
+  {% if user.profile_pics %}
+  <a href="{% url 'profile' user_id=user.id %}">
+      <img src="{{ user.profile_pics.url }}" class="index-post-circle-image">
+  </a>
+{% else %}
+  <a href="{% url 'profile' user_id=user.id %}">
+      <img src="/media/post_image/nodp.jpg" class="index-post-circle-image">
+  </a>
 {% endif %}
-        </div>
-        -->
-      </div>
-      
-     
+  <input type="text" id="create-post-field" placeholder="share insight..." onclick="openModal('postModal')">
+<br>
+<br>
+<div>
+  <button class="media-button" onclick="openModal('postModal')">
+      <img id="media-icon" src="/media/post_image/media-icon.png" alt="upload media icon">
+  </button>
+</div>
+</div>
+</div>
 
-        
+
+
+<div class="container sidebar-container">
+  <div class="row">
+    <nav class="col-md-3 d-none d-md-block sidebar">
+      <div class="sidebar-sticky">
+        <div class="left-sideba-items" id="sidebar" style="font-family: 'Times New Roman', Times, serif;">
+          <!-- Sidebar content here -->
+          <ul class="navbar-nav ml-auto">
+              
+              {% if user.is_authenticated %}
+              <li class="nav-item">
+                
+                </li> 
+                
+              <li class="nav-item">
+                <div style="display: flex; align-items: center;">
+                  <h4>Friends ({{ friends.count }})</h4>
+                  <img src="/media/post_image/btdw.png" style="margin-left: auto; vertical-align: middle;">
+                </div>
+                
+              </li>
+              
+             <hr>
+             <li class="nav-item">
+              <div class="sidebar-following">
+                  
+                  <br>
+                
+                      <div class="friend-image">
+                        {% for friend in friends %}
+                        {% if friend.profile_pics %}
+                              <a href="{% url 'profile' friend.id %}">
+                                <br>
+                                  <img src="{{ friend.profile_pics.url }}" alt="{{ user_followed.following.username }}">
+                              </a>
+                              {% else %}
+                              <a href="{% url 'profile' friend.id %}">
+                                <br>
+                                  <img src="/media/post_image/nodp.jpg" alt="{{ user_followed.following.username }}">
+                              </a>
+                              {% endif %}
+                          {% endfor %}
+                      </div>
+                
+              </div>
+          
+            {% endif %}
+
+          </ul>
       </div>
-    </div>
+  </div>
+        <div>
+          
+        </div>
+      </div>
+    </nav>
   </div>
 </div>
-<br>
-<br>
 
-<div style="position: relative; top: -140px;">
-  {% include 'network/create-post.html' %}
-</div>
-
-
+<div style="margin-top: -350px;">
   {% for posts in page_post %}
   <br>
-  <section class="container" style="position: relative; top: -140px;">
-      <div class="card post-card">
+  <section class="container">
+      <div class="card profile-posts-margin">
         <div class="card-body">
           <div class="d-flex align-items-center">
             
@@ -262,7 +308,6 @@
   </div>
   </section>
 {% endfor %}
-
 
 
 {% include 'network/newpost-modal.html' %}

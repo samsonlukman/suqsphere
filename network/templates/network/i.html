@@ -4,67 +4,11 @@
 {% load my_filters %}
 {% block body %}
 
-{% include 'network/sidebar.html' %}
+
+
+<div class="container">
 <div class="content">
   <div class="post">
-{% if user == userProfile %}
-<!-- My Groups Modal -->
-<div class="modal" id="my-groups-modal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 style="color: blue;" class="modal-title">My Groups</h5>
-        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('my-groups-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <ul>
-          {% for group in my_groups %}
-            <li><a style="color: blue" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
-              <form method="post" action="{% url 'delete_group' group.id %}">
-                {% csrf_token %}
-                <button class="btn btn-danger" type="submit">Delete Group</button>
-              </form>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Groups I Joined Modal -->
-<div class="modal" id="groups-i-joined-modal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 style="color: blue;" class="modal-title">Groups I Have Joined</h5>
-        <button type="button" class="close" data-dismiss="modal" onclick="closeModal('groups-i-joined-modal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <ul>
-          {% for group in groups_i_joined %}
-            <li><a style="color: blue;" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
-              <form method="post" action="{% url 'exit_group' group.id %}">
-                {% csrf_token %}
-                <button class="btn btn-danger" type="submit">Exit Group</button>
-              </form>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  function closeModal(modalId) {
-    var modal = document.getElementById(modalId);
-    modal.style.display = 'none'; /* Hide the modal */
-  }
-</script>
-{% endif %}
-
-<div>
   <div class="row mb-3">
     <div class="col-6 text-center">
       <h5 class="text-black">Following: {{ following.count }}</h5>
@@ -96,11 +40,10 @@
           {% endif %}
 </div>
 
-
 <!-- Modal -->
-<div id="editBioModal" class="custom-modal">
+<div id="editBioModal" class="modal">
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div style="background-color: black; color: white;" class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Edit Bio</h5>
         <button type="button" class="close" onclick="closeEditBioModal()">
@@ -147,18 +90,7 @@
 </style>
 
 <script>
-
-function openMyGroupsModal() {
-    // Initialize the modal
-    var modal = document.getElementById('my-groups-modal');
-    modal.style.display = 'block';
-  }
-
-  function openGroupsIJoinedModal() {
-    // Initialize the modal
-    var modal = document.getElementById('groups-i-joined-modal');
-    modal.style.display = 'block';
-  }
+  
   function openEditBioModal() {
     var modal = document.getElementById('editBioModal');
     modal.style.display = 'block';
@@ -170,16 +102,50 @@ function openMyGroupsModal() {
   }
 </script>
 
-<div class="">
+<div class="container" style="margin-top: 100px; position: relative;">
+  {% if userProfile.profile_pics %}
+      <img src="/media/post_image/ttta.png" width="1110" height="180"> 
+  {% else %} 
+      <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
+  {% endif %}
+</div>
+
+<div class="container center">
+<div class="image-profile">
+  {% if userProfile.profile_pics %}
+  <img src="{{ userProfile.profile_pics.url }}" width="200" height="200" class="rounded-circle" style="border: 8px solid rgb(4, 81, 247)">
+  {% else %} 
+      <img src="/media/post_image/nodp.jpg"width="150" height="150" class="rounded-circle" style="border: 8px solid rgb(4, 81, 247)">
+  {% endif %}
+  </div>
+<div class="user-details">
+  <h2 style="color: #1b0fbb;">@{{ user.username }}</h2>
+  {% if userProfile.about %}
+    <p style="color: #1b0fbb;"><strong>About: </strong> <small>{{ userProfile.about|urlize }}</small></p>
+  {% else %}
+    <p>About: ...</p>
+  {% endif %}
+  <p style="color: #1b0fbb;"><strong>Email: </strong> <small> {{ userProfile.email|urlize }} <small></p>
+  <p style="color: #1b0fbb;"><strong>Phone Number:</strong> <small>{{ userProfile.phone_number|urlize }} </small></p>
+  <a href="">
+    <strong style="color: #1b0fbb;">See details</strong>
+  </a>
+  {% if user == userProfile %}
+  <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">
+    Edit <i class="fas fa-edit"></i>
+  </button>
+  {% endif %}
+</div>
+</div>
+
+
+<div class="container">
 <div class="post">
-  <div class="card">
+  <div class="post-car" style="width: 820; height: 312;">
     <div class="card-body">
       <div class="d-flex align-items-center">
-        {% if userProfile.profile_pics %}
-          <img src="{{ userProfile.profile_pics.url }}" class="rounded-circle" width="150" height="150"> 
-          {% else %} 
-          <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70" style="margin-top: 1px;">
-          {% endif %}
+        
+          <!---
         <div class="ml-3">
           <h4 class="">
             {{ userProfile.first_name }} {{ userProfile.last_name }}
@@ -189,39 +155,16 @@ function openMyGroupsModal() {
           </p>
           <br>
           
-          <!-- Button to open the modal -->
+         
 {% if user == userProfile %}
 <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">Edit Bio</button>
 {% endif %}
-        </div>
+        
+        -->
       </div>
-      <hr>
-      <div>
-        <p>
-           Email: {{ userProfile.email }}
-          </p>
-          <p class="">
-            Phone Number: {{ userProfile.phone_number }}
-          </p>
-        {% if userProfile.about %}
-        <p>{{ userProfile.about|urlize }}</p>
-      {% else %}
-        <p>About: ...</p>
-      {% endif %}
       
-        {% if user == userProfile %}
-        <br>
-        <button id="popit" onclick="pop()" class="btn-primary">Groups Info</button>
-        <br>
-        <div>
-<button href="#" id="my-groups-btn" class="btn btn-primary">My Groups</button>
-<br>
-<button href="#" id="groups-i-joined-btn" class="btn btn-primary">Joined Groups</button>
-<br>
-<button onclick="navigateToAllGroups()" class="btn btn-primary" id="all-btn">Check other groups</button>
-        </div>
-</div>
-{% endif %}
+     
+
         
       </div>
     </div>
@@ -231,21 +174,77 @@ function openMyGroupsModal() {
 <br>
 
 
-<div id="posts">
+
+<div class="container-fluid" style="margin-top: -100px;">
+  <div class="row">
+    <nav class="col-md-3 d-none d-md-block sidebar">
+      <div class="sidebar-sticky">
+        <!-- Your sidebar content goes here -->
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <div>
+              <h5 class="d-inline">Friends ({{ friends.count }})</h5>
+              <img src="/media/post_image/btdw.png" class="float-right">
+              <hr>
+              <div class="d-flex flex-wrap justify-content-between">
+                {% for friend in friends|slice:":9" %}
+                <div class="friend-profile">
+                  
+                  {% if friend.profile_pics %}
+                  <img src="{{ friend.profile_pics.url }}" alt="friend(s) profile pictures" class="img-fluid friend-img">
+                  {% else %}
+                  <img src="/media/post_image/nodp.jpg" alt="friend(s) profile pictures" class="img-fluid friend-img">
+                  {% endif %}
+                  <br>
+                  <a href="{% url 'profile' user_id=friend.id %}" class="friend-name">{{ friend.first_name|truncatechars:7 }}</a>
+                </div>
+                {% endfor %}
+              </div>
+              <br>
+              <br>
+              <p style="font-size: larger;" class="float-right">
+                <a href="">See More...</a>
+              </p>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">
+              Sidebar Item 2
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">
+              Sidebar Item 3
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</div>
+
+
+
+<div style="position: relative; top: -530px;">
+  {% include 'network/create-post.html' %}
+</div>
+
+
+
   {% for posts in page_post %}
   <br>
-  <section>
-    <div>
-      <div class="card">
+  <section class="container" style="position: relative; top: -530px;">
+      <div class="card post-card">
         <div class="card-body">
           <div class="d-flex align-items-center">
+            
             {% if posts.user.profile_pics %}
               <a href="{% url 'profile' user_id=posts.user.id %}">
-                <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="70" height="70">
+                <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="40" height="40">
               </a>
             {% else %}
               <a href="{% url 'profile' user_id=posts.user.id %}">
-                <img src="/media/post_image/hand.gif" class="rounded-circle" width="70" height="70">
+                <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="40" height="40">
               </a>
             {% endif %}
             <div class="ml-3">
@@ -253,9 +252,13 @@ function openMyGroupsModal() {
                 <!-- Display a link to the user's profile -->
                 <a class="card-title" style="text-decoration: none;" href="{% url 'profile' user_id=posts.user.id %}">{{posts.user.first_name}} {{posts.user.last_name}}</a>
               </h5>
-              <p class="mb-0">
-                <p>@{{posts.user.username}}</p>
-              </p>
+              <div class="mb-0">
+                {% if posts.user.username|length > 15 %}
+                <p>@{{posts.user.username | slice:":15"}}...</p>
+                {% else %}
+                <p>@{{posts.user.username}} <small class="text-muted">{{ posts.timestamp }}</small> </p>
+                {% endif %}
+            </div>
             </div>
           </div>
           <br>
@@ -295,13 +298,14 @@ function openMyGroupsModal() {
             {% endif %}
 
         </div>
-        <p class="card-text"><small class="text-muted">{{ posts.timestamp }}</small></p>
- {% if request.user == posts.user %}
-        <button class="delete-post" data-delete-post-id="{{ posts.id }}">Delete</button>
-        {% endif %}
+        <!-- Add a delete button for each post -->
+       
+          {% if request.user == posts.user %} 
+          {% include 'network/delete-post.html' %}</p>
+          {% endif %}
         <!-- Display the number of likes for the post -->
         {% include 'network/likes.html' %}
-        <hr style="border-color: black;">
+        <hr>
 
         <!--Urlize comments, read more comments, and display comments-->
         {% include 'network/comments.html' %}
@@ -310,9 +314,7 @@ function openMyGroupsModal() {
   </div>
   </section>
 {% endfor %}
-</div>
-</div>
-</div>
+
 
 
 {% include 'network/newpost-modal.html' %}
@@ -406,60 +408,19 @@ function openMyGroupsModal() {
 <!-- Add pagination links -->
 <div class="pagination">
   <span class="step-links">
-    {% if page_post.has_previous %}
-      <a class="btn btn-primary" href="?page=1">&laquo; first</a>
-      <a class="btn btn-primary" href="?page={{ page_post.previous_page_number }}">previous</a>
-    {% endif %}
-
-    <span class="current-page">
-      Page {{ page_post.number }} of {{ page_post.paginator.num_pages }}.
-    </span>
-
-    {% if page_post.has_next %}
-      <a class="btn btn-primary" href="?page={{ page_post.next_page_number }}">next</a>
-      <a class="btn btn-primary" href="?page={{ page_post.paginator.num_pages }}">last &raquo;</a>
-    {% endif %}
+      {% if page_post.has_previous %}
+      <a class="btn btn-primary" href="?page=1"> <<<< </a>
+      <a class="btn btn-primary" href="?page={{ page_post.previous_page_number }}">&raquo;</a>
+      {% endif %}
+      
+      {% if page_post.has_next %}
+      <a class="btn btn-primary" href="?page={{ page_post.next_page_number }}">&laquo;</a>
+      <a class="btn btn-primary" href="?page={{ page_post.paginator.num_pages }}">>>>></a>
+      {% endif %}
   </span>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const deletePostButtons = document.querySelectorAll('.delete-post');
-
-    deletePostButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const post_id = button.getAttribute('data-delete-post-id');
-
-        fetch(`/post/${post_id}/delete/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // post deleted successfully
-            const postElement = button.parentElement;
-            if (postElement) {
-              postElement.remove();
-            }
-          } else {
-            // Display error message (data.message) if deletion was not successful
-            console.log(data.message);
-          }
-        })
-        .catch(error => {
-          console.error('An error occurred:', error);
-        });
-      });
-    });
-  });
-
-
-</script>
+</div>
 
 
   {% endblock %}
