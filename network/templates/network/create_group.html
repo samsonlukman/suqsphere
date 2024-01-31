@@ -1,6 +1,6 @@
 {% extends "network/layout.html" %}
 {% block body %}
-{% include 'network/open-sidebar.html' %}
+
 <div class="container">
 <form method="POST" class="create-group-form">
     {% csrf_token %}
@@ -8,6 +8,8 @@
     <button type="submit" class="create-group-button">Create Group</button>
 </form>
 </div>
-{% include 'network/open-sidebar.html' %}
+
+<!--The sidebar on the left-->
+{% include 'network/left-sidebar.html' %}
 {% endblock %}
 

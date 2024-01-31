@@ -46,7 +46,7 @@ def index(request):
 
     # Get users who are following the current user
     followers = Follow.objects.filter(following=user).values_list('follower', flat=True)
-
+    users_i_follow = Follow.objects.filter(follower=user).select_related('following')
     # Find users who both follow the current user and are followed by the current user
     friends = set(following).intersection(followers)
     # Get the posts by the users who are friends with the current user
@@ -68,7 +68,7 @@ def index(request):
     return render(request, "network/index.html", {
         "is_member": is_member,
         "is_not_member": is_not_member,
-       
+        "users_i_follow": users_i_follow,
         "suggested_groups": suggested_groups,
         "page_post": page_post,
         "groups": groups,
@@ -810,7 +810,7 @@ def like_count(request):
         "posts": post
     })
 
-
+from .custom_context_processors import user_connections
 @login_required
 def profile(request, user_id):
     if not request.user.is_authenticated:
@@ -851,15 +851,16 @@ def profile(request, user_id):
         newFollowing = False
 
     return render(request, "network/user_profile.html", {
-        "userProfile": user,
-        
-        "user_like": user_like,
-        "page_post": page_post,
-        "following": following,
-        "follower": follower,
-        "username": user.username,
-        "isFollowing": newFollowing,
-    })
+    "userProfile": user,
+    "user_like": user_like,
+    "page_post": page_post,
+    "following": following,
+    "follower": follower,
+    "username": user.username,
+    "isFollowing": newFollowing,
+    "connections_data": user_connections(request, user_id=user_id),
+})
+
 
 
 

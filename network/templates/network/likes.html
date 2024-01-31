@@ -24,7 +24,7 @@
      <small class="text-muted">{{ posts.postComment.count }}</small>
     
   </h3>
-  <button style="background: none; border: none; padding: 0; width: 24px; height: 35px;" onclick="shareFile('https:\//suqspehere.com/post_content/{{ posts.id }}')">
+  <button style="background: none; border: none; padding: 0; width: 24px; height: 35px;" onclick="share({{ posts.id }})">
     <img src="/media/post_image/share.png" width="100%" height="100%" alt="Share" title="Share">
   </button>
 {% endwith %}

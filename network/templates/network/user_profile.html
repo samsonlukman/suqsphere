@@ -122,7 +122,7 @@
   {% endif %}
   </div>
 <div class="user-details">
-  <h2 style="color: #1b0fbb;">@{{ user.username }}</h2>
+  <h2 style="color: #1b0fbb;">{{ userProfile.first_name }} {{ userProfile.last_name }}</h2>
   {% if userProfile.about %}
     <p style="color: #1b0fbb;"><strong>About: </strong> <small>{{ userProfile.about|urlize }}</small></p>
   {% else %}
@@ -137,12 +137,31 @@
   <button id="editBioBtn" class="btn btn-primary" onclick="openEditBioModal()">
     Edit <i class="fas fa-edit"></i>
   </button>
+  {% else %}
+      {% if isFollowing %}
+      <form action="{% url 'unfollow' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="followUser" value="{{ userProfile }}" />
+        <button class="btn btn-danger" style="background-color: #dc3545; border-color: #dc3545;">
+          <i class="fas fa-user-minus"></i> Unfollow
+        </button>
+      </form>
+    {% else %}
+      <form action="{% url 'follow' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="followUser" value="{{ userProfile }}" />
+        <button class="btm btn-primary">
+          <i class="fas fa-user-plus"></i> Follow
+        </button>
+      </form>
+      {% endif %}
   {% endif %}
 </div>
 </div>
 
 <!--Create post box-->
-<div class="container" style="margin-top: -20px;">
+
+<div class="container" style="margin-top: -60px;">
   <div class="profile-createpost-margin">
   {% if user.profile_pics %}
   <a href="{% url 'profile' user_id=user.id %}">
@@ -167,7 +186,7 @@
 
 
 <div class="container sidebar-container">
-  <div class="row">
+  <div class="row" style="margin-left: 80px;">
     <nav class="col-md-3 d-none d-md-block sidebar">
       <div class="sidebar-sticky">
         <div class="left-sideba-items" id="sidebar" style="font-family: 'Times New Roman', Times, serif;">
@@ -176,12 +195,8 @@
               
               {% if user.is_authenticated %}
               <li class="nav-item">
-                
-                </li> 
-                
-              <li class="nav-item">
-                <div style="display: flex; align-items: center;">
-                  <h4>Friends ({{ friends.count }})</h4>
+                <div class="times-roman-font" style="display: flex; align-items: center;">
+                  <h4>Friends ({{ connections_data.friends.count }})</h4>
                   <img src="/media/post_image/btdw.png" style="margin-left: auto; vertical-align: middle;">
                 </div>
                 
@@ -191,28 +206,33 @@
              <li class="nav-item">
               <div class="sidebar-following">
                   
-                  <br>
+                  <div class="friend-image">
+                    {% for image_url in connections_data.friend_images %}
+                        {% if image_url and image_url.url != '/media/post_image/nodp.jpg' %}
+                            <a href="{% url 'profile' user_id=image_url.id %}">
+                                
+                                <img src="{{ image_url.url }}" alt="friends">
+                                <h6 class="times-roman-font">{{ image_url.username }}</h6>
+                            </a>
+                        {% else %}
+                            <br>
+                            <a>
+                            <img src="/media/post_image/nodp.jpg" alt="No Profile Pic">
+                          </a>
+                        {% endif %}
+                    {% endfor %}
+                    <a href="">
+                      <br>
+                      <h6>See more</h6>
+                    </a>
+                </div>
                 
-                      <div class="friend-image">
-                        {% for friend in friends %}
-                        {% if friend.profile_pics %}
-                              <a href="{% url 'profile' friend.id %}">
-                                <br>
-                                  <img src="{{ friend.profile_pics.url }}" alt="{{ user_followed.following.username }}">
-                              </a>
-                              {% else %}
-                              <a href="{% url 'profile' friend.id %}">
-                                <br>
-                                  <img src="/media/post_image/nodp.jpg" alt="{{ user_followed.following.username }}">
-                              </a>
-                              {% endif %}
-                          {% endfor %}
-                      </div>
+                
                 
               </div>
           
             {% endif %}
-
+             </li>
           </ul>
       </div>
   </div>
@@ -224,7 +244,11 @@
   </div>
 </div>
 
-<div style="margin-top: -350px;">
+<br>
+<br>
+<br>
+<br>
+<div style="margin-top: -520px;">
   {% for posts in page_post %}
   <br>
   <section class="container">

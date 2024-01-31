@@ -12,6 +12,11 @@ body {
            
 }
 
+/* class for times new roman font */
+.times-roman-font {
+  font-family: 'Times New Roman', Times, serif;
+}
+
 #search-button {
   border: none;
 }
@@ -167,8 +172,9 @@ body {
 /* Add styles for the sidebar container */
 .sidebar-container {
   position: relative;
-  top: -120px; /* Adjust the value as needed */
+  top: -125px; /* Adjust the value as needed */
 }
+
 
 .card-text {
   margin-top: -30px;
@@ -1172,7 +1178,7 @@ footer {
 
 /* External CSS file (e.g., styles.css) */
 .create-group-form {
-  width: 80%; /* Adjust the width as needed */
+  width: 50%; /* Adjust the width as needed */
   margin: 10% auto; /* Center the form vertically and horizontally */
   padding: 20px;
   background-color: #f2f2f2;
@@ -1368,29 +1374,6 @@ footer {
   }
   
   /* New styles for sliding sidebar */
-  .sidebar {
-    position: fixed;
-    margin-top: 10px;
-    margin-left: 155px;
-    left: -700%; /* Start with the sidebar off-screen */
-    width: 60%;
-    height: 100%;
-    background-color: #4B9CD3;
-    color: white;
-    border: 0.5px solid #0805c1;
-    text-align: center;
-    border-radius: 5%;
-    border-style: dashed;
-    transition: right 0.3s ease;
-    font-family:Arial, Helvetica, sans-serif;
-    z-index: 6000;
-    font-size: small;
-  }
-  
-  
-  .sidebar.open {
-    right: 0; /* Slide the sidebar into view */
-  }
 
 #category-border {
   margin-top: 1px;

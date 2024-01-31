@@ -76,7 +76,7 @@
         </div>
         -->
         
-        <div class="left-sidebar-items" id="sidebar" style="font-family: 'Times New Roman', Times, serif;">
+        <div class="left-sidebar-items times-roman-font" id="sidebar">
             <!-- Sidebar content here -->
             <ul class="navbar-nav ml-auto">
                 
@@ -110,10 +110,11 @@
                     <br>
                     {% if following %}
                         <div class="followed-users">
-                            {% for user_followed in following %}
+                            {% for user_followed in users_i_follow|slice:":9" %}
                                 <a href="{% url 'profile' user_followed.following.id %}">
                                   <br>
                                     <img src="{{ user_followed.following.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle">
+                                    {{user_followed.following.username}}
                                 </a>
                             {% endfor %}
                         </div>
@@ -126,9 +127,7 @@
                 <li class="nav-item">
                 <a class="nav-link" id="groups-i-joined-btn" href="#">Joined Groups</a>
                 </li>
-                <li class="nav-item">
-                <a class="nav-link" href="#" onclick="navigateToAllGroups()" id="all-btn">Check other groups</a>
-                </li>
+               
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'create_group' %}">Create Group</a>
                 </li>
@@ -139,7 +138,9 @@
                   {% if groups_i_joined %}
                       <ul style="list-style-type: none; padding: 0; margin: 0;">
                           {% for group in groups_i_joined %}
+                          <a href="{% url 'group_detail' group.id %}">
                               <li><i class="fas fa-users" style="margin-right: 5px;"></i><small>  {{ group.name | truncatechars:20 }} </small></li>
+                            </a>
                           {% endfor %}
                       </ul>
                   {% else %}
@@ -151,6 +152,7 @@
             </ul>
         </div>
     </div>
+    
     
        
             

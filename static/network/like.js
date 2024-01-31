@@ -31,22 +31,24 @@ window.onload = function() {
 $(document).ready(function() {
   var reactionTimeout;
 
-  // Hide all reaction buttons by default
-  $('.reaction-button').hide();
+  // Hide all reaction containers by default
+  $('.reactions-container').hide();
+  
+
 
   // Show the reaction buttons when the mouse hovers on a like button
   $('.like-btn').mouseenter(function() {
     var postId = $(this).data('post-id');
-    $('#reaction-buttons-' + postId).show();
+    $('.reactions-container[data-post-id="' + postId + '"]').show();
     clearTimeout(reactionTimeout);
   });
 
-  // Hide the reaction buttons after 10 seconds of not hovering on the like button
+  // Hide the reaction buttons after 3 seconds of not hovering on the like button
   $('.like-btn').mouseleave(function() {
     var postId = $(this).data('post-id');
     reactionTimeout = setTimeout(function() {
-      $('#reaction-buttons-' + postId).hide();
-    }, 3000); // 10 seconds
+      $('.reactions-container[data-post-id="' + postId + '"]').hide();
+    }, 20000); // 20 seconds
   });
 });
 
@@ -125,4 +127,3 @@ function getCookie(name){
             if(parts.length == 2) return parts.pop().split(';').shift();
         }
 
-      

@@ -111,14 +111,16 @@
   </div>
 </div>
 
+<!--The sidebar on the left-->
+{% include 'network/left-sidebar.html' %}
+
     {% for posts in page_group_posts %}
-    
-    <section>
-      <div>
+    <br>
+    <section class="container">
         <br>
-        <div class="card">
+        <div class="card post-card" style="width:700px;">
           <div class="card-body">
-            <div class="d-flex align-items-center">
+              <div class="d-flex align-items-center">
               {% if posts.user.profile_pics %}
                 <a href="{% url 'profile' user_id=posts.user.id %}">
                   <img src="{{ posts.user.profile_pics.url }}" class="rounded-circle" width="30" height="30">
@@ -195,7 +197,7 @@
               <button class="group-react-button" data-reaction="haha">Haha</button>
               <button class="group-react-button" data-reaction="shock">Shock</button>
           
-              <!-- Display individual reaction counts -->
+              <!-- Display individual reaction counts 
               <div>
                   <p>Love: <span class="group_post_love_count">{{posts.group_postLove.count}}</span></p>
                   <p>Like: <span class="group_post_like_count"></span></p>
@@ -203,7 +205,7 @@
                   <p>Haha: <span class="group_post_haha_count"></span></p>
                   <p>Shock: <span class="group_post_shock_count"></span></p>
               </div>
-          
+          -->
               <!-- Display total count -->
               {% with total_count=posts.group_postLove.count|add:posts.group_postHaha.count|add:posts.group_postSad.count|add:posts.group_postShock.count|add:posts.group_post_like.count %}
             {% if total_count > 0 %}
@@ -268,7 +270,6 @@
           </form>
         </div>
       </div>
-    </div>
     </section>
   {% endfor %}
   {% else %}
