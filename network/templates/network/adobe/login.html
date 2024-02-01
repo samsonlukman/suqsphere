@@ -1,0 +1,80 @@
+<!-- 
+/*
+ *	This content is generated from the PSD File Info.
+ *	(Alt+Shift+Ctrl+I).
+ *
+ *	@desc 		
+ *	@file 		login_page___1
+ *	@date 		Monday 29th of January 2024 11:59:59 AM
+ *	@title 		Home
+ *	@author 	
+ *	@keywords 	
+ *	@generator 	Export Kit v1.3.xd
+ *
+*/
+ -->
+ {% extends 'network/layout.html' %}
+ {% load static %}
+
+ {% block body %}
+ <link href="{% static 'network/login_page___1.css' %}" rel="stylesheet">
+ <script src="https://secure.exportkit.com/cdn/js/ek_googlefonts.js?v=6"></script>
+ 
+	<body>
+		<div id="content-container" >
+			<div id="_bg__login_page___1"  ></div>
+			<img src="/media/skins/imagebot_11_01_2024_copy.png" id="imagebot_11_01_2024_copy" />
+			
+			<img src="/media/skins/__a81faaca_1743_4c3d_9578_5e3b6a4a0c1c.png" id="__a81faaca_1743_4c3d_9578_5e3b6a4a0c1c" />
+			<div id="__96a06382_828a_4873_a5ee_f08c64c60790_ek1"  ></div>
+
+			<form action="{% url 'network_login' %}" method="post">
+				{% csrf_token %}
+				<div id="search_ek1">
+					
+						<input autofocus class="form-control" type="text" name="username" placeholder="Username">
+					
+					
+				</div>
+			
+				<div id="search">
+				
+						<input class="form-control" type="password" name="password" placeholder="Password">
+				</div>
+			
+				<div id="top"></div>
+				<div id="top_ek1"></div>
+				<div id="login">
+					<button style="background: none; border: none; color: white;" type="submit">Login</button>
+				</div>
+			</form>
+			
+			<div id="group_9"  >
+				<a href="{% url 'index' %}">
+				<img src="/media/skins/suqs.png" id="suqs" />
+				</a>
+			</div>
+			<div id="suqsphere_com" >
+				<a href="{% url 'index' %}">suqsphere.com</a>
+			</div>
+			
+
+			
+			<div id="by_signing_in__you_agree_to_our_terms_and_policy___don_t_have_an_account__" >
+				By signing in, you agree to our <a href="{% url 'terms' %}">terms and policy.</a><br/><br/>Don't have an account? 
+			</div>
+			<div id="forgotten_your_password_" >
+				<a href="{% url "password_reset" %}">Forgotten your password?</a>
+			</div>
+			<div id="sup_" >
+				Sup!
+			</div>
+			<div id="register_here_" >
+				<a href="{% url 'network_register' %}">Register here.</a>
+			</div>
+
+		</div>
+	</body>
+
+
+{% endblock %}
