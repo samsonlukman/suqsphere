@@ -27,17 +27,43 @@ class RegistrationForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password', 'confirmation', 'profile_pics']
-    
+        help_texts = {
+            'username': None,  # Set help text for the username field to an empty string
+        }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Add placeholders for first_name, last_name, and username fields
-        self.fields['first_name'].widget.attrs['placeholder'] = 'Max 15 characters'
-        self.fields['last_name'].widget.attrs['placeholder'] = 'Max 15 characters'
-        self.fields['username'].widget.attrs['placeholder'] = ''
+        # Set placeholders directly in the widget attributes
+        self.fields['first_name'].widget = forms.TextInput(attrs={
+            'placeholder': 'First name',
+            'maxlength': 15,  # Enforce character limit
+        })
+        self.fields['last_name'].widget = forms.TextInput(attrs={
+            'placeholder': 'Last name',
+            'maxlength': 15,
+        })
+        self.fields['username'].widget = forms.TextInput(attrs={
+            'placeholder': 'Username',
+        })
+        self.fields['email'].widget = forms.TextInput(attrs={
+            'placeholder': 'Email',
+        })
+        self.fields['password'].widget.attrs['placeholder'] = 'Password'
+        self.fields['confirmation'].widget.attrs['placeholder'] = 'Confirm Password'
 
         # Set the email field as required
         self.fields['email'].required = True
+
+        # Remove label prefixes for specific fields
+        self.fields['first_name'].label = ''
+        self.fields['last_name'].label = ''
+        self.fields['username'].label = ''
+        self.fields['password'].label = ''
+        self.fields['confirmation'].label = ''
+        self.fields['email'].label = ''
+        self.fields['profile_pics'].label = ''
+        
 
     def clean(self):
         cleaned_data = super().clean()

@@ -26,26 +26,31 @@
   <!-- Groups I Joined Modal -->
   <div style="z-index: 15000;" class="modal" id="groups-i-joined-modal">
     <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 style="color: blue;" class="modal-title">Groups I Have Joined</h5>
-          <button type="button" class="close" data-dismiss="modal" onclick="closeModal('groups-i-joined-modal')">&times;</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 style="color: blue;" class="modal-title">Groups I Have Joined</h5>
+                <button type="button" class="close" data-dismiss="modal" onclick="closeModal('groups-i-joined-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    {% for group in groups_i_joined %}
+                    <br>
+                    <li>
+                        <a style="color: blue;" href="{% url 'group_detail' group.pk %}">
+                            {{ group.name }}
+                        </a>
+                        <form method="post" action="{% url 'exit_group' group.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-danger btn-sm" type="submit">Exit Group</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-        <div class="modal-body">
-          <ul>
-            {% for group in groups_i_joined %}
-              <li><a style="color: blue;" href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
-                <form method="post" action="{% url 'exit_group' group.id %}">
-                  {% csrf_token %}
-                  <button class="btn btn-danger" type="submit">Exit Group</button>
-                </form>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
+
   
   <!-- Groups Joined Modal -->
   <div style="z-index: 15000;" class="modal" id="groups-joined-modal">
@@ -81,10 +86,7 @@
             <ul class="navbar-nav ml-auto">
                 
                 {% if user.is_authenticated %}
-                <li class="nav-item">
-                  
-                  </li> 
-                  
+                <!--
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'profile' user_id=user.id %}">
                     {% if user.first_name and user.last_name %}
@@ -93,36 +95,46 @@
                 </a>
                 
                 </li>
+                <br>
+                <br>
+                -->
                 <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'profile' user_id=user.id %}">
-                        {% if user.username|length > 15 %}
-                        @{{ user.username | slice:":15"}}...
-                        {% else %}
-                        @{{ user.username}}
-                        {% endif %}
-                    </a>
+                  <div class="times-roman-font" style="display: flex; align-items: center;">
+                    <h6>People you follow </h6>
+                    <a href="{% url 'myfollowing' %}">
+                    <img src="/media/post_image/seemore.png" style="margin-left: 120px; vertical-align: middle;">
+                  </a>
+                  </div>
+                  
                 </li>
-               <hr>
+               <hr style="margin-top: -2px;">
                <li class="nav-item">
-                <div class="sidebar-following">
-                    <small>Users You're Following</small>
-                    <br>
-                    <br>
-                    {% if following %}
-                        <div class="followed-users">
-                            {% for user_followed in users_i_follow|slice:":9" %}
-                                <a href="{% url 'profile' user_followed.following.id %}">
-                                  <br>
-                                    <img src="{{ user_followed.following.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle">
-                                    {{user_followed.following.username}}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <small>You're not following any users yet.</small>
-                    {% endif %}
-                </div>
-            </li>
+    <div class="sidebar-following">
+
+       
+      <div style="margin-top: 10px;" class="followed-sers">
+        {% if users_i_follow %}
+            {% for user_followed in users_i_follow|slice:":9" %}
+                {% if user_followed.profile_pics %}
+                    <a href="{% url 'profile' user_followed.id %}" class="d-block mb-2">
+                        <img style="border: 2px solid #435D7D; padding: 2px;" src="{{ user_followed.profile_pics.url }}" alt="{{ user_followed.following.username }}" class="rounded-circle" width="30" height="30">
+                        <strong s style="color: #435D7D; padding: 5px;"> {{ user_followed.username }}</strong>
+                    </a>
+                {% else %}
+                    <a href="{% url 'profile' user_followed.id %}" class="d-block mb-2">
+                        <img style="border: 2px solid #435D7D; padding: 2px;" src="media/post_image/nodp.jpg" alt="{{ user_followed.username }}" class="rounded-circle" width="30" height="30">
+                        <strong s style="color: #435D7D; padding: 5px;"> {{ user_followed.username }}</strong>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>Ussers you follow and are not following you will appear here</p>
+        {% endif %}
+    </div>
+    
+    </div>
+</li>
+
             <hr>
                 <li class="nav-item">
                 <a class="nav-link" id="groups-i-joined-btn" href="#">Joined Groups</a>

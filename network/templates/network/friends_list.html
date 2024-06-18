@@ -1,0 +1,71 @@
+{% extends 'network/layout.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container" style="margin-top: 100px; background-color: #f0f8ff; border: 1px solid #ccc; padding-left: 100px; padding-right: 100px; border: none;">
+  <h3 style="color: blue;"><strong>F R I E N D S</strong></h3>
+  <div class="image-container">
+    {% for friend in friends %}
+      <div class="friend-container">
+        {% if friend.profile_pics %}
+        <a href="{% url 'profile' friend.id %}">
+        <img src="{{ friend.profile_pics.url }}" class="card-img-top" alt="{{ friend.username }}" style="aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; margin-top: 50px;">
+        <p class="friend-username">{{ friend.username }}</p>
+        </a>
+        {% else %}
+        <a href="{% url 'profile' friend.id %}">
+        <img src="media/post_image/nodp.jpg" class="card-img-top" alt="{{ friend.username }}" style="aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; margin-top: 50px;">
+        <p class="friend-username">{{ friend.username }}</p>
+      </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+ 
+    <div class="see-more-button">
+      {% if friends.has_previous %}
+      <a href="?page={{ friends.previous_page_number }}" style="color: blue;"><strong>PREVIOUS</strong></a>
+    {% endif %}
+    {% if friends.has_next %}
+      <a href="?page={{ friends.next_page_number }}" style="color: blue;"><strong>NEXT</strong></a>
+      {% endif %}
+    </div>
+
+</div>
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adjust the gap as needed */
+  }
+
+  .friend-container {
+    flex: 1 0 auto; /* Equal width with aspect ratio preservation */
+    max-width: 10%; /* Adjust based on desired max width per image */
+    text-align: center; /* Center the username under the image */
+    margin-bottom: 10px; /* Adjust spacing between rows of images */
+  }
+
+  .friend-container img {
+    width: 100%; /* Ensure the image takes 100% width of its container */
+    border-radius: 20px;
+  }
+
+  .friend-username {
+    margin-top: 5px; /* Adjust spacing between image and username */
+  }
+
+  .see-more-button {
+    margin-top: 20px; /* Adjust spacing as needed */
+    align-self: flex-end; /* Align to the right at the end of the container */
+  }
+</style>
+{% endblock %}

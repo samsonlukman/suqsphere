@@ -2,27 +2,27 @@
 {% load my_filters %}
 {% load static %}
 
-<ul class="list-group" id="comment-list-{{ posts.id }}">
+<ul class="list-grup" id="comment-list-{{ posts.id }}">
   {% for comment in posts.postComment.all|slice:":3" %}
     <li class="list-group-item">
      <div>
       {% if comment.author.profile_pics %}
       <a href="{% url 'profile' user_id=comment.author.id %}">
-        <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="20" height="20" style="margin-left: -20px;">
+        <img src="{{ comment.author.profile_pics.url }}" class="rounded-circle" width="40" height="40" style="margin-left: -20px; margin-top: 10px;">
       </a>
       {% else %}
       <a href="{% url 'profile' user_id=comment.author.id %}">
         <img src="/media/post_image/nodp.jpg" class="rounded-circle" width="20" height="20" style="margin-left: -20px;">
       </a>
       {% endif %}
-      <strong><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author.username }}</a></strong>
+      <strong style="margin-left: 10px;"><a href="{% url 'profile' user_id=comment.author.id %}">{{ comment.author.username }}</a></strong>
         {% if request.user == comment.author or request.user == posts.user %}
         {% include 'network/delete-comment.html' %}</div>
         {% endif %}
       
       <div id="content_{{ comment.id }}">
         {% for paragraph in comment.message|split_paragraphs|slice:":3" %}
-          <p><small>{{ paragraph|urlize }}</small></p>
+          <p style="margin-left: 20px;"><small>{{ paragraph|urlize }}</small></p>
         {% endfor %}
         {% if comment.message|split_paragraphs|length > 3 %}
           <a href="{% url 'post_content' post_id=posts.id %}">

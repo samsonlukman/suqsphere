@@ -87,9 +87,6 @@
                         </div>
                         <!-- Add a delete button for each post -->
                         
-                          {% if request.user == posts.user %} 
-                          {% include 'network/delete-post.html' %}</p>
-                          {% endif %}
 
                          
                            <div class="reactions-container" data-post-id="{{ posts.id }}">

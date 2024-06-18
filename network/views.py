@@ -33,7 +33,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView,
 )
 from .forms import GroupForm, LibraryDocumentForm, VideoForm, RegistrationForm
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def index(request):
     """This is the index page"""
@@ -46,13 +46,17 @@ def index(request):
 
     # Get users who are following the current user
     followers = Follow.objects.filter(following=user).values_list('follower', flat=True)
+
+    following_only = User.objects.filter(id__in=followers).exclude(id__in=following)
+    
+    
     users_i_follow = Follow.objects.filter(follower=user).select_related('following')
     # Find users who both follow the current user and are followed by the current user
     friends = set(following).intersection(followers)
     # Get the posts by the users who are friends with the current user
     post = Post.objects.filter(user__in=friends).order_by('-timestamp')
 
-    paginator = Paginator(post, 30) # Show 20 contacts per page.
+    paginator = Paginator(post, 3) # Show 20 contacts per page.
     page_number = request.GET.get('page')
     page_post = paginator.get_page(page_number)
     suggested_groups = Group.objects.all()
@@ -67,17 +71,31 @@ def index(request):
 
     return render(request, "network/index.html", {
         "is_member": is_member,
+        "following_only": following_only,
         "is_not_member": is_not_member,
-        "users_i_follow": users_i_follow,
         "suggested_groups": suggested_groups,
         "page_post": page_post,
         "groups": groups,
         "profile_pics": profile_pics,
         "comments": comments,
         "user": user,
-        "following": following,
         "follower": follower,
     })
+
+def myfollowing(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('network_login'))
+    user = User.objects.get(pk=request.user.id)
+
+    # Get users followed by the current user
+    following = Follow.objects.filter(follower=user).values_list('following', flat=True)
+
+    # Get users who are following the current user
+    followers = Follow.objects.filter(following=user).values_list('follower', flat=True)
+
+    following_only = User.objects.filter(id__in=followers).exclude(id__in=following)
+
+    return render(request, "network/myfollowing.html", {"following_only": following_only})
 
 @login_required
 def share_post(request):
@@ -840,6 +858,9 @@ def profile(request, user_id):
 
     following = Follow.objects.filter(following=user)
     follower = Follow.objects.filter(follower=user)
+    # Assuming you have an instance of the User model (user_instance)
+    
+
 
     try:
         checkFollowers = follower.filter(following=User.objects.get(pk=request.user.id))
@@ -851,6 +872,7 @@ def profile(request, user_id):
         newFollowing = False
 
     return render(request, "network/user_profile.html", {
+        
     "userProfile": user,
     "user_like": user_like,
     "page_post": page_post,
@@ -1030,6 +1052,23 @@ def following(request):
     return render(request, "network/following.html", {
         "page_post": page_post
     })
+
+@login_required
+def friends_list(request):
+    friends = user_connections(request).get('friends', [])  # Use the custom context processor to get friends
+    friends_per_page = 81  # Set the number of friends per page
+
+    paginator = Paginator(friends, friends_per_page)
+    page = request.GET.get('page', 1)
+
+    try:
+        friends = paginator.page(page)
+    except PageNotAnInteger:
+        friends = paginator.page(1)
+    except EmptyPage:
+        friends = paginator.page(paginator.num_pages)
+
+    return render(request, 'network/friends_list.html', {'friends': friends})
 
 
 @login_required

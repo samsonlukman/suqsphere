@@ -1,5 +1,5 @@
 body {
-  background-color:#f0f3f5; 
+  background-color:#BABABA; 
 }
 
 /* css for the search button at the top page */
@@ -26,8 +26,8 @@ body {
 /* css for suqsphere logo on top page */
 #index-suqlogo {
   border-radius: 50%;
-  width: 30px; 
-  height: 30px;
+  width: 50px; 
+ 
 }
 
 .top-page {
@@ -1129,22 +1129,7 @@ footer {
   background-color: transparent; /* Make the scrollbar thumb transparent */
 }
 
-.followed-users {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
 
-.followed-users a {
-  flex: 0 0 calc(30% - 10px); /* Three images per row with spacing */
-  margin-bottom: 10px; /* Adjust as needed */
-  box-sizing: border-box;
-}
-
-.followed-users img {
-  width: 70%;
-  height: auto;
-}
 
 
 

@@ -30,16 +30,18 @@
     {% if request.user.is_authenticated %}
     <div class="container-fluid top-page">
         <div class="row">
-            <div class="col-l">
+            <div class="col-l" style="margin-left: 40px;">
+                <a href="{% url 'index' %}">
                 <img src="/media/post_image/suqlogo.png" id="index-suqlogo">
+            </a>
             </div>
             <div class="col-md-3">
-                <div id="search-icon">
+                <div id="searchicon">
                     <form action="{% url 'search' %}" method="get" style="margin-top: 10px;">
-                        <i class="fas fa-search"></i>
-                        <input id="search-button" type="text" name="q" placeholder="Search" />
+                      <input id="search-button" type="text" name="q" placeholder="Search" style="background-image: url('media/post_image/search.png'); background-repeat: no-repeat; background-position: left center; padding-left: 15px; outline: none;">
                     </form>
-                </div>
+                  </div>
+                  
             </div>
             <div class="col-md-2">
                 <!-- Content for Column 3 -->
@@ -89,7 +91,7 @@ function toggleBackgroundColor() {
     if (toggleSwitch.checked) {
         // Set background color to black
         const newBackgroundColor = 'black';
-        const newTextColor = 'white';
+        const newTextColor = '#BABABA';
         
         body.style.backgroundColor = newBackgroundColor;
         body.style.color = newTextColor;
@@ -123,7 +125,7 @@ function toggleBackgroundColor() {
         localStorage.setItem('backgroundColor', newBackgroundColor);
     } else {
         // Set background color to white
-        const newBackgroundColor = 'white';
+        const newBackgroundColor = '#BABABA';
         const newTextColor = 'black';
 
         body.style.backgroundColor = newBackgroundColor;

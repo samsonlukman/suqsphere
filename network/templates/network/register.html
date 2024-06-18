@@ -2,30 +2,84 @@
 
 {% block body %}
 
+<style>
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50%; /* Set the height to 100% of the viewport height for vertical centering */
+    }
 
-<div class="intro-container">
-    <div class="circle-container">
-      <img src="media/post_image/chatlogo.jpg" alt="Chat Logo" class="circle-image">
-    </div>
-    <div class="intro-text-container">
-      <p style="font-weight: 500; font-size: large; font-family: 'Times New Roman', Times, serif;">Don't have an account?</p>
-      <button class="signup-button" onclick="openRegisterModal()">Sign-up</button>
-      <br>
-      <div class="login-text-space">
-      <p style="font-weight: 500; font-size: large; font-family: 'Times New Roman', Times, serif;">Already have an account?</p>
-      <button class="login-button"><a href="{% url 'network_login' %}">Login</a></button>
-    </div>
-    </div>
-  </div>
-  
+    .fir input {
+                border: 1px solid white;
+                border-radius: 20px;
+                padding: 8px; /* Adjust padding as needed */
+                box-sizing: border-box;
+                    }
 
-    <!-- Unique Register Modal -->
-    <div style="color: black;" class="modal fade" id="registerModalUnique" tabindex="-1" aria-labelledby="registerModalUniqueLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="registerModalUniqueLabel">Register</h5>
-                    {% if form.errors %}
+    .form-container {
+        margin-top: 20px;
+        background-color: #E2EFFF;
+        padding-left: 150px;
+        padding-right: 150px;
+        width: 800px; /* Set a fixed width for the form container */
+        border-radius: 10px;
+        text-align: center; /* Center the text content within the form container */
+    }
+
+    #index-suqlogo {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 10px;
+    }
+
+    /* Add any additional styles as needed */
+
+    /* Center the form fields within the form container */
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Style form fields */
+    form input, form select, form textarea {
+        margin-bottom: 10px; /* Add spacing between form fields */
+        width: 100%; /* Make form fields take full width */
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc; /* Add a border */
+        border-radius: 20px; /* Add border-radius */
+    }
+
+    /* Style submit button */
+    form input[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 20px; /* Add border-radius */
+    }
+
+    /* Style form field pairs */
+    .form-field-pair {
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
+
+<div class="container">
+    <div class="form-container">
+        <div>
+            <img src="/media/post_image/suqlogo.png" id="index-suqlogo"> <span style="color: #435D7D"> suqsphere.com</span>
+            
+        </div>
+        {% if form.errors %}
+        <br>
         <div class="alert">
             {% for field in form %}
                 {% for error in field.errors %}
@@ -33,43 +87,54 @@
                 {% endfor %}
             {% endfor %}
         </div>
-    {% endif %}
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="registerFormUnique" action="{% url 'network_register' %}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <input class="btn btn-primary" type="submit" value="Register">
-                        <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
-                    </form>
-                </div>
+        {% endif %}
+        <br>
+        <form id="registerFormUnique" action="{% url 'network_register' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- First Name and Last Name Pair -->
+            <div class="form-field-pair fir" style="gap: 20px;">
+                
+                    {{ form.first_name }}
+            
+                
+                
+                {{ form.last_name }}
             </div>
-        </div>
+                <br>
+            <!-- Email and Username Pair -->
+            <div class="form-field-pair fir" style="gap: 20px;">
+                {{ form.email }}
+                {{ form.username }}
+            </div>
+<br>
+            <!-- Password and Confirmation Pair -->
+            <div class="form-field-pair fir" style="gap: 20px;">
+                {{ form.password }}
+                {{ form.confirmation }}
+            </div>
+<br>
+            <div class="form-field-pair fir" style="gap: 20px;">
+                {{ form.profile_pics }}
+                
+            </div>
+                <br>
+            <button style="border: none; background: none;" type="submit">
+                <img src="media/post_image/signup.png" width="50%">
+            </button>
+        </form>
+        <div class="login-text-space">
+            Already have an account?<a href="{% url 'network_login' %}"> Login</a> 
+            <br>
+            <br>
+            About us | Terms and Conditions | Privacy | Contact us
+          </div>
+
+         
     </div>
-    <footer>
-        <div class="intro-footer-buttons">
-          <button class="intro-footer-button">About Us</button>
-          <button class="intro-footer-button">Terms and Conditions</button>
-          <button class="intro-footer-button">Privacy</button>
-          <button class="intro-footer-button">Contact Us</button>
-        </div>
-      </footer>
-      
+</div>
 
 
-    <script>
-        function openRegisterModal() {
-            var modal = document.getElementById('registerModalUnique');
-            modal.classList.add('show');
-            modal.style.display = 'block';
-        }
 
-        function closeRegisterModal() {
-            var modal = document.getElementById('registerModalUnique');
-            modal.classList.remove('show');
-            modal.style.display = 'none';
-        }
-    </script>
 
 {% endblock %}

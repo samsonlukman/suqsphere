@@ -120,6 +120,9 @@ document.getElementById('shareId').addEventListener('click', () => withFriend())
    function withFriend(){
     console.log("HI")
    }
+
+  
+
 // This function gets the value of the cookie with the specified name
 function getCookie(name){
             const value = `; ${document.cookie}`;
