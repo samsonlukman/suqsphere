@@ -518,7 +518,7 @@ def post_add_or_remove_reaction(request, post_id, reaction_type):
 
     if request.method == 'POST':
         try:
-            # Get the corresponding ReactionModel based on reaction_type
+            # Define the mapping for reaction models
             reaction_model = {
                 'love': Love,
                 'haha': Haha,
@@ -527,44 +527,57 @@ def post_add_or_remove_reaction(request, post_id, reaction_type):
                 'sad': Sad,
             }[reaction_type]
 
-            # Try to get the existing reaction for the user and post
-            reaction = reaction_model.objects.get(post=post, user=user)
+            # Check if the user already reacted to the post with this reaction
+            try:
+                existing_reaction = reaction_model.objects.get(post=post, user=user)
+                # If the same reaction is clicked, remove it
+                existing_reaction.delete()
+                success = False
+            except ObjectDoesNotExist:
+                # Remove any other reaction by this user for this post
+                Love.objects.filter(post=post, user=user).delete()
+                Haha.objects.filter(post=post, user=user).delete()
+                Like.objects.filter(post=post, user=user).delete()
+                Shock.objects.filter(post=post, user=user).delete()
+                Sad.objects.filter(post=post, user=user).delete()
 
-            # Reaction exists, delete it
-            reaction.delete()
-            success = False
-        except ObjectDoesNotExist:
-            # Reaction does not exist, create it
-            reaction = reaction_model.objects.create(post=post, user=user)
-            success = True
+                # Create the new reaction
+                reaction_model.objects.create(post=post, user=user)
+                success = True
 
-        # Update the post instance to reflect the new counts
-        post.refresh_from_db()
+            # Update the post instance to reflect the new counts
+            post.refresh_from_db()
 
-        # Calculate the total count of all reactions
-        total_count = (
-            post.postLove.count() +
-            post.postHaha.count() +
-            post.post_like.count() +
-            post.postShock.count() +
-            post.postSad.count()
-        )
+            # Calculate the total count of all reactions
+            total_count = (
+                post.postLove.count() +
+                post.postHaha.count() +
+                post.post_like.count() +
+                post.postShock.count() +
+                post.postSad.count()
+            )
 
-        # Send the updated counts to the client
-        data = {
-            'post_love': post.postLove.count(),
-            'post_haha': post.postHaha.count(),
-            'post_like': post.post_like.count(),
-            'post_shock': post.postShock.count(),
-            'post_sad': post.postSad.count(),
-            'total_count': total_count,
-            'success': success,
-            'post_id': post.id
-        }
+            # Send the updated counts to the client
+            data = {
+                'post_love': post.postLove.count(),
+                'post_haha': post.postHaha.count(),
+                'post_like': post.post_like.count(),
+                'post_shock': post.postShock.count(),
+                'post_sad': post.postSad.count(),
+                'total_count': total_count,
+                'success': success,
+                'post_id': post.id
+            }
 
-        return JsonResponse({"data": data})
+            return JsonResponse({"data": data})
+
+        except KeyError:
+            return JsonResponse({"error": "Invalid reaction type"}, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
 
 
 
