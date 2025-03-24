@@ -5,6 +5,7 @@ from network.api.views import *
 
 urlpatterns = [
     path('index', IndexView.as_view(), name='index'),
+    path('random-posts', RandomPostsView.as_view(), name='random-posts'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('user/', views.get_user_details, name='get_user_details'),
     path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),

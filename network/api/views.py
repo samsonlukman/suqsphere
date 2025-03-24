@@ -52,7 +52,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 User = get_user_model()
 
-
+#user gets posts from friends only
 class IndexView(APIView):
     """
     API view for the index page
@@ -110,6 +110,36 @@ class IndexView(APIView):
             "suggested_groups": suggested_groups_serializer.data,
             "posts": posts_serializer.data,
             "groups": groups_serializer.data,
+        })
+    
+#For user to get random post
+class RandomPostsView(APIView):
+    """
+    API view to get all posts without any filter, ordered by latest.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch all posts, ordered by latest
+        posts = Post.objects.annotate(
+            total_likes=Count('post_like'),
+            total_sads=Count('postSad'),
+            total_loves=Count('postLove'),
+            total_hahas=Count('postHaha'),
+            total_shocks=Count('postShock'),
+        ).prefetch_related('postComment__author').order_by('-timestamp')  # Prefetch comments for optimization
+
+        # Paginate posts
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # You can change the page size if needed
+        paginated_posts = paginator.paginate_queryset(posts, request)
+
+        # Serialize data
+        posts_serializer = PostSerializer(paginated_posts, many=True)
+
+        return paginator.get_paginated_response({
+            "posts": posts_serializer.data
         })
 
 class CommentPagination(PageNumberPagination):

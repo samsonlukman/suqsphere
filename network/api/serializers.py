@@ -30,12 +30,13 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
+    author = UserSerializer(read_only=True)  # Make it read-only
     post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
 
     class Meta:
         model = Comment
         fields = ['id', 'author', 'post', 'message']
+
 
 
 class PostImageSerializer(serializers.ModelSerializer):
