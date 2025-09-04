@@ -9,7 +9,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'profile_pics']
+        fields = ['id', 'first_name', 'last_name', 'username', 'profile_pics', 'about', 'phone_number',]
+
+class RecursiveField(serializers.Serializer):
+    def to_representation(self, value):
+        # This points back to the serializer that holds this field
+        # allowing it to recursively serialize child comments
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -30,13 +37,87 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)  # Make it read-only
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+    author = UserSerializer(read_only=True)
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), write_only=True)
+    likes_count = serializers.SerializerMethodField()
+    liked_by_me = serializers.SerializerMethodField()
+    replies = RecursiveField(many=True, read_only=True) 
 
     class Meta:
         model = Comment
-        fields = ['id', 'author', 'post', 'message']
+        fields = ['id', 'author', 'post', 'message', 'timestamp', 'parent', 'likes_count', 'liked_by_me', 'replies']
+        read_only_fields = ['timestamp', 'likes_count', 'liked_by_me', 'replies']
+        extra_kwargs = {
+            'parent': {'required': False, 'allow_null': True}
+        }
 
+    def get_likes_count(self, obj):
+        return obj.comment_likes.count()
+
+    def get_liked_by_me(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.comment_likes.filter(user=request.user).exists()
+        return False
+
+
+class PostImageSerializer(serializers.ModelSerializer):
+    post_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostImage
+        fields = ['id', 'post_image']
+
+    def get_post_image(self, obj):
+        return f"http://192.168.0.202:8000{obj.post_image.url}"
+
+
+class PostSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    post_images = PostImageSerializer(many=True, read_only=True)
+    comments = CommentSerializer(many=True, read_only=True, source='postComment')
+    total_likes = serializers.SerializerMethodField()
+    total_sads = serializers.SerializerMethodField()
+    total_loves = serializers.SerializerMethodField()
+    total_hahas = serializers.SerializerMethodField()
+    total_shocks = serializers.SerializerMethodField()
+    total_reactions = serializers.SerializerMethodField()
+    total_comments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = [
+            'id', 'user', 'postContent', 'timestamp', 'post_images',
+            'comments', 'total_likes', 'total_sads', 'total_loves',
+            'total_hahas', 'total_shocks', 'total_reactions', 'total_comments'
+        ]
+
+    def get_total_likes(self, obj):
+        return obj.post_like.count()
+
+    def get_total_sads(self, obj):
+        return obj.postSad.count()
+
+    def get_total_loves(self, obj):
+        return obj.postLove.count()
+
+    def get_total_hahas(self, obj):
+        return obj.postHaha.count()
+
+    def get_total_shocks(self, obj):
+        return obj.postShock.count()
+
+    def get_total_reactions(self, obj):
+        return (
+            obj.post_like.count() +
+            obj.postSad.count() +
+            obj.postLove.count() +
+            obj.postHaha.count() +
+            obj.postShock.count()
+        )
+
+    def get_total_comments(self, obj):
+        return obj.postComment.count()
 
 
 class PostImageSerializer(serializers.ModelSerializer):
@@ -152,3 +233,79 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             # Print the error and raise the exception again
             print(f"Error creating user: {e}")
             raise e
+        
+#MARKETPLACE SERIALIZERS
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = '__all__'
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+class MarketImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MarketImage
+        fields = ['image']
+
+class ProductSerializer(serializers.ModelSerializer):
+    seller = serializers.StringRelatedField() # Or use a UserSerializer if you need more user details
+    category = serializers.StringRelatedField() # Or use a CategorySerializer
+    images = MarketImageSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'title', 'description', 'price', 'currency', 'stock_quantity',
+            'is_active', 'is_featured', 'is_sold_out', 'seller', 'category',
+            'created_at', 'updated_at', 'images'
+        ]
+
+class MarketCommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    
+    class Meta:
+        model = MarketComment
+        fields = ['id', 'author', 'message', 'created_at']
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product', 'quantity']
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'items', 'created_at']
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'quantity', 'price_at_purchase']
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    buyer = serializers.StringRelatedField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'buyer', 'total_amount', 'order_currency', 'status',
+            'transaction_id', 'items', 'created_at'
+        ]
+# serializers.py
+class ReviewSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'product', 'author', 'rating', 'comment', 'created_at']
+        read_only_fields = ['product', 'author']

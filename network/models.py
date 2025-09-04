@@ -31,6 +31,19 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="userComment")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True, related_name="postComment")
     message = models.CharField(max_length=10000)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    parent = models.ForeignKey(
+        'self', # Refers to the Comment model itself
+        on_delete=models.CASCADE,
+        null=True,     # Parent is optional (top-level comments have no parent)
+        blank=True,    # Allow null in forms/admin
+        related_name='replies' # Use 'replies' to access child comments
+    )
+
+    class Meta:
+        ordering = ['timestamp']
+    
 
     def __str__(self):
         return f"{str(self.author)} wrote {self.message} on {self.post}"
@@ -78,6 +91,17 @@ class Shock(models.Model):
     def __str__(self):
         return f"{self.user} reacts Shock on {self.post}"
 
+class CommentLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_comment_likes")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="comment_likes")
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'comment') # A user can like a comment only once
+
+    def __str__(self):
+        return f"{self.user} likes comment {self.comment.id}"
+    
 # Define the Group model and GroupPost model
 class Group(models.Model):
     name = models.CharField(max_length=100)  # Default value for 'name'
@@ -292,7 +316,7 @@ class Currency(models.Model):
 
 class Bid(models.Model):
     bid = models.FloatField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="Userbid")
+    user = models.ForeignKey('User', on_delete=models.CASCADE, blank=True, null=True, related_name="Userbid")
 
 
 class Listing(models.Model):
@@ -330,52 +354,119 @@ class auctions_Comment(models.Model):
 
 # Database for Market 
 
-class MarketCurrency(models.Model):
-    currencyName = models.CharField(max_length=50)
+class Water(models.Model):
+    table = models.IntegerField()
 
-    def __str__(self):
-        return self.currencyName
-    
-class MarketCategory(models.Model):
-    categoryName = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.categoryName
-
-class Market(models.Model):
+class Product(models.Model):
+    # Basic Product Details
     title = models.CharField(max_length=100)
-    transaction_reference = models.CharField(max_length=100, default="aa")
-    description = models.CharField(max_length=1000)
-    phone_number = models.CharField(max_length=15, default="Not Provided")
-    currency = models.ForeignKey(MarketCurrency, on_delete=models.CASCADE, blank=True, null=True, related_name="market_currency")
-    price = models.DecimalField(max_digits=10, decimal_places=5)
-    isActive = models.BooleanField(default=True)
-    isFeatured = models.BooleanField(default=False)
-    completed = models.BooleanField(default=False)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="market_user")
-    category = models.ForeignKey(MarketCategory, on_delete=models.CASCADE, blank=True, null=True, related_name="market_category")
-    cart = models.ManyToManyField(User, blank=True, related_name="cart")
+    description = models.TextField(max_length=1000)
+    
+    # Financials and Inventory
+    price = models.DecimalField(max_digits=10, decimal_places=2) # Changed to 2 decimal places for standard currency
+    currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="products")
+    stock_quantity = models.PositiveIntegerField(default=1)
+    
+    # Status and Metadata
+    is_active = models.BooleanField(default=True) # Renamed for consistency
+    is_featured = models.BooleanField(default=False) # Renamed for consistency
+    is_sold_out = models.BooleanField(default=False)
+    
+    # Relationships
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listed_products") # Renamed 'owner' to 'seller'
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name="products")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} by {self.seller.username}"
+
+    def save(self, *args, **kwargs):
+        # Automatically update is_sold_out based on stock
+        self.is_sold_out = (self.stock_quantity == 0)
+        super().save(*args, **kwargs)
+
+class Order(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="orders")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    order_currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="orders")
+    
+    # Order Statuses
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    
+    # Transaction Details
+    transaction_id = models.CharField(max_length=200, unique=True, blank=True, null=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Order #{self.id} by {self.buyer.username}"
+    
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name="ordered_items")
+    quantity = models.PositiveIntegerField(default=1)
+    price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2) # Store the price at time of purchase to prevent issues if seller changes the price later
 
     def __str__(self):
-        return f"{self.title}, {self.currency}{self.price}"
+        return f"{self.quantity} x {self.product.title}"
+    
 
-
-class MarketImage(models.Model):
-    item = models.ForeignKey(Market, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to='images/')
-
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
-        return f"Image for {self.item.title}"
-
-
+        return f"Cart for {self.user.username}"
+    
+class CartItem(models.Model):
+    cart = models.ForeignKey('Cart', on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    
+    def __str__(self):
+        return f"{self.quantity} x {self.product.title} in cart"
+    
 class MarketComment(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="market_userComment")
-    item = models.ForeignKey(Market, on_delete=models.CASCADE, blank=True, null=True, related_name="marketComment")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="market_comments", default=1)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name="comments")
     message = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.author.username} commented on {self.product.title}"
+    
+class MarketImage(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to='product_images/') # More descriptive upload path
+    
+    def __str__(self):
+        return f"Image for {self.product.title}"
+
+# models.py
+class Review(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_reviews')
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    comment = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('product', 'author')  # A user can only review a product once
 
     def __str__(self):
-        return f"{self.author} commented on {self.item}"
-
-
-
-
+        return f"Review by {self.author.username} for {self.product.title}"

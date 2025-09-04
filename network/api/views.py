@@ -7,7 +7,13 @@ from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonRespo
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect
+from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
 from django.contrib.auth.views import (
     PasswordResetView,
     PasswordResetDoneView,
@@ -28,6 +34,9 @@ from rest_framework.permissions import AllowAny
 from django.template.response import TemplateResponse
 from .serializers import *
 import requests
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 from django.db.models import Q
 from network.models import *
@@ -51,6 +60,11 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 User = get_user_model()
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 20
 
 #user gets posts from friends only
 class IndexView(APIView):
@@ -85,8 +99,7 @@ class IndexView(APIView):
         ).prefetch_related('postComment__author').order_by('-timestamp')  # Prefetch related comments
 
         # Paginate posts
-        paginator = PageNumberPagination()
-        paginator.page_size = 3
+        paginator = CustomPagination()
         page_posts = paginator.paginate_queryset(posts, request)
 
         # Suggested groups
@@ -131,17 +144,159 @@ class RandomPostsView(APIView):
         ).prefetch_related('postComment__author').order_by('-timestamp')  # Prefetch comments for optimization
 
         # Paginate posts
-        paginator = PageNumberPagination()
-        paginator.page_size = 10  # You can change the page size if needed
-        paginated_posts = paginator.paginate_queryset(posts, request)
-
+        paginator = CustomPagination()
+        page_posts = paginator.paginate_queryset(posts, request)
         # Serialize data
-        posts_serializer = PostSerializer(paginated_posts, many=True)
+        posts_serializer = PostSerializer(page_posts, many=True)
 
         return paginator.get_paginated_response({
             "posts": posts_serializer.data
         })
+class ProfileView(APIView):
+    """
+    API view for user profile.
+    Returns details for the profile specified by user_id,
+    and also indicates if the requesting user follows them.
+    """
+    permission_classes = [permissions.IsAuthenticated] # Or [permissions.IsAuthenticatedOrReadOnly] if public profiles
 
+    def get(self, request, user_id):
+        # The requesting user (currently logged-in user)
+        requesting_user = request.user 
+        
+        try:
+            # The user whose profile is being viewed (the actual profile user)
+            profile_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the requesting_user follows this profile_user (this is correct)
+        is_following = False
+        if requesting_user.is_authenticated:
+            is_following = Follow.objects.filter(
+                follower=requesting_user,
+                following=profile_user
+            ).exists()
+
+        # --- CRITICAL FIX START: Calculate connections for `profile_user` ---
+        
+        # Who does `profile_user` follow?
+        profile_user_following_ids = Follow.objects.filter(follower=profile_user).values_list('following', flat=True)
+        # Who follows `profile_user`?
+        profile_user_follower_ids = Follow.objects.filter(following=profile_user).values_list('follower', flat=True)
+
+        # Friends of `profile_user` (mutual following)
+        profile_user_friends_ids = set(profile_user_following_ids).intersection(profile_user_follower_ids)
+
+        # --- CRITICAL FIX END ---
+
+        # Get `profile_user`'s posts (this part was already correct)
+        posts = Post.objects.filter(user=profile_user).annotate(
+            total_likes=Count('post_like'),
+            total_sads=Count('postSad'),
+            total_loves=Count('postLove'),
+            total_hahas=Count('postHaha'),
+            total_shocks=Count('postShock'),
+        ).prefetch_related('postComment__author', 'post_images').order_by('-timestamp')
+
+        # Paginate posts (assuming CustomPagination is defined and imported)
+        # from .your_pagination_module import CustomPagination 
+        paginator = CustomPagination() # Replace CustomPagination with your actual pagination class
+        page_posts = paginator.paginate_queryset(posts, request)
+
+        # Serialize data
+        posts_serializer = PostSerializer(page_posts, many=True, context={'request': request})
+        user_serializer = UserSerializer(profile_user) # Serialize the profile_user
+
+        return paginator.get_paginated_response({
+            "user": user_serializer.data,              # Data for the profile being viewed
+            "posts": posts_serializer.data,            # Posts of the profile being viewed
+            "is_following": is_following,              # If the requesting_user follows profile_user
+            
+            # --- Return connections for `profile_user` ---
+            "followers_count": list(profile_user_follower_ids), # Return list of IDs for profile_user's followers
+            "following_count": list(profile_user_following_ids),# Return list of IDs for profile_user's following
+            "friends": list(profile_user_friends_ids),           # Return list of IDs for profile_user's friends
+        })
+
+    
+class FollowUnfollowView(APIView):
+    """
+    API view to follow/unfollow a user
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        try:
+            user_to_follow = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user == user_to_follow:
+            return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
+
+        follow_relation, created = Follow.objects.get_or_create(
+            follower=request.user,
+            following=user_to_follow
+        )
+
+        if not created:
+            follow_relation.delete()
+            action = "unfollowed"
+        else:
+            action = "followed"
+
+        return Response({
+            "status": "success",
+            "action": action,
+            "followers_count": user_to_follow.followers.count(),
+            "following_count": request.user.following.count()
+        }, status=status.HTTP_200_OK)
+    
+
+    
+
+class CreatePostAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            post_content = request.data.get("post_content")
+            post_images = request.FILES.getlist("post_images[]")
+            
+            if not post_content and not post_images:
+                return Response(
+                    {"error": "Post must contain either text or an image"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if len(post_images) > 1:
+                return Response(
+                    {"error": "A post cannot have more than one image"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            post = Post.objects.create(
+                postContent=post_content,
+                user=request.user
+            )
+
+            for image in post_images:
+                PostImage.objects.create(
+                    postContent=post,
+                    post_image=image
+                )
+
+            serializer = PostSerializer(post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+    
 class CommentPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -149,26 +304,60 @@ class CommentPagination(PageNumberPagination):
 
 class CommentListCreateView(ListCreateAPIView):
     serializer_class = CommentSerializer
-    pagination_class = CommentPagination
+    pagination_class = None # Set to None, or keep if you manage pagination differently
     filter_backends = [OrderingFilter]
-    ordering = ['-timestamp']
-    permission_classes = [IsAuthenticated]
+    ordering = ['timestamp'] # Important for chronological order of parent comments
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        """
-        Optionally filters comments by a specific post ID if provided.
-        """
-        queryset = Comment.objects.all()
+        # Fetch only top-level comments (where parent is null) for a specific post
+        # IMPORTANT: Prefetch replies to avoid N+1 queries.
+        queryset = Comment.objects.filter(parent__isnull=True).select_related('author').prefetch_related(
+            # Prefetch nested replies. For deeper nesting, you might need recursive prefetching or a custom manager.
+            # This covers 1 level of replies. For deeper, it gets complex quickly in `prefetch_related`.
+            'replies__author', # Prefetch replies and their authors
+            'replies__replies__author', # Prefetch 2nd level replies and their authors
+            # Add more for deeper levels if needed, or consider a custom tree fetching logic
+            'comment_likes', # For `likes_count` and `liked_by_me` on parent comments
+            'replies__comment_likes', # For likes on 1st level replies
+            'replies__replies__comment_likes', # For likes on 2nd level replies
+        ).order_by('-timestamp') # Order top-level comments by most recent first for the feed
+
         post_id = self.request.query_params.get('post_id')
         if post_id:
             queryset = queryset.filter(post_id=post_id)
-        return queryset
+        return queryset.distinct() # Use distinct() to prevent duplicates if prefetching causes them
 
     def perform_create(self, serializer):
-        """
-        Associates the authenticated user as the comment's author.
-        """
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied("Authentication is required to post a comment.")
+        # The serializer will handle saving the 'post' and 'parent' fields if provided in request.data
         serializer.save(author=self.request.user)
+
+
+class CommentLikeToggleView(APIView):
+    permission_classes = [IsAuthenticated] # Only authenticated users can like/unlike
+
+    def post(self, request, pk, format=None):
+        comment = get_object_or_404(Comment, pk=pk)
+        user = request.user
+
+        try:
+            comment_like = CommentLike.objects.get(user=user, comment=comment)
+            comment_like.delete() # If exists, unlike
+            liked = False
+        except CommentLike.DoesNotExist:
+            CommentLike.objects.create(user=user, comment=comment) # If not, like
+            liked = True
+
+        likes_count = CommentLike.objects.filter(comment=comment).count()
+
+        return Response({
+            "comment_id": comment.id,
+            "liked": liked, # Boolean indicating current like status by the user
+            "likes_count": likes_count # Total likes count
+        }, status=status.HTTP_200_OK)
+
 
 class CommentDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
@@ -206,6 +395,85 @@ class PostDetailView(RetrieveAPIView):
             'post_like', 'postSad', 'postLove', 'postHaha', 'postShock'
         )
     
+REACTION_MODELS = {
+    'like': Like,
+    'love': Love,
+    'haha': Haha,
+    'sad': Sad,
+    'shock': Shock,
+}
+
+class PostReactionsListView(generics.ListAPIView):
+    """
+    API view to list users who reacted to a specific post,
+    optionally filtered by reaction type.
+    """
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # Allow anyone to see reactions
+    serializer_class = UserSerializer # We will serialize the User objects who reacted
+
+    def get_queryset(self):
+        post_id = self.kwargs['post_id'] # Get post_id from URL
+        reaction_type = self.request.query_params.get('type', 'all') # Get reaction type from query params (e.g., ?type=like)
+        
+        post = get_object_or_404(Post, pk=post_id) # Get the Post object
+
+        user_ids = set() # Use a set to store unique user IDs
+
+        # Filter by reaction type
+        if reaction_type == 'all':
+            # If 'all', collect user IDs from all reaction types for this post
+            for model_name, model_class in REACTION_MODELS.items():
+                user_ids.update(model_class.objects.filter(post=post).values_list('user__id', flat=True))
+        elif reaction_type in REACTION_MODELS:
+            # If a specific reaction type, get user IDs for that type
+            model_class = REACTION_MODELS[reaction_type]
+            user_ids.update(model_class.objects.filter(post=post).values_list('user__id', flat=True))
+        else:
+            # If an invalid reaction type is provided, return an empty queryset
+            return User.objects.none()
+
+        # Return User objects based on the collected unique IDs
+        # Order by username for consistent display, or add a reaction timestamp for sorting.
+        return User.objects.filter(id__in=list(user_ids)).order_by('username')
+    
+    # Override list method to include total counts for all reaction types in the response
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        post_id = self.kwargs['post_id']
+        post = get_object_or_404(Post, pk=post_id)
+        
+        total_counts = {}
+        for reaction_type, model_class in REACTION_MODELS.items():
+            total_counts[f'{reaction_type}_count'] = model_class.objects.filter(post=post).count()
+
+        return Response({
+            'reactors': serializer.data, # List of User objects
+            'total_counts': total_counts, # Dictionary of all reaction counts for the post
+            'total_all_reactions': sum(total_counts.values()) # Sum of all reactions
+        })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_users_by_ids(request):
+    """
+    Returns a list of User objects given a comma-separated string of IDs.
+    Example: /api/users_by_ids/?ids=1,5,10
+    """
+    ids_param = request.query_params.get('ids', '')
+    if not ids_param:
+        return Response([], status=status.HTTP_200_OK)
+    
+    try:
+        user_ids = [int(id_str) for id_str in ids_param.split(',') if id_str.strip()]
+    except ValueError:
+        return Response({"error": "Invalid ID format. Must be comma-separated integers."}, status=status.HTTP_400_BAD_REQUEST)
+
+    users = User.objects.filter(id__in=user_ids)
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrf_token': csrf_token})
@@ -226,8 +494,24 @@ def user_login(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def user_logout(request):
-    logout(request)
-    return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
+    
+class RegisterAPIView(generics.CreateAPIView):
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [permissions.AllowAny] # Allow anyone to register
+    parser_classes = [MultiPartParser, FormParser] # Required for handling file uploads (profile_pics)
+
+    # Override the default create method to add custom pre-validation or context
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer) # Calls serializer.save() which uses custom .create()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+from django.contrib.auth import logout as auth_logout
+@ensure_csrf_cookie # Ensures a CSRF token is available in the cookie for subsequent requests
+def logout_view_functional(request):
+    if request.method == 'POST':
+        auth_logout(request)
+        return JsonResponse({'message': 'Logged out successfully'}, status=200)
+    return JsonResponse({'message': 'Invalid request method'}, status=405)
