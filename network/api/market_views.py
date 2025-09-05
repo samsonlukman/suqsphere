@@ -7,6 +7,12 @@ from django.db.models import Q
 from network.models import *
 from .serializers import *
 from rest_framework import viewsets, permissions
+from rest_framework.generics import ListAPIView
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class CategoryListView(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 class ProductListView(generics.ListAPIView):
     """
@@ -39,16 +45,16 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class AddProductView(APIView):
     """
-    API view for adding a new product.
+    API view for adding a new product with multiple image uploads.
     """
     permission_classes = [IsAuthenticated]
-    
+    parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request, *args, **kwargs):
-        # We handle image upload here or use a dedicated view for it.
-        # For simplicity, we'll assume the request body contains all data.
-        serializer = ProductSerializer(data=request.data)
+        # The serializer needs the request context to access uploaded files
+        serializer = ProductSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(seller=request.user)
+            serializer.save()  # The custom create method will be called here
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -179,3 +185,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         product_id = self.request.data.get('product')
         product = Product.objects.get(id=product_id)
         serializer.save(author=self.request.user, product=product)
+
+
+class CurrencyListView(ListAPIView):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializer

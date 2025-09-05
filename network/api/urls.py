@@ -38,6 +38,8 @@ urlpatterns = [
     path('products/friends/', FriendsProductListView.as_view(), name='friends-products'),
     path('products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
     path('products/add/', AddProductView.as_view(), name='add-product'),
+    path('currencies/', CurrencyListView.as_view(), name='currency-list'),
+    path('categories/', CategoryListView.as_view(), name='category-list'),
     
     path('cart/', CartView.as_view(), name='cart'),
     

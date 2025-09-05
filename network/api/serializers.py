@@ -235,33 +235,70 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise e
         
 #MARKETPLACE SERIALIZERS
+
+
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
-        fields = '__all__'
+        fields = ['id', 'currencyName']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ['id', 'categoryName']
 
 class MarketImageSerializer(serializers.ModelSerializer):
+    """Serializer for a single product image."""
     class Meta:
         model = MarketImage
         fields = ['image']
 
+
 class ProductSerializer(serializers.ModelSerializer):
-    seller = serializers.StringRelatedField() # Or use a UserSerializer if you need more user details
-    category = serializers.StringRelatedField() # Or use a CategorySerializer
+    # Field for displaying images in a GET request (read-only)
     images = MarketImageSerializer(many=True, read_only=True)
+    
+    # Fields for displaying related objects (read-only)
+    seller = serializers.CharField(source='seller.username', read_only=True)
+    
+    # THE FIX: Add explicit output serializers for currency and category.
+    # These fields will be used for GET requests, embedding the full object.
+    currency = CurrencySerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
+    
+    # The writable fields for POST/PUT requests
+    currency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Currency.objects.all(), source='currency', write_only=True
+    )
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), source='category', write_only=True
+    )
+    
+    # The field for is_active
+    is_active = serializers.BooleanField(default=True)
     
     class Meta:
         model = Product
         fields = [
-            'id', 'title', 'description', 'price', 'currency', 'stock_quantity',
-            'is_active', 'is_featured', 'is_sold_out', 'seller', 'category',
-            'created_at', 'updated_at', 'images'
+            'id', 'title', 'description', 'price', 'stock_quantity', 'is_active', 
+            'is_featured', 'is_sold_out', 'seller', 'images', 
+            'currency', 'category', # Now correctly represented for output
+            'currency_id', 'category_id', # Writable fields for input
+            'created_at', 'updated_at'
         ]
+
+    def create(self, validated_data):
+        images_data = self.context.get('request').FILES.getlist('images')
+
+        product = Product.objects.create(
+            seller=self.context['request'].user,
+            **validated_data
+        )
+
+        for image_file in images_data:
+            MarketImage.objects.create(product=product, image=image_file)
+            
+        return product
 
 class MarketCommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()

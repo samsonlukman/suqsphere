@@ -329,10 +329,10 @@ class Listing(models.Model):
     completed = models.BooleanField(default=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True, related_name="category")
-    watchlist = models.ManyToManyField(User, blank=True, related_name="listingWatchlist")
 
     def __str__(self):
         return f"{self.title}, {self.currency}{self.price}"
+    
 
 
 class ListingImage(models.Model):
