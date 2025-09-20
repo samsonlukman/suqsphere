@@ -42,6 +42,11 @@ urlpatterns = [
     path('categories/', CategoryListView.as_view(), name='category-list'),
     
     path('cart/', CartView.as_view(), name='cart'),
+    path('cart/update-item/', CartItemUpdateView.as_view(), name='cart-item-update'),
+
+    path('my-products/', MyProductsListView.as_view(), name='my-products'),
+    path('products/delete/<int:pk>/', ProductDeleteView.as_view(), name='product-delete'),
+    path('products/update-status/<int:pk>/', ProductStatusUpdateView.as_view(), name='product-status-update'),
     
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     

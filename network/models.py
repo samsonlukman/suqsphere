@@ -308,7 +308,7 @@ class Category(models.Model):
 
 
 class Currency(models.Model):
-    currencyName = models.CharField(max_length=50)
+    currencyName = models.CharField(max_length=50, default="NGN")
 
     def __str__(self):
         return self.currencyName

@@ -23,11 +23,11 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        category_name = self.request.query_params.get('category', None)
+        category_id = self.request.query_params.get('category_id', None)
         search_query = self.request.query_params.get('search', None)
 
-        if category_name:
-            queryset = queryset.filter(category__categoryName=category_name)
+        if category_id:
+            queryset = queryset.filter(category__id=category_id)
         
         if search_query:
             queryset = queryset.filter(
@@ -35,7 +35,7 @@ class ProductListView(generics.ListAPIView):
             )
         
         return queryset
-
+    
 class ProductDetailView(generics.RetrieveAPIView):
     """
     API view for a single product.
@@ -57,6 +57,41 @@ class AddProductView(APIView):
             serializer.save()  # The custom create method will be called here
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ProductDeleteView(generics.DestroyAPIView):
+    """
+    API view to delete a product.
+    Only the owner of the product can delete it.
+    """
+    queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Ensure only the owner can see and delete their own products
+        return self.queryset.filter(seller=self.request.user)
+    
+class ProductStatusUpdateView(generics.UpdateAPIView):
+    """
+    API view to toggle the active status of a product.
+    """
+    queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        # Ensure only the owner can update their own products
+        return self.queryset.filter(seller=self.request.user)
+
+class MyProductsListView(generics.ListAPIView):
+    """
+    API view to list all products owned by the authenticated user.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        return Product.objects.filter(seller=self.request.user).order_by('-created_at')
+
 
 class FriendsProductListView(APIView):
     """
@@ -66,8 +101,19 @@ class FriendsProductListView(APIView):
 
     def get(self, request):
         user = request.user
-        friends = user.following.filter(follower__in=user.followed_by.all()).values_list('pk', flat=True)
-        products = Product.objects.filter(seller__pk__in=friends, is_active=True)
+
+        # Get users followed by the current user
+        following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+
+        # Get users who follow the current user
+        followers_ids = Follow.objects.filter(following=user).values_list('follower_id', flat=True)
+
+        # Find the intersection to get friends (mutually followed users)
+        friends_ids = set(following_ids).intersection(followers_ids)
+
+        # Get products from sellers who are friends of the current user
+        products = Product.objects.filter(seller__id__in=friends_ids, is_active=True).order_by('-created_at')
+
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -108,6 +154,30 @@ class CartView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except CartItem.DoesNotExist:
             return Response({'error': 'Item not found in cart'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class CartItemUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            cart_item = CartItem.objects.get(
+                cart__user=request.user,
+                product__id=request.data.get('product_id')
+            )
+        except CartItem.DoesNotExist:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_quantity = request.data.get('quantity')
+        if new_quantity is None or new_quantity < 1:
+            return Response({'error': 'Quantity must be at least 1'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_quantity > cart_item.product.stock_quantity:
+            return Response({'error': 'Cannot add more than available stock'}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart_item.quantity = new_quantity
+        cart_item.save()
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_200_OK)
 
 class CheckoutView(APIView):
     """
