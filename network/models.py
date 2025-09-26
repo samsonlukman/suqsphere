@@ -55,6 +55,29 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.following} is following {self.follower}"
 
+
+"""This is like a repitition of the Follow model above but I wanted to simplify
+this for messages"""
+class Friend(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    
+    class Meta:
+        unique_together = ('follower', 'following')
+
+# This model represents a one-on-one chat
+class Conversation(models.Model):
+    participants = models.ManyToManyField(User, related_name='conversations')
+    
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender} | {self.conversation} | {self.timestamp}"
+
 # Regular post reactions
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_like")

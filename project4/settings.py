@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['192.168.0.202']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'network',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +99,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project4.wsgi.application'
 
-
+ASGI_APPLICATION = 'project4.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -160,3 +162,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

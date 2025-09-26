@@ -10,27 +10,30 @@ router = DefaultRouter()
 router.register(r'reviews', ReviewViewSet, basename='review')
 
 urlpatterns = [
-    path('index', IndexView.as_view(), name='index'),
-    path('random-posts', RandomPostsView.as_view(), name='random-posts'),
-    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
-    path('posts/<int:post_id>/reactions/', PostReactionsListView.as_view(), name='post-reactions-list'),
+    path('index', IndexView.as_view(), name='api_index'),
+    path('random-posts', RandomPostsView.as_view(), name='api_random-posts'),
+    path('post/<int:pk>/', PostDetailView.as_view(), name='api_post-detail'),
+    path('posts/<int:post_id>/reactions/', PostReactionsListView.as_view(), name='api_post-reactions-list'),
 
-    path('user/', views.get_user_details, name='get_user_details'),
+    path('user/', views.get_user_details, name='api_get_user_details'),
     path('users_by_ids/', get_users_by_ids, name='users-by-ids'),
     
-    path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
-    path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
-    path('comments/<int:pk>/like_toggle/', CommentLikeToggleView.as_view(), name='comment-like-toggle'),
+    path('comments/', CommentListCreateView.as_view(), name='api_comment-list-create'),
+    path('comments/<int:pk>/', CommentDetailView.as_view(), name='api_comment-detail'),
+    path('comments/<int:pk>/like_toggle/', CommentLikeToggleView.as_view(), name='api_comment-like-toggle'),
     
-    path('get-csrf-token/', views.get_csrf_token, name="get-csrf-token"),
+    path('get-csrf-token/', views.get_csrf_token, name="api_get-csrf-token"),
 
-    path('login/', views.user_login, name='login'),
-    path('logout/', logout_view_functional, name='logout_functional_api'),
-    path('register/', RegisterAPIView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='api_login'),
+    path('logout/', LogoutView.as_view(), name='logout_functional_api'),
+    path('register/', RegisterAPIView.as_view(), name='api_register'),
     
-    path('profile/<int:user_id>/', ProfileView.as_view(), name='profile'),
-    path('follow/<int:user_id>/', FollowUnfollowView.as_view(), name='follow-unfollow'),
-    path('posts/create/', CreatePostAPIView.as_view(), name='create-post'),
+    path('profile/<int:user_id>/', ProfileView.as_view(), name='api_profile'),
+    path('follow/<int:user_id>/', FollowUnfollowView.as_view(), name='api_follow-unfollow'),
+    path('posts/create/', CreatePostAPIView.as_view(), name='api_create-post'),
+
+    path('friends/', FriendsListView.as_view(), name='api_friends-list'),
+    path('conversations/<int:other_user_id>/', ConversationView.as_view(), name='api_conversation-detail'),
 
     #Marketplace URLs
 

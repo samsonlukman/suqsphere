@@ -58,6 +58,10 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from django.core.paginator import Paginator, EmptyPage
+from django.conf import settings
 
 User = get_user_model()
 
@@ -474,26 +478,64 @@ def get_users_by_ids(request):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
     
-def get_csrf_token(request):
-    csrf_token = get_token(request)
-    return JsonResponse({'csrf_token': csrf_token})
+class FriendsListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+        followers_ids = Follow.objects.filter(following=user).values_list('follower_id', flat=True)
+        friends_ids = set(following_ids).intersection(followers_ids)
+        friends = User.objects.filter(id__in=friends_ids)
+        serializer = FriendsSerializer(friends, many=True)
+        return Response(serializer.data)
 
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def user_login(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
+class MessagesPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 50
 
-    user = authenticate(request, username=username, password=password)
+class ConversationView(APIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = MessagesPagination
 
-    if user is not None:
-        login(request, user)
-        serializer = UserSerializer(user)
+    def get(self, request, other_user_id):
+        try:
+            other_user = User.objects.get(id=other_user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        # FIX: A simple and reliable query to find a two-person conversation.
+        # This filters for conversations where the current user is a participant
+        # AND the other user is a participant.
+        conversation = Conversation.objects.filter(
+            participants=request.user
+        ).filter(
+            participants=other_user
+        ).first()
+        
+        print(f"DEBUG: Found conversation: {conversation}")
+
+        if not conversation:
+            print("DEBUG: No conversation found, creating a new one.")
+            conversation = Conversation.objects.create()
+            conversation.participants.add(request.user, other_user)
+        
+        messages_queryset = Message.objects.filter(conversation=conversation).order_by('-timestamp')
+        
+        paginator = self.pagination_class()
+        paginated_messages = paginator.paginate_queryset(messages_queryset, request)
+        
+        messages_serializer = MessageSerializer(paginated_messages, many=True)
+        
+        paginated_response = paginator.get_paginated_response(messages_serializer.data)
+
+        response_data = paginated_response.data
+        response_data['conversation_id'] = conversation.id
+        
+        response_data['results'].reverse()
+        
+        return Response(response_data)
     
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -508,10 +550,33 @@ class RegisterAPIView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
-from django.contrib.auth import logout as auth_logout
-@ensure_csrf_cookie # Ensures a CSRF token is available in the cookie for subsequent requests
-def logout_view_functional(request):
-    if request.method == 'POST':
-        auth_logout(request)
-        return JsonResponse({'message': 'Logged out successfully'}, status=200)
-    return JsonResponse({'message': 'Invalid request method'}, status=405)
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrf_token': csrf_token})
+
+class LoginView(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        
+        # Use Django's built-in login function to set the session
+        login(request, user)
+
+        # We can still get or create a token for future requests, if needed
+        token, created = Token.objects.get_or_create(user=user)
+        user_serializer = UserSerializer(user)
+
+        return Response({
+            'token': token.key,
+            'user_data': user_serializer.data,
+        }, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Use Django's built-in logout function to destroy the session
+        logout(request)
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)

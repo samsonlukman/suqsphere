@@ -27,6 +27,25 @@ class FollowSerializer(serializers.ModelSerializer):
         model = Follow
         fields = ['id', 'follower', 'following']
 
+#For messages
+class FriendsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'profile_pics']
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Message
+        fields = ['id', 'sender', 'content', 'timestamp']
+
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Conversation
+        fields = ['id', 'messages']
 
 class GroupSerializer(serializers.ModelSerializer):
     members = UserSerializer(many=True)
@@ -198,7 +217,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'phone_number', 'password']
+        fields = ['username', 'first_name', 'last_name', 'email', 'phone_number', 'password', 'profile_pics']
         
 
     def validate(self, data):
