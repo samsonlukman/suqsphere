@@ -1121,13 +1121,13 @@ def logout_view(request):
     return render(request, "network/login.html")
 
 def terms(request):
-    return render(request, "terms.html")
+    return render(request, "network/terms.html")
 
 def privacy_policy(request):
-    return render(request, "privacy-policy.html")
+    return render(request, "network/privacy-policy.html")
 
 def delete_account(request):
-    return render(request, "delete-account.html")
+    return render(request, "network/delete-account.html")
 
 def register(request):
     if request.method == "POST":
