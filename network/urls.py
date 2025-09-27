@@ -12,6 +12,7 @@ urlpatterns = [
     path("terms", views.terms, name="terms"),
     path("privacy-policy", views.privacy_policy, name="privacy_policy"),
     path("delete-account", views.delete_account, name="delete_account"),
+    path("csae-policy", views.csae, name="csae"),
     path("newpost", views.newPost, name="newPost"),
     path('post/<int:post_id>/delete/', views.delete_post, name="delete_post"),
     path('post_comment/<int:comment_id>/delete/', views.delete_comment, name="delete_comment"),

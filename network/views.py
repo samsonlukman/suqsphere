@@ -1129,6 +1129,9 @@ def privacy_policy(request):
 def delete_account(request):
     return render(request, "network/delete-account.html")
 
+def csae(request):
+    return render(request, "network/csae.html")
+
 def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST, request.FILES)
