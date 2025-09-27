@@ -1,0 +1,43 @@
+{% extends "network/layout.html" %}
+{% load static %}
+{% block title %}Account Deletion - Suqsphere{% endblock %}
+
+{% block body %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card post-card p-4 text-center">
+                <h1 class="mb-4" style="font-weight: bold; color: var(--danger-color);">Permanent Account Deletion</h1>
+                <p class="lead text-muted">We understand that you wish to terminate your account. Please read the following before proceeding.</p>
+
+                <div class="alert mt-4 text-left p-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
+                    <h4 class="alert-heading" style="color: var(--primary-color);"><i class="fas fa-exclamation-triangle"></i> What You Are Losing</h4>
+                    <ul class="list-group list-group-flush mt-3" style="background-color: transparent;">
+                        <li class="list-group-item" style="background-color: transparent; border: none;"><strong>Content Deletion:</strong> All your posts, photos, likes, and direct messages will be **permanently and irrevocably deleted**.</li>
+                        <li class="list-group-item" style="background-color: transparent; border: none;"><strong>Market History:</strong> All your active seller listings will be removed. You will lose access to your sales and purchase history.</li>
+                        <li class="list-group-item" style="background-color: transparent; border: none;"><strong>Data Loss:</strong> This process is final and cannot be reversed.</li>
+                    </ul>
+                </div>
+
+                <h3 style="color: var(--primary-color); margin-top: 30px;">Procedure for Account Deletion</h3>
+                <p class="mb-4">To ensure the request is secure, please send an email verification from the address associated with your account.</p>
+                
+                <div class="card p-4 mx-auto mb-4" style="max-width: 450px; border: 1px solid var(--border-color);">
+                    <p class="font-weight-bold text-dark mb-3" style="color: var(--text-color);">Step 1: Send Verification Email</p>
+                    <p class="mb-3">Send an email from the address associated with your Suqsphere account to:</p>
+                    <a href="mailto:support@suqsphere.com" class="btn btn-lg btn-primary mb-3" style="background-color: var(--primary-color); border-color: var(--primary-color);">
+                        support@suqsphere.com
+                    </a>
+                    <p class="font-weight-bold text-dark mb-1" style="color: var(--text-color);">Step 2: Use the Required Subject Line</p>
+                    <p style="font-style: italic; color: var(--text-color);">The subject line **MUST** be:</p>
+                    <code class="p-2" style="background-color: var(--bg-color-light); border-radius: 5px; color: var(--text-color);">ACCOUNT DELETION REQUEST - [Your Username]</code>
+                </div>
+
+                <p class="mt-4 text-muted">Your account will be deactivated upon verified receipt and fully deleted within 30 days.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

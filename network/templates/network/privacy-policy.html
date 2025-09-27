@@ -1,0 +1,103 @@
+{% extends "network/layout.html" %}
+{% load static %}
+{% block title %}Privacy Policy - Suqsphere{% endblock %}
+
+{% block body %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+            <div class="card post-card p-4">
+                <h1 class="text-center" style="color: var(--primary-color); font-weight: bold;">Suqsphere Privacy Policy</h1>
+                <p class="lead text-muted text-center mb-4"><strong>Effective Date:</strong> September 27, 2025</p>
+                
+                <p>This Privacy Policy describes how Suqsphere ("we," "us," or "our") collects, uses, and shares your personal information when you use our mobile and web application (the "Service"), which provides both social networking and e-commerce marketplace functionalities focused on the Halal community.</p>
+
+                <hr style="border-color: var(--border-color);">
+
+                <h3 style="color: var(--primary-color); margin-top: 25px;">1. Information We Collect</h3>
+                <p>We collect information directly from you, automatically through your use of the Service, and sometimes from third-party sources.</p>
+
+                <h4 style="color: var(--text-color); margin-top: 15px;">1.1 Information You Provide Directly</h4>
+                <ul>
+                    <li><strong>Account Data:</strong> Username, password (hashed), email address, first name, last name, and profile picture.</li>
+                    <li><strong>Social Content:</strong> Posts, comments, likes, reactions, direct messages, and group participation history.</li>
+                    <li><strong>E-commerce Data:</strong>
+                        <ul>
+                            <li><strong>Seller Information:</strong> Products listed, inventory, pricing, and currency of sale.</li>
+                            <li><strong>Buyer Information:</strong> Purchase history, shipping address, and billing information (payment card details are processed securely by third-party payment processors, not stored by us).</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4 style="color: var(--text-color); margin-top: 15px;">1.2 Information Collected Automatically</h4>
+                <ul>
+                    <li><strong>Usage and Activity Data:</strong> Information about how you use the Service, including the products you view, items added to your cart, groups you visit, and friends you interact with.</li>
+                    <li><strong>Log and Device Data:</strong> IP address, device type, operating system version, app version, and unique device identifiers.</li>
+                    <li><strong>Real-time Communication Data (Chat):</strong> Timestamps, conversation participants, and connection status (online/offline) for our WebSocket chat service.</li>
+                </ul>
+
+                <h3 style="color: var(--primary-color); margin-top: 25px;">2. How We Use Your Information</h3>
+                <p>We use your information to provide and improve the Service, personalize your experience, and ensure security.</p>
+
+                <table class="table table-striped table-bordered mt-3">
+                    <thead style="background-color: var(--primary-color); color: white;">
+                        <tr>
+                            <th>Purpose</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Service Operation</strong></td>
+                            <td>To manage your account, facilitate login (including biometric access via secured local keys), process transactions, and provide real-time chat functionality.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Marketplace Function</strong></td>
+                            <td>To display listings based on your location/preferences, process orders, manage inventory, and handle payment and fulfillment logistics.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Social Function</strong></td>
+                            <td>To show posts from friends, suggest new connections and groups, and calculate engagement metrics (likes, friends list).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Security and Legal</strong></td>
+                            <td>To prevent fraud, verify accounts, enforce our Terms of Service, and comply with legal obligations.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Monetization</strong></td>
+                            <td>To display personalized or non-personalized advertisements, depending on your subscription status (premium accounts are ad-free).</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: var(--primary-color); margin-top: 25px;">3. Data Sharing and Disclosure</h3>
+                <p>We only share your information in the following circumstances:</p>
+
+                <ul>
+                    <li><strong>Between Buyers and Sellers:</strong> When a transaction is initiated, we share the buyer's shipping address and contact name with the seller to fulfill the order.</li>
+                    <li><strong>With Payment Processors:</strong> We share transaction details (amount, currency, item description) with secure third-party payment gateways (e.g., Stripe, Paystack) to complete your purchase. We do not store your full card details.</li>
+                    <li><strong>Legal Compliance:</strong> We may disclose information if required by law or subpoena, or if we believe such action is necessary to protect our rights, safety, or that of our users.</li>
+                </ul>
+
+                <h3 style="color: var(--primary-color); margin-top: 25px;">4. Your Choices and Rights</h3>
+                
+                <ul>
+                    <li><strong>Access/Rectification:</strong> You can review and update your profile information (e.g., name, email) at any time through the Profile settings screen.</li>
+                    <li><strong>Account Deletion:</strong> You can request the permanent deletion of your account (see Section 5 below).</li>
+                    <li><strong>Data Portability:</strong> You may request a copy of the personal data we hold about you.</li>
+                </ul>
+
+                <h3 style="color: var(--primary-color); margin-top: 25px;">5. Account Deletion Policy</h3>
+                
+                <ul>
+                    <li><strong>Process:</strong> To delete your account, please send an email request to <code>support@suqsphere.com</code> from the email address associated with your account, stating "Account Deletion Request" in the subject line.</li>
+                    <li><strong>Data Retention:</strong> Upon verified deletion, we will immediately deactivate your account. Your personal data, posts, photos, and messages will be permanently deleted from our primary servers within 30 days. We may retain anonymized transaction records for accounting and legal compliance purposes only.</li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

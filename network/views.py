@@ -1122,6 +1122,13 @@ def logout_view(request):
 
 def terms(request):
     return render(request, "terms.html")
+
+def privacy_policy(request):
+    return render(request, "privacy-policy.html")
+
+def delete_account(request):
+    return render(request, "delete-account.html")
+
 def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST, request.FILES)
