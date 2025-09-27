@@ -1,0 +1,351 @@
+/*
+	@name login_page___1
+*/
+/* Only edit this if you know what you are doing! */
+body { position: fixed; margin: 0px; padding: 0px; font-family:"Arial"; overflow-x:hidden; }
+
+/* Only edit this if you know what you are doing! */
+img { position: absolute; display: block; margin: 0px; border: none; padding: 0px; }
+
+/* Only edit this if you know what you are doing! */
+div { position: absolute; }
+
+#content-container { display: table; position: relative; width: 1920px; width: 1920px; height: 1077px; overflow: hidden; display: block;  margin-left: auto; margin-right: auto;  }
+
+#_bg__login_page___1 {
+	top: 0px;
+	left: 0px;
+	width: 1920px;
+	height: 1077px;
+	background:rgba(121,120,120,255);
+}
+
+
+#imagebot_11_01_2024_copy {
+	top: 0px;
+	left: -3px;
+	max-width: 100%;
+	max-width: 100%;
+}
+
+
+#__96a06382_828a_4873_a5ee_f08c64c60790 {
+	top: 114px;
+	left: 177px;
+	width: 1525px;
+	height: 835px;
+	-ms-border-radius: 62px;
+	-o-border-radius: 62px;
+	-moz-border-radius: 62px;
+	-webkit-border-radius: 62px;
+	border-radius: 62px;
+	background:rgba(0,0,0,255);
+}
+
+
+#__a81faaca_1743_4c3d_9578_5e3b6a4a0c1c {
+	top: 50px;
+	left: 50px;
+	max-height: 70%;
+	max-height: 50%;
+}
+
+
+#__96a06382_828a_4873_a5ee_f08c64c60790_ek1 {
+    top: 50px;
+    left: 620px;
+    width: 22%;
+    height: 50%;
+    -ms-border-radius: 216px;
+    -o-border-radius: 216px;
+    -moz-border-radius: 216px;
+    -webkit-border-radius: 216px;
+    border-radius: 216px 150px 0 0; /* Adjusted border radius values */
+    background: rgba(226, 239, 255, 255);
+}
+
+#search {
+	top: 350px;
+	left: 685px;
+	
+}
+
+#rectangle_9 {
+	opacity:0.7;
+	top: 0px;
+	left: 50px;
+	width: 200px;
+	height: 30px;
+	-ms-border-radius: 19px;
+	-o-border-radius: 19px;
+	-moz-border-radius: 19px;
+	-webkit-border-radius: 19px;
+	border-radius: 19px;
+	-ms-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-o-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-webkit-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-moz-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	background:rgba(255,255,255,255);
+}
+
+
+#rectangle_10 {
+	top: 7px;
+	left: 50px;
+	width: 200px;
+	height: 30px;
+	-ms-border-radius: 29px;
+	-o-border-radius: 29px;
+	-moz-border-radius: 29px;
+	-webkit-border-radius: 29px;
+	border-radius: 29px;
+	-ms-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.07);
+	-o-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.07);
+	-webkit-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.07);
+	-moz-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.07);
+	box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.07);
+	background:rgba(255,255,255,255);
+}
+
+#search_ek1 {
+	top: 280px;
+	left: 685px;
+	
+	
+}
+
+#search_ek1 input {
+    border-radius: 20px;
+}
+
+#search input {
+    border-radius: 20px;
+}
+
+#rectangle_9_ek1 {
+	opacity:0.7;
+	top: 0px;
+	left: 50px;
+	width: 200px;
+	height: 30px;
+	-ms-border-radius: 19px;
+	-o-border-radius: 19px;
+	-moz-border-radius: 19px;
+	-webkit-border-radius: 19px;
+	border-radius: 19px;
+	-ms-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-o-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-webkit-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	-moz-box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	box-shadow:6px 6px 6px 1px rgba(0,0,0,1.28);
+	background:rgba(255,255,255,255);
+}
+
+
+#rectangle_10_ek1 {
+	top: 7px;
+	left: 50px;
+	width: 200px;
+	height: 30px;
+	-ms-border-radius: 29px;
+	-o-border-radius: 29px;
+	-moz-border-radius: 29px;
+	-webkit-border-radius: 29px;
+	border-radius: 29px;
+	-ms-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.22);
+	-o-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.22);
+	-webkit-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.22);
+	-moz-box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.22);
+	box-shadow:-7px -7px 8px 1px rgba(255,255,255,2.22);
+	background:rgba(255,255,255,255);
+}
+
+#group_9 {
+	top: 60px;
+	left: 50px;
+	width: 108px;
+	height: 108px;
+}
+
+#suqs {
+	top: 0px;
+	left: 0px;
+	width: 108px;
+	height: 108px;
+}
+
+
+#suqsphere_com {
+	top: 90px;
+	left: 150px;
+	width: 205px;
+	height: 58.5px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 29px;
+	text-align: left;
+	letter-spacing: 0.145px;
+	color:#ffffff;
+}
+
+
+#username {
+	top: 438px;
+	left: 1269px;
+	width: 75px;
+	height: 29px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	text-align: left;
+	line-height: 23px;
+	margin-top: -3px;
+	height: 43px;
+	letter-spacing: 0.07px;
+	color:#bababa;
+}
+
+
+#password {
+	top: 530px;
+	left: 1263px;
+	width: 70px;
+	height: 29px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	text-align: left;
+	line-height: 23px;
+	margin-top: -3px;
+	height: 43px;
+	letter-spacing: 0.07px;
+	color:#bababa;
+}
+
+
+#top {
+	top: 400px;
+	left: 800px;
+	width: 102px;
+	height: 27px;
+	-ms-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	-ms-box-shadow:-2px -2px 3px 1px rgba(255,251,251,2.55);
+	-o-box-shadow:-2px -2px 3px 1px rgba(255,251,251,2.55);
+	-webkit-box-shadow:-2px -2px 3px 1px rgba(255,251,251,2.55);
+	-moz-box-shadow:-2px -2px 3px 1px rgba(255,251,251,2.55);
+	box-shadow:-2px -2px 3px 1px rgba(255,251,251,2.55);
+	background:rgba(124,164,104,0);
+}
+
+
+#top_ek1 {
+	top: 400px;
+	left: 800px;
+	width: 102px;
+	height: 27px;
+	-ms-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	-ms-box-shadow:2px 2px 4px 1px rgba(68,68,68,1.84);
+	-o-box-shadow:2px 2px 4px 1px rgba(68,68,68,1.84);
+	-webkit-box-shadow:2px 2px 4px 1px rgba(68,68,68,1.84);
+	-moz-box-shadow:2px 2px 4px 1px rgba(68,68,68,1.84);
+	box-shadow:2px 2px 4px 1px rgba(68,68,68,1.84);
+	background:rgba(137,163,194,255);
+}
+
+
+#login {
+	top: 400px;
+	left: 830px;
+	width: 49px;
+	height: 29px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+	color:#ffffff;
+}
+
+
+#by_signing_in__you_agree_to_our_terms_and_policy___don_t_have_an_account__ {
+	top: 500px;
+	left: 700px;
+	width: 314px;
+	height: 49px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	text-align: left;
+	line-height: 10px;
+	padding-top: 4px;
+	margin-top: -4px;
+	letter-spacing: 0.07px;
+	color:#797878;
+}
+
+
+#forgotten_your_password_ {
+	top: 440px;
+	left: 750px;
+	width: 178px;
+	height: 29px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: right;
+	line-height: 10px;
+	padding-top: 4px;
+	margin-top: -4px;
+	letter-spacing: 0.07px;
+	color:#89a3c2;
+}
+
+
+#sup_ {
+	top: 150px;
+	left: 750px;
+	width: 150px;
+	height: 138px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 68px;
+	font-weight: bold;
+	text-align: right;
+	line-height: 49px;
+	padding-top: 19px;
+	margin-top: -19px;
+	letter-spacing: 0.34px;
+	color:#435d7d;
+}
+
+
+#register_here_ {
+	top: 520px;
+	left: 860px;
+	width: 103px;
+	height: 29px;
+	overflow: hidden;
+	font-family: Segoe UI;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+	line-height: 10px;
+	padding-top: 4px;
+	margin-top: -4px;
+	letter-spacing: 0.07px;
+	color:#435d7d;
+}
+
+
+
+/* Add your custom CSS here */
