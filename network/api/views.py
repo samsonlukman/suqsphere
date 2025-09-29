@@ -100,7 +100,7 @@ class IndexView(APIView):
             total_loves=Count('postLove'),
             total_hahas=Count('postHaha'),
             total_shocks=Count('postShock'),
-        ).prefetch_related('postComment__author').order_by('-timestamp')  # Prefetch related comments
+        ).prefetch_related('postComment__author').order_by('-pinned', '-timestamp')  # Prefetch related comments
 
         # Paginate posts
         paginator = CustomPagination()
@@ -145,7 +145,7 @@ class RandomPostsView(APIView):
             total_loves=Count('postLove'),
             total_hahas=Count('postHaha'),
             total_shocks=Count('postShock'),
-        ).prefetch_related('postComment__author').order_by('-timestamp')  # Prefetch comments for optimization
+        ).prefetch_related('postComment__author').order_by('-pinned', '-timestamp')  # Prefetch comments for optimization
 
         # Paginate posts
         paginator = CustomPagination()
@@ -201,7 +201,7 @@ class ProfileView(APIView):
             total_loves=Count('postLove'),
             total_hahas=Count('postHaha'),
             total_shocks=Count('postShock'),
-        ).prefetch_related('postComment__author', 'post_images').order_by('-timestamp')
+        ).prefetch_related('postComment__author', 'post_images').order_by('-pinned', '-timestamp')
 
         # Paginate posts (assuming CustomPagination is defined and imported)
         # from .your_pagination_module import CustomPagination 

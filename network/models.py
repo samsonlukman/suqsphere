@@ -14,6 +14,10 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="post_user")
     postContent = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    pinned = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-pinned', '-timestamp']
     
 
     def __str__(self):
