@@ -88,7 +88,7 @@ class PostImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'post_image']
 
     def get_post_image(self, obj):
-        return f"http://192.168.0.202:8000{obj.post_image.url}"
+        return obj.post_image.url
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -108,7 +108,8 @@ class PostSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'postContent', 'timestamp', 'post_images',
             'comments', 'total_likes', 'total_sads', 'total_loves',
-            'total_hahas', 'total_shocks', 'total_reactions', 'total_comments'
+            'total_hahas', 'total_shocks', 'total_reactions', 'total_comments',
+            
         ]
 
     def get_total_likes(self, obj):
@@ -139,62 +140,6 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.postComment.count()
 
 
-class PostImageSerializer(serializers.ModelSerializer):
-    post_image = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PostImage
-        fields = ['id', 'post_image']
-
-    def get_post_image(self, obj):
-        return f"http://192.168.0.202:8000{obj.post_image.url}" #Must change
-    
-class PostSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    post_images = PostImageSerializer(many=True, read_only=True)
-    comments = CommentSerializer(many=True, read_only=True, source='postComment')  # Related name for comments
-    total_likes = serializers.SerializerMethodField()
-    total_sads = serializers.SerializerMethodField()
-    total_loves = serializers.SerializerMethodField()
-    total_hahas = serializers.SerializerMethodField()
-    total_shocks = serializers.SerializerMethodField()
-    total_reactions = serializers.SerializerMethodField()
-    total_comments = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Post
-        fields = [
-            'id', 'user', 'postContent', 'timestamp', 'post_images',
-            'comments', 'total_likes', 'total_sads', 'total_loves',
-            'total_hahas', 'total_shocks', 'total_reactions', 'total_comments'
-        ]
-
-    def get_total_likes(self, obj):
-        return obj.post_like.count()
-
-    def get_total_sads(self, obj):
-        return obj.postSad.count()
-
-    def get_total_loves(self, obj):
-        return obj.postLove.count()
-
-    def get_total_hahas(self, obj):
-        return obj.postHaha.count()
-
-    def get_total_shocks(self, obj):
-        return obj.postShock.count()
-
-    def get_total_reactions(self, obj):
-        return (
-            obj.post_like.count() +
-            obj.postSad.count() +
-            obj.postLove.count() +
-            obj.postHaha.count() +
-            obj.postShock.count()
-        )
-
-    def get_total_comments(self, obj):
-        return obj.postComment.count()
 
 
 

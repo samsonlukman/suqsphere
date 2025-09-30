@@ -62,6 +62,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.core.paginator import Paginator, EmptyPage
 from django.conf import settings
+from django.views.generic import TemplateView
 
 User = get_user_model()
 
@@ -287,7 +288,7 @@ class CreatePostAPIView(APIView):
 
             for image in post_images:
                 PostImage.objects.create(
-                    postContent=post,
+                    post=post,
                     post_image=image
                 )
 
@@ -580,3 +581,24 @@ class LogoutView(APIView):
         # Use Django's built-in logout function to destroy the session
         logout(request)
         return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+    
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    success_url = reverse_lazy('registration/password_reset_done')
+    email_template_name = 'registration/password_reset_email.html'
+
+    def form_valid(self, form):
+        context = {'email': form.cleaned_data['email']}
+        return render(self.request, self.template_name, context)
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'registration/password_reset_done'
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('registration/password_reset_complete')
+
+
+class CustomPasswordResetCompleteView(TemplateView):
+    template_name = 'registration/password_reset_complete.html'
