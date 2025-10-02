@@ -14,26 +14,86 @@ class CategoryListView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+from django.db.models import Q
+from rest_framework import generics
+# Ensure Product, ProductSerializer are imported from their respective locations
+
+from django.db.models import Q
+from rest_framework import generics
+# Ensure Product, ProductSerializer are imported from their respective locations
+
 class ProductListView(generics.ListAPIView):
     """
-    API view for listing all products. Supports filtering by category and search.
+    API view for listing all products. Supports comprehensive search and filtering.
     """
+    # NOTE: Keep the base queryset clean for safety and performance
     queryset = Product.objects.filter(is_active=True, is_sold_out=False).order_by('-created_at')
     serializer_class = ProductSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        category_id = self.request.query_params.get('category_id', None)
-        search_query = self.request.query_params.get('search', None)
+        query_params = self.request.query_params
 
-        if category_id:
-            queryset = queryset.filter(category__id=category_id)
-        
+        # --- 1. Text Search (Includes Title, Description, Category, Seller, State) ---
+        search_query = query_params.get('search', None)
         if search_query:
+            # Apply search across multiple fields (case-insensitive containment)
             queryset = queryset.filter(
-                Q(title__icontains=search_query) | Q(description__icontains=search_query)
-            )
+                Q(title__icontains=search_query) | 
+                Q(description__icontains=search_query) |
+                # The field name for searching by category is the relationship field: 'category__categoryName'
+                Q(category__categoryName__icontains=search_query) |  
+                Q(seller__username__icontains=search_query) |        
+                Q(state__icontains=search_query)                    
+            ).distinct() # Use .distinct() to prevent duplicate results from Q lookups
+
+        # --- 2. Simple Filters (Exact/Specific Match) ---
         
+        # Category Filter (This one works)
+        category_id = query_params.get('category_id', None)
+        if category_id:
+            # We convert the value to an integer for a strict ID comparison, though Django handles string-to-int conversion usually.
+            queryset = queryset.filter(category__id=category_id) 
+            
+        # State Filter (Must match the state short code, e.g., 'LAGOS')
+        state = query_params.get('state', None)
+        if state:
+            # Use __iexact for case-insensitive exact match
+            queryset = queryset.filter(state__iexact=state) 
+            
+        is_featured = query_params.get('is_featured', None)
+        if is_featured in ['true', 'True', '1']:
+            queryset = queryset.filter(is_featured=True)
+
+        # --- 3. Range Filters (Price & Stock) ---
+        
+        # Price Range
+        min_price = query_params.get('min_price', None)
+        max_price = query_params.get('max_price', None)
+
+        try:
+            if min_price:
+                # Convert to float and filter: price greater than or equal to (gte)
+                queryset = queryset.filter(price__gte=float(min_price))
+            if max_price:
+                # Convert to float and filter: price less than or equal to (lte)
+                queryset = queryset.filter(price__lte=float(max_price))
+        except ValueError:
+             # Log the error but continue without the price filter
+             print(f"DEBUG: Invalid price filter value received: min={min_price}, max={max_price}")
+             pass
+
+        # Stock Quantity
+        min_stock = query_params.get('min_stock', None)
+        if min_stock:
+            try:
+                # Convert to integer and filter: stock greater than or equal to (gte)
+                queryset = queryset.filter(stock_quantity__gte=int(min_stock))
+            except ValueError:
+                print(f"DEBUG: Invalid stock filter value received: min_stock={min_stock}")
+                pass 
+                
+        # IMPORTANT: You must return the filtered queryset
         return queryset
     
 class ProductDetailView(generics.RetrieveAPIView):

@@ -1,0 +1,13 @@
+# Ignore SQLite database
+db.sqlite3
+*.sqlite3
+
+# Ignore migration cache files
+*.pyc
+__pycache__/
+
+# Ignore media uploads (if you don’t want them in GitHub)
+media/
+
+# Environment variables
+.env

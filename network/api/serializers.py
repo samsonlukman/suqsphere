@@ -141,20 +141,70 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 
-
-
+class SocialMediaSearchSerializer(serializers.Serializer):
+    """
+    Serializer to combine search results from multiple models (Users and Posts).
+    """
+    # Use your existing serializers to handle the detailed data structure
+    users = UserSerializer(many=True, read_only=True)
+    posts = PostSerializer(many=True, read_only=True)
+    
+    # Optional: include a count of results
+    total_user_results = serializers.IntegerField(read_only=True)
+    total_post_results = serializers.IntegerField(read_only=True)
 
 class EditProfileSerializer(serializers.ModelSerializer):
+    # Ensure profile_pics is handled correctly for file uploads
+    profile_pics = serializers.ImageField(required=False, allow_null=True)
+    
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'phone_number']
-
+        fields = ['username', 'first_name', 'last_name', 'email', 'phone_number', 'profile_pics', 'about']
         
-        first_name = serializers.CharField(required=False)
-        last_name = serializers.CharField(required=False)
-        email = serializers.EmailField(required=False)
-        phone_number = serializers.CharField(required=False)
-        username = serializers.CharField(required=False)
+        extra_kwargs = {
+            'username': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'email': {'required': False, 'allow_blank': True}, # <-- ADD allow_blank=True
+            'phone_number': {'required': False},
+            'about': {'required': False},
+        }
+        
+    # FIX 1: Add the allow_blank=True to the email field explicitly to allow empty strings.
+    # We rely on the model itself to enforce whether the field can truly be blank.
+    # Since you didn't provide the model, we assume email can be blank/null.
+    # If the model requires an email, this will not fully solve the issue, but it's the DRF fix.
+    
+    # FIX 2: Refined uniqueness check
+    def validate_email(self, value):
+        user = self.context['request'].user
+        
+        # 1. If the email field is sent as an empty string, don't run uniqueness check.
+        #    (The field will default to the model's behavior: blank or not.)
+        if not value:
+            # If your User model requires email (null=False, blank=False), Django will throw a non-field error later.
+            return value 
+            
+        # 2. Check if the email being validated is the same as the current user's email
+        #    (This covers when the user sends their existing email without changing it)
+        if self.instance and self.instance.email == value:
+            return value 
+            
+        # 3. If the email is new, proceed with the uniqueness check
+        if User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists():
+            raise serializers.ValidationError("This email is already in use by another user.")
+            
+        return value
+
+    # Keep the refined username validation logic from the previous fix:
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if self.instance and self.instance.username == value:
+            return value
+        if User.objects.exclude(pk=user.pk).filter(username__iexact=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -240,16 +290,18 @@ class ProductSerializer(serializers.ModelSerializer):
     
     # The field for is_active
     is_active = serializers.BooleanField(default=True)
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
     
     class Meta:
         model = Product
         fields = [
             'id', 'title', 'description', 'price', 'stock_quantity', 'is_active', 
-            'is_featured', 'is_sold_out', 'seller', 'images', 
-            'currency', 'category', # Now correctly represented for output
+            'is_featured', 'is_sold_out', 'seller', 'images', 'state_display',
+            'currency', 'state', 'category', # Now correctly represented for output
             'currency_id', 'category_id', # Writable fields for input
             'created_at', 'updated_at'
         ]
+        extra_kwargs = {'state': {'required': True}}
 
     def create(self, validated_data):
         images_data = self.context.get('request').FILES.getlist('images')

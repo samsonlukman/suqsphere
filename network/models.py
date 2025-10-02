@@ -384,23 +384,73 @@ class auctions_Comment(models.Model):
 class Water(models.Model):
     table = models.IntegerField()
 
+# --- Nigerian States Choices ---
+NIGERIAN_STATES = [
+    ('ABIA', 'Abia'),
+    ('ADAMAWA', 'Adamawa'),
+    ('AKWA IBOM', 'Akwa Ibom'),
+    ('ANAMBRA', 'Anambra'),
+    ('BAUCHI', 'Bauchi'),
+    ('BAYELSA', 'Bayelsa'),
+    ('BENUE', 'Benue'),
+    ('BORNO', 'Borno'),
+    ('CROSS RIVER', 'Cross River'),
+    ('DELTA', 'Delta'),
+    ('EBONYI', 'Ebonyi'),
+    ('EDO', 'Edo'),
+    ('EKITI', 'Ekiti'),
+    ('ENUGU', 'Enugu'),
+    ('FCT', 'F.C.T. Abuja'),
+    ('GOMBE', 'Gombe'),
+    ('IMO', 'Imo'),
+    ('JIGAWA', 'Jigawa'),
+    ('KADUNA', 'Kaduna'),
+    ('KANO', 'Kano'),
+    ('KATSINA', 'Katsina'),
+    ('KEBBI', 'Kebbi'),
+    ('KOGI', 'Kogi'),
+    ('KWARA', 'Kwara'),
+    ('LAGOS', 'Lagos'),
+    ('NASARAWA', 'Nasarawa'),
+    ('NIGER', 'Niger'),
+    ('OGUN', 'Ogun'),
+    ('ONDO', 'Ondo'),
+    ('OSUN', 'Osun'),
+    ('OYO', 'Oyo'),
+    ('PLATEAU', 'Plateau'),
+    ('RIVERS', 'Rivers'),
+    ('SOKOTO', 'Sokoto'),
+    ('TARABA', 'Taraba'),
+    ('YOBE', 'Yobe'),
+    ('ZAMFARA', 'Zamfara'),
+]
+
+
 class Product(models.Model):
     # Basic Product Details
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     
+    # --- NEW FIELD FOR STATE LOCATION ---
+    state = models.CharField(
+        max_length=50,
+        choices=NIGERIAN_STATES,
+        default='LAGOS',  
+        help_text="The Nigerian state where the product is located."
+    )
+    
     # Financials and Inventory
-    price = models.DecimalField(max_digits=10, decimal_places=2) # Changed to 2 decimal places for standard currency
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="products")
     stock_quantity = models.PositiveIntegerField(default=1)
     
     # Status and Metadata
-    is_active = models.BooleanField(default=True) # Renamed for consistency
-    is_featured = models.BooleanField(default=False) # Renamed for consistency
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
     is_sold_out = models.BooleanField(default=False)
     
     # Relationships
-    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listed_products") # Renamed 'owner' to 'seller'
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listed_products")
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name="products")
     
     # Timestamps
@@ -408,10 +458,11 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.title} by {self.seller.username}"
+        return f"{self.title} by {self.seller.username} ({self.get_state_display()})"
 
     def save(self, *args, **kwargs):
         # Automatically update is_sold_out based on stock
+        # NOTE: Keeping the is_sold_out logic as requested by user in the history.
         self.is_sold_out = (self.stock_quantity == 0)
         super().save(*args, **kwargs)
 

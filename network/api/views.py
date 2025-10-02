@@ -33,7 +33,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.template.response import TemplateResponse
 from .serializers import *
-import requests
+
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -42,17 +42,14 @@ from django.db.models import Q
 from network.models import *
 from .serializers import *
 from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.middleware.csrf import get_token
-from rest_framework import filters, viewsets, status, filters, generics, permissions
+from rest_framework import status, generics, permissions
 from rest_framework.views import APIView
 from rest_framework import status
-import json
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -60,9 +57,12 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from django.core.paginator import Paginator, EmptyPage
-from django.conf import settings
 from django.views.generic import TemplateView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.db.models import Q, Count
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -129,6 +129,65 @@ class IndexView(APIView):
             "posts": posts_serializer.data,
             "groups": groups_serializer.data,
         })
+
+class GlobalSearchAPIView(APIView):
+    """
+    API view for global search across users and posts based on a query string.
+    Endpoint: /api/search/?q=<query>
+    """
+    
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('q', None)
+        
+        if not query:
+            # Return an empty set or a message if no query is provided
+            return Response({
+                'message': 'Please provide a search query using the "q" parameter.',
+                'users': [],
+                'posts': [],
+                'total_user_results': 0,
+                'total_post_results': 0,
+            }, status=status.HTTP_200_OK)
+
+        # 1. --- Search Users ---
+        # Only search active users
+        users_queryset = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).distinct().order_by('-last_name') # Order users for better presentation
+        
+        # 2. --- Search Posts ---
+        # Search active posts, including content, user, and comment messages
+        # Note: We need to use postComment__message__icontains=query to search comments
+        # and then use distinct() to get unique posts.
+        posts_queryset = Post.objects.filter(
+            Q(postContent__icontains=query) |
+            Q(user__username__icontains=query) |
+            Q(postComment__message__icontains=query)
+        ).distinct().order_by('-timestamp')
+
+        # 3. --- Prepare Context for nested serializers ---
+        # The context is required for CommentSerializer's get_liked_by_me method
+        serializer_context = {'request': request}
+        
+        # 4. --- Serialize Data ---
+        user_serializer = UserSerializer(users_queryset, many=True, context=serializer_context)
+        post_serializer = PostSerializer(posts_queryset, many=True, context=serializer_context)
+
+        # 5. --- Final Response Structure ---
+        # Use the SocialMediaSearchSerializer to structure the final output
+        response_data = {
+            'users': user_serializer.data,
+            'posts': post_serializer.data,
+            'total_user_results': users_queryset.count(),
+            'total_post_results': posts_queryset.count(),
+        }
+
+        # Instead of instantiating the SocialMediaSearchSerializer with response_data
+        # (which requires setting fields explicitly), we return the structured dictionary directly.
+        # This is simpler and avoids unnecessary nested serialization overhead for a custom response structure.
+        return Response(response_data, status=status.HTTP_200_OK)
     
 #For user to get random post
 class RandomPostsView(APIView):
@@ -288,7 +347,7 @@ class CreatePostAPIView(APIView):
 
             for image in post_images:
                 PostImage.objects.create(
-                    post=post,
+                    postContent=post,
                     post_image=image
                 )
 
@@ -537,6 +596,18 @@ class ConversationView(APIView):
         response_data['results'].reverse()
         
         return Response(response_data)
+    
+class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    GET: Retrieve the current authenticated user's profile data.
+    PUT/PATCH: Update the authenticated user's profile data.
+    """
+    serializer_class = EditProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    # Override get_object to ensure only the currently logged-in user's profile is returned/updated
+    def get_object(self):
+        return self.request.user
     
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer

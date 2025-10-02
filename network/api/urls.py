@@ -29,6 +29,7 @@ urlpatterns = [
     path('register/', RegisterAPIView.as_view(), name='api_register'),
     
     path('profile/<int:user_id>/', ProfileView.as_view(), name='api_profile'),
+    path('profile/edit/', UserProfileUpdateView.as_view(), name='profile-edit'),
     path('follow/<int:user_id>/', FollowUnfollowView.as_view(), name='api_follow-unfollow'),
     path('posts/create/', CreatePostAPIView.as_view(), name='api_create-post'),
 
@@ -46,6 +47,8 @@ urlpatterns = [
     
     path('cart/', CartView.as_view(), name='cart'),
     path('cart/update-item/', CartItemUpdateView.as_view(), name='cart-item-update'),
+
+    path('search/', GlobalSearchAPIView.as_view(), name='global-search'),
 
     path('my-products/', MyProductsListView.as_view(), name='my-products'),
     path('products/delete/<int:pk>/', ProductDeleteView.as_view(), name='product-delete'),
