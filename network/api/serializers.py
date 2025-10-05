@@ -299,7 +299,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'is_featured', 'is_sold_out', 'seller', 'images', 'state_display',
             'currency', 'state', 'category', # Now correctly represented for output
             'currency_id', 'category_id', # Writable fields for input
-            'created_at', 'updated_at'
+            'created_at', 'updated_at', 'weight'
         ]
         extra_kwargs = {'state': {'required': True}}
 

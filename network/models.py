@@ -443,6 +443,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="products")
     stock_quantity = models.PositiveIntegerField(default=1)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
     # Status and Metadata
     is_active = models.BooleanField(default=True)

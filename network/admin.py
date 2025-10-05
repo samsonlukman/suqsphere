@@ -52,12 +52,13 @@ class ProductAdmin(admin.ModelAdmin):
         'currency',
         'category',
         'state',
+        'weight',
         'is_active',
         'is_sold_out',
         'stock_quantity',
     )
     list_filter = ('is_active', 'is_featured', 'category', 'currency')
-    search_fields = ('title', 'description', 'state', 'category' 'seller__username')
+    search_fields = ('title', 'description', 'state', 'category' 'seller__username', 'weight')
     prepopulated_fields = {'title': ('description',)}
     readonly_fields = ('is_sold_out',)
     fieldsets = (
