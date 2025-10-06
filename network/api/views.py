@@ -643,6 +643,28 @@ class LoginView(ObtainAuthToken):
             'token': token.key,
             'user_data': user_serializer.data,
         }, status=status.HTTP_200_OK)
+    
+class SavePushTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        expo_token = request.data.get('token')
+        if not expo_token:
+            return Response({'error': 'Missing token'}, status=400)
+
+        DeviceToken.objects.update_or_create(
+            user=request.user,
+            defaults={'token': expo_token},
+        )
+        return Response({'message': 'Token saved successfully'})
+
+class NotificationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
 
 
 class LogoutView(APIView):
@@ -673,3 +695,4 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(TemplateView):
     template_name = 'registration/password_reset_complete.html'
+

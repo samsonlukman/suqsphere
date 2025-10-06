@@ -69,6 +69,7 @@ urlpatterns = [
     # Include the URLs from auctions_urls.py, market and mobile app
     path("auctions/", include("network.urls_auctions")),
     path("market/", include("network.urls_market")),
+    
     path('api/', include('network.api.urls')),
 
 

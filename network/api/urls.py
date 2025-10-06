@@ -23,6 +23,9 @@ urlpatterns = [
     path('comments/<int:pk>/like_toggle/', CommentLikeToggleView.as_view(), name='api_comment-like-toggle'),
     
     path('get-csrf-token/', views.get_csrf_token, name="api_get-csrf-token"),
+    path('save-token/', SavePushTokenView.as_view(), name='save_token'),
+
+    path('notifications', NotificationListView.as_view(), name='notifications'),
 
     path('login/', LoginView.as_view(), name='api_login'),
     path('logout/', LogoutView.as_view(), name='logout_functional_api'),

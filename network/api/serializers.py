@@ -362,3 +362,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'product', 'author', 'rating', 'comment', 'created_at']
         read_only_fields = ['product', 'author']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'  

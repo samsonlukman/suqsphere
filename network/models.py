@@ -549,3 +549,33 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.author.username} for {self.product.title}"
+    
+class DeviceToken(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='device_token')
+    token = models.CharField(max_length=255, unique=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.token[:20]}"
+    
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('follow', 'Follow'),
+        ('comment', 'Comment'),
+        ('purchase', 'Purchase'),
+        ('message', 'Message'),
+        ('post', 'Post'),
+        ('system', 'System'),
+        ('ai_daily', 'AI Daily'),  # For DeepSeek-generated messages
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+    metadata = models.JSONField(default=dict, blank=True)  # can store {"post_id": 12} or {"order_id": 3}
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.notification_type} -> {self.recipient}"
