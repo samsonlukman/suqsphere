@@ -9,5 +9,6 @@ __pycache__/
 # Ignore media uploads (if you don’t want them in GitHub)
 media/
 
-# Environment variables
-.env
+
+# Virtual environment
+venv/

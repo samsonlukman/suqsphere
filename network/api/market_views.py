@@ -9,18 +9,20 @@ from .serializers import *
 from rest_framework import viewsets, permissions
 from rest_framework.generics import ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.db.models import Q
+from rest_framework import generics
+from network.notifications.service import NotificationService
+# Ensure Product, ProductSerializer are imported from their respective locations
+
+from django.db.models import Q
+from rest_framework import generics
+# Ensure Product, ProductSerializer are imported from their respective locations
+
 
 class CategoryListView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-from django.db.models import Q
-from rest_framework import generics
-# Ensure Product, ProductSerializer are imported from their respective locations
-
-from django.db.models import Q
-from rest_framework import generics
-# Ensure Product, ProductSerializer are imported from their respective locations
 
 class ProductListView(generics.ListAPIView):
     """
@@ -270,6 +272,17 @@ class CheckoutView(APIView):
                 quantity=item.quantity,
                 price_at_purchase=item.product.price
             )
+
+            seller = item.product.seller
+            if seller != request.user:
+                NotificationService.create(
+                    recipient=seller,
+                    sender=request.user,
+                    notification_type='purchase',
+                    message=f"Your product '{item.product.title}' has been purchased.",
+                    metadata={'product_id': item.product.id, 'order_id': order.id}
+                )
+
             item.delete()
 
         serializer = OrderSerializer(order)

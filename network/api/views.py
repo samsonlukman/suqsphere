@@ -63,6 +63,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
+from network.notifications.service import NotificationService
+from django.db import transaction
 
 User = get_user_model()
 
@@ -316,39 +318,56 @@ class FollowUnfollowView(APIView):
             "followers_count": user_to_follow.followers.count(),
             "following_count": request.user.following.count()
         }, status=status.HTTP_200_OK)
-    
+      
 
-    
 
 class CreatePostAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic  # Ensures all DB actions succeed or roll back together
     def post(self, request):
         try:
-            post_content = request.data.get("post_content")
+            post_content = request.data.get("post_content", "").strip()
             post_images = request.FILES.getlist("post_images[]")
-            
+
+            # 🧩 Validation
             if not post_content and not post_images:
                 return Response(
-                    {"error": "Post must contain either text or an image"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            if len(post_images) > 1:
-                return Response(
-                    {"error": "A post cannot have more than one image"},
+                    {"error": "Post must contain either text or an image."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            if len(post_images) > 1:
+                return Response(
+                    {"error": "A post cannot have more than one image."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # 📝 Create Post
             post = Post.objects.create(
                 postContent=post_content,
                 user=request.user
             )
 
+            # 🖼️ Attach Image(s)
             for image in post_images:
                 PostImage.objects.create(
                     postContent=post,
                     post_image=image
+                )
+
+            # 🧠 Notify mutual followers (friends)
+            followers = Follow.objects.filter(following=request.user).values_list('follower', flat=True)
+            following = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
+            friends_ids = set(followers).intersection(following)
+
+            for friend_id in friends_ids:
+                NotificationService.create(
+                    recipient_id=friend_id,  # using ID is more efficient
+                    sender=request.user,
+                    notification_type='post',
+                    message=f"{request.user.username} shared a new post.",
+                    metadata={'post_id': post.id}
                 )
 
             serializer = PostSerializer(post)
@@ -359,6 +378,7 @@ class CreatePostAPIView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
             
     
 class CommentPagination(PageNumberPagination):
@@ -368,58 +388,96 @@ class CommentPagination(PageNumberPagination):
 
 class CommentListCreateView(ListCreateAPIView):
     serializer_class = CommentSerializer
-    pagination_class = None # Set to None, or keep if you manage pagination differently
+    pagination_class = None
     filter_backends = [OrderingFilter]
-    ordering = ['timestamp'] # Important for chronological order of parent comments
+    ordering = ['timestamp']
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        # Fetch only top-level comments (where parent is null) for a specific post
-        # IMPORTANT: Prefetch replies to avoid N+1 queries.
-        queryset = Comment.objects.filter(parent__isnull=True).select_related('author').prefetch_related(
-            # Prefetch nested replies. For deeper nesting, you might need recursive prefetching or a custom manager.
-            # This covers 1 level of replies. For deeper, it gets complex quickly in `prefetch_related`.
-            'replies__author', # Prefetch replies and their authors
-            'replies__replies__author', # Prefetch 2nd level replies and their authors
-            # Add more for deeper levels if needed, or consider a custom tree fetching logic
-            'comment_likes', # For `likes_count` and `liked_by_me` on parent comments
-            'replies__comment_likes', # For likes on 1st level replies
-            'replies__replies__comment_likes', # For likes on 2nd level replies
-        ).order_by('-timestamp') # Order top-level comments by most recent first for the feed
-
+        """
+        Return top-level comments for a post, with replies and likes prefetched
+        to reduce N+1 queries.
+        """
         post_id = self.request.query_params.get('post_id')
+        queryset = Comment.objects.filter(parent__isnull=True)
+
         if post_id:
             queryset = queryset.filter(post_id=post_id)
-        return queryset.distinct() # Use distinct() to prevent duplicates if prefetching causes them
+
+        queryset = queryset.select_related('author').prefetch_related(
+            'replies__author',
+            'replies__replies__author',
+            'comment_likes',
+            'replies__comment_likes',
+            'replies__replies__comment_likes',
+        ).order_by('-timestamp')
+
+        return queryset.distinct()
 
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
+        """
+        Create a new comment and send notification to post owner.
+        """
+        user = self.request.user
+        if not user.is_authenticated:
             raise PermissionDenied("Authentication is required to post a comment.")
-        # The serializer will handle saving the 'post' and 'parent' fields if provided in request.data
-        serializer.save(author=self.request.user)
+
+        serializer.save(author=user)
+
+        comment = serializer.instance
+        post_owner = comment.post.user
+
+        # Notify the post owner if someone else comments
+        if post_owner != user:
+            NotificationService.create(
+                recipient=post_owner,
+                sender=user,
+                notification_type='comment',
+                message=f"{user.username} commented on your post.",
+                metadata={'post_id': comment.post.id, 'comment_id': comment.id}
+            )
+
+
 
 
 class CommentLikeToggleView(APIView):
-    permission_classes = [IsAuthenticated] # Only authenticated users can like/unlike
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk, format=None):
+        """
+        Toggle a like on a comment. If already liked, unlike it.
+        Send a notification to the comment author if it's a new like.
+        """
         comment = get_object_or_404(Comment, pk=pk)
         user = request.user
 
         try:
+            # If the user already liked the comment, unlike it
             comment_like = CommentLike.objects.get(user=user, comment=comment)
-            comment_like.delete() # If exists, unlike
+            comment_like.delete()
             liked = False
         except CommentLike.DoesNotExist:
-            CommentLike.objects.create(user=user, comment=comment) # If not, like
+            # Otherwise, create a new like
+            CommentLike.objects.create(user=user, comment=comment)
             liked = True
 
+            # Notify the comment author (avoid notifying self)
+            if comment.author != user:
+                NotificationService.create(
+                    recipient=comment.author,
+                    sender=user,
+                    notification_type='comment',
+                    message=f"{user.username} liked your comment.",
+                    metadata={'comment_id': comment.id}
+                )
+
+        # Update likes count
         likes_count = CommentLike.objects.filter(comment=comment).count()
 
         return Response({
             "comment_id": comment.id,
-            "liked": liked, # Boolean indicating current like status by the user
-            "likes_count": likes_count # Total likes count
+            "liked": liked,  # Whether current user likes it now
+            "likes_count": likes_count  # Updated total count
         }, status=status.HTTP_200_OK)
 
 

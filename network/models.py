@@ -78,6 +78,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender} | {self.conversation} | {self.timestamp}"
@@ -566,13 +567,15 @@ class Notification(models.Model):
         ('message', 'Message'),
         ('post', 'Post'),
         ('system', 'System'),
-        ('ai_daily', 'AI Daily'),  # For DeepSeek-generated messages
+        ('ai_daily', 'AI Daily'),
+        ('daily_market_update', 'Daily Market Update'),
     ]
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_notifications')
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     message = models.TextField()
+    url = models.CharField(max_length=255, blank=True, null=True)  # Optional link to open on click
     metadata = models.JSONField(default=dict, blank=True)  # can store {"post_id": 12} or {"order_id": 3}
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

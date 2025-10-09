@@ -167,6 +167,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'network.notifications.tasks.send_ai_daily_notifications',
         'schedule': crontab(hour=9, minute=0),  # Runs daily at 9 AM
     },
+    "send_market_update_notifications": {
+        "task": "network.notifications.tasks.send_market_update_notifications",
+        "schedule": crontab(hour=12, minute=0),
+    },
 }
 
 # ============================================================
