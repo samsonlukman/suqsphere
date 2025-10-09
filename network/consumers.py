@@ -5,8 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .models import Message, Conversation
-from network.notifications.service import NotificationService       
+     
 
 
 
@@ -77,6 +76,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 @sync_to_async
 def save_message(self, user, message):
+        from .models import Message, Conversation
         conversation = get_object_or_404(Conversation, id=self.conversation_id)
         new_message = Message.objects.create(
             conversation=conversation,
@@ -86,6 +86,7 @@ def save_message(self, user, message):
 
         # ✅ Notify the other participant
         other_participants = conversation.participants.exclude(id=user.id)
+        from network.notifications.service import NotificationService
         for recipient in other_participants:
             NotificationService.create(
                 recipient=recipient,
