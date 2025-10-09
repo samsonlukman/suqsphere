@@ -652,10 +652,12 @@ class SavePushTokenView(APIView):
         if not expo_token:
             return Response({'error': 'Missing token'}, status=400)
 
+        # ✅ Use token as the unique key, not user
         DeviceToken.objects.update_or_create(
-            user=request.user,
-            defaults={'token': expo_token},
+            token=expo_token,
+            defaults={'user': request.user},
         )
+
         return Response({'message': 'Token saved successfully'})
 
 class NotificationListView(APIView):
@@ -671,9 +673,9 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Use Django's built-in logout function to destroy the session
+        DeviceToken.objects.filter(user=request.user).update(user=None)
         logout(request)
-        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Logged out successfully'})
     
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
