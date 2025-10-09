@@ -4,6 +4,7 @@ from network.notifications.utils import send_push  # ✅ this is your Celery tas
 from django.apps import apps
 
 
+
 class NotificationService:
     @staticmethod
     def create(recipient, sender=None, notification_type='system', message='', metadata=None):
@@ -16,10 +17,11 @@ class NotificationService:
                 message=message,
                 metadata=metadata or {}
             )
+            
 
-            # 🔔 This line schedules the background Expo push
-            token_obj = getattr(recipient, "device_token", None)
-            if token_obj and token_obj.token:
-                send_push.delay(token_obj.token, "🔔 Notification", message)
+            # 🔔 Send push to ALL devices of recipient
+            device_tokens = DeviceToken.objects.filter(user=recipient)
+            for dt in device_tokens:
+                send_push(dt.token, "🔔 Notification", message, data={'notification_id': notification.id})
 
             return notification

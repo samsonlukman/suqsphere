@@ -15,7 +15,7 @@ SECRET_KEY = '13kl@xtukpwe&xj2xoysxe9_6=tf@f8ewxer5n&ifnd46+6$%8'
 DEBUG = False  # 🚀 Set to False in production
 
 ALLOWED_HOSTS = [
-    'suqsphere.com', '127.0.0.1', 'www.suqsphere.com', '13.60.34.232', '10.102.181.66', '10.186.202'
+    'suqsphere.com', '127.0.0.1', 'www.suqsphere.com', '13.60.34.232', '10.102.181.66',  '192.168.0.202'
 ]
 
 # ============================================================

@@ -34,6 +34,7 @@ from django.contrib.auth.views import (
 )
 from .forms import GroupForm, LibraryDocumentForm, VideoForm, RegistrationForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from network.notifications.service import NotificationService
 
 def index(request):
     """This is the index page"""
@@ -508,7 +509,6 @@ def group_post_content(request, post_id):
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-
 def post_add_or_remove_reaction(request, post_id, reaction_type):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "User not authenticated"}, status=401)
@@ -544,6 +544,25 @@ def post_add_or_remove_reaction(request, post_id, reaction_type):
                 # Create the new reaction
                 reaction_model.objects.create(post=post, user=user)
                 success = True
+
+                # Send notification only when adding a new reaction AND if the reactor is not the post owner
+                if post.user != user:
+                    try:
+                        # Create reaction notification
+                        NotificationService.create(
+                            recipient=post.user,
+                            sender=user,
+                            notification_type='reaction',
+                            message=f"{user.username} reacted to your post",
+                            metadata={
+                                'post_id': post.id, 
+                                'reaction_type': reaction_type
+                            }
+                        )
+                        print(f"Reaction notification sent to {post.user.username}")
+                    except Exception as e:
+                        print(f"Failed to create notification: {e}")
+                        # Don't fail the whole request if notification fails
 
             # Update the post instance to reflect the new counts
             post.refresh_from_db()

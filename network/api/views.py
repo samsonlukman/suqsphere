@@ -14,6 +14,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import LimitOffsetPagination
 from django.contrib.auth.views import (
     PasswordResetView,
     PasswordResetDoneView,
@@ -312,6 +313,14 @@ class FollowUnfollowView(APIView):
         else:
             action = "followed"
 
+            # 🔔 Send notification for new follow
+            NotificationService.create(
+                recipient=user_to_follow,   # The user being followed
+                sender=request.user,        # The follower
+                notification_type='follow',
+                message=f"{request.user.username} started following you."
+            )
+
         return Response({
             "status": "success",
             "action": action,
@@ -324,7 +333,7 @@ class FollowUnfollowView(APIView):
 class CreatePostAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @transaction.atomic  # Ensures all DB actions succeed or roll back together
+    @transaction.atomic
     def post(self, request):
         try:
             post_content = request.data.get("post_content", "").strip()
@@ -362,13 +371,16 @@ class CreatePostAPIView(APIView):
             friends_ids = set(followers).intersection(following)
 
             for friend_id in friends_ids:
+                friend = User.objects.get(id=friend_id)  # ✅ Fetch user instance
                 NotificationService.create(
-                    recipient_id=friend_id,  # using ID is more efficient
+                    recipient=friend,  # ✅ must be a User instance
                     sender=request.user,
                     notification_type='post',
                     message=f"{request.user.username} shared a new post.",
                     metadata={'post_id': post.id}
                 )
+
+            
 
             serializer = PostSerializer(post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -378,6 +390,7 @@ class CreatePostAPIView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
 
             
     
@@ -524,6 +537,44 @@ REACTION_MODELS = {
     'sad': Sad,
     'shock': Shock,
 }
+
+class PostReactionCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, post_id, reaction_type):
+        """
+        Create or toggle a reaction for a post, and notify the post owner.
+        """
+        post = get_object_or_404(Post, pk=post_id)
+
+        if reaction_type not in REACTION_MODELS:
+            return Response({"error": "Invalid reaction type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        model_class = REACTION_MODELS[reaction_type]
+        user = request.user
+
+        # Create the reaction if it doesn't exist
+        reaction, created = model_class.objects.get_or_create(user=user, post=post)
+
+        if created:
+            print(f"Created {reaction_type} reaction by {user.username} on post {post.id}")
+        else:
+            print(f"{user.username} already reacted with {reaction_type} on post {post.id}")
+
+        # Notify the post owner if the reactor is not the owner
+        if post.user != user:
+            print(f"Sending reaction notification to {post.user.username}")
+            NotificationService.create(
+                recipient=post.user,
+                sender=user,
+                notification_type='reaction',
+                message=f"{user.username} reacted to your post",
+                metadata={'post_id': post.id, 'reaction_type': reaction_type}
+            )
+
+        return Response({"status": "success"}, status=status.HTTP_201_CREATED)
+
+
 
 class PostReactionsListView(generics.ListAPIView):
     """
@@ -710,30 +761,62 @@ class SavePushTokenView(APIView):
         if not expo_token:
             return Response({'error': 'Missing token'}, status=400)
 
-        # ✅ Use token as the unique key, not user
+        # Ensure token is assigned to the current user
         DeviceToken.objects.update_or_create(
             token=expo_token,
-            defaults={'user': request.user},
+            defaults={'user': request.user}
         )
 
         return Response({'message': 'Token saved successfully'})
+
+
+
+
+class NotificationPagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 50
 
 class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+        notifications = Notification.objects.filter(
+            recipient=request.user
+        ).order_by('-created_at')
+        
+        paginator = NotificationPagination()
+        result_page = paginator.paginate_queryset(notifications, request)
+        
+        # Check if result_page is None (no pagination applied)
+        if result_page is not None:
+            serializer = NotificationSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        
+        # Fallback if no pagination
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
+@api_view(['POST'])
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
+        notification.is_read = True
+        notification.save()
+        return Response({'success': True}, status=status.HTTP_200_OK)
+    except Notification.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        DeviceToken.objects.filter(user=request.user).update(user=None)
+        expo_token = request.data.get('token')  # front-end must send the token
+        if expo_token:
+            DeviceToken.objects.filter(user=request.user, token=expo_token).delete()
+        
         logout(request)
         return Response({'message': 'Logged out successfully'})
+
     
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'

@@ -550,10 +550,12 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.author.username} for {self.product.title}"
-    
+
+
 class DeviceToken(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='device_token')
-    token = models.CharField(max_length=255, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='device_tokens')
+    token = models.CharField(max_length=255, unique=True)  # One token per device
+    device_name = models.CharField(max_length=100, blank=True, null=True)  # Optional
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -562,6 +564,7 @@ class DeviceToken(models.Model):
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('follow', 'Follow'),
+        ('reaction', 'Reaction'),
         ('comment', 'Comment'),
         ('purchase', 'Purchase'),
         ('message', 'Message'),

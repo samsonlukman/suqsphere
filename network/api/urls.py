@@ -14,7 +14,8 @@ urlpatterns = [
     path('random-posts', RandomPostsView.as_view(), name='api_random-posts'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='api_post-detail'),
     path('posts/<int:post_id>/reactions/', PostReactionsListView.as_view(), name='api_post-reactions-list'),
-
+    path('posts/<int:post_id>/add-remove-reaction/<str:reaction_type>/', PostReactionCreateView.as_view(), name='api_add-or-remove-reaction'),
+    
     path('user/', views.get_user_details, name='api_get_user_details'),
     path('users_by_ids/', get_users_by_ids, name='users-by-ids'),
     
@@ -26,6 +27,8 @@ urlpatterns = [
     path('save-token/', SavePushTokenView.as_view(), name='save_token'),
 
     path('notifications', NotificationListView.as_view(), name='notifications'),
+    path('notifications/<int:notification_id>/mark-read/', mark_notification_read, name='api_notification-mark-read'),
+
 
     path('login/', LoginView.as_view(), name='api_login'),
     path('logout/', LogoutView.as_view(), name='logout_functional_api'),
