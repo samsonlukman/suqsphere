@@ -185,6 +185,16 @@ CHANNEL_LAYERS = {
     },
 }
 
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# This forces URL generation to use HTTPS
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # --- Development (InMemory) ---
 # CHANNEL_LAYERS = {
 #     "default": {
