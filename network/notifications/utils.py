@@ -1,29 +1,30 @@
-# notifications/utils.py
+# network/notifications/utils.py
 import requests
 
-EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
-
-
-# ============================================================
-# 📱 Push Notification Helper
-# ============================================================
-def send_push(expo_token, title, body, data=None):
-    print(f"Sending push to {expo_token} with title {title}")
-    """Send Expo push notification to a single device."""
-    message = {
-        "to": expo_token,
-        "sound": "default",  # Device handles playback
+def send_push(token, title, message, data=None):
+    """
+    Sends a push notification via the Expo Push API.
+    """
+    payload = {
+        "to": token,
+        "sound": "default",
         "title": title,
-        "body": body,
+        "body": message,
         "data": data or {},
+        "priority": "high",
     }
-    headers = {"Content-Type": "application/json"}
+
     try:
-        response = requests.post(EXPO_PUSH_URL, json=message, headers=headers)
+        response = requests.post(
+            "https://exp.host/--/api/v2/push/send",
+            json=payload,
+            timeout=10
+        )
         response.raise_for_status()
-        print(f"✅ Push sent to {expo_token[:10]}...: {response.text}")
-    except Exception as e:
-        print(f"❌ Push error for token {expo_token}: {e}")
+        print(f"✅ Push sent successfully to {token[:20]}...")
+    except requests.RequestException as e:
+        print(f"❌ Failed to send push: {e}")
+
 
 
 
