@@ -137,7 +137,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'lucassamson24@gmail.com'
 EMAIL_HOST_PASSWORD = 'ezgokvqbrzfnfbjw'
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'lucassamson24@gmail.com'
+DEFAULT_FROM_EMAIL = 'no-reply@suqsphere.com'
 
 # ============================================================
 # 🖼️ STATIC & MEDIA

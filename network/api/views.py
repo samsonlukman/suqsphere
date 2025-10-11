@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db.models.functions import Coalesce
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.db import IntegrityError
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, Http404
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect
@@ -31,14 +31,11 @@ from network.forms import GroupForm, LibraryDocumentForm, VideoForm, Registratio
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
-from django.template.response import TemplateResponse
 from .serializers import *
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.http import JsonResponse
 from django.db.models import Q
 from network.models import *
 from .serializers import *
@@ -66,6 +63,18 @@ from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 from network.notifications.service import NotificationService
 from django.db import transaction
+
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.core.mail import send_mail
+from django.contrib.auth.views import PasswordResetView
 
 User = get_user_model()
 
@@ -844,15 +853,50 @@ class CustomPasswordResetView(PasswordResetView):
         context = {'email': form.cleaned_data['email']}
         return render(self.request, self.template_name, context)
 
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CustomPasswordResetView(PasswordResetView):
+    """
+    JSON API password reset endpoint.
+    """
+    def post(self, request, *args, **kwargs):
+        import json
+
+        try:
+            data = json.loads(request.body)
+            email = data.get("email", "").strip()
+        except Exception:
+            return JsonResponse({"detail": "Invalid request format."}, status=400)
+
+        if not email:
+            return JsonResponse({"detail": "Email is required."}, status=400)
+
+        # Check if user exists (case-insensitive)
+        users = User.objects.filter(email__iexact=email)
+        if not users.exists():
+            return JsonResponse({"detail": "Invalid email address."}, status=400)
+
+        for user in users:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = get_current_site(request).domain
+            reset_link = f"https://{domain}/reset/{uid}/{token}/"
+
+            # Send the reset email
+            send_mail(
+                subject="Password Reset Request",
+                message=f"Hi {user.username},\n\nYou can reset your password here: {reset_link}",
+                from_email="no-reply@suqsphere.com",
+                recipient_list=[email],
+            )
+
+        return JsonResponse({"detail": "Password reset email sent."}, status=200)
+
+
 class CustomPasswordResetDoneView(PasswordResetDoneView):
-    template_name = 'registration/password_reset_done'
-
-
-class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    template_name = 'registration/password_reset_confirm.html'
-    success_url = reverse_lazy('registration/password_reset_complete')
+    template_name = 'registration/password_reset_done.html'
 
 
 class CustomPasswordResetCompleteView(TemplateView):
     template_name = 'registration/password_reset_complete.html'
-
