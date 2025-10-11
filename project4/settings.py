@@ -176,6 +176,7 @@ CELERY_BEAT_SCHEDULE = {
 # ============================================================
 # 🔌 Channels / WebSocket Layer (Production with Redis)
 # ============================================================
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -184,6 +185,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
 
 """
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -196,11 +198,13 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 """
 # --- Development (InMemory) ---
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels.layers.InMemoryChannelLayer",
-#     }
-# }
+"""
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
+"""
 
 # ============================================================
 # 🔒 ADDITIONAL SECURITY SETTINGS (Recommended)

@@ -1,12 +1,8 @@
-# network/consumers.py
-
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-     
-
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -14,18 +10,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         super().__init__(*args, **kwargs)
         self.conversation_id = None
         self.conversation_group_name = None
-        self.User = get_user_model()  # ✅ safe here
+        self.User = get_user_model()
 
     async def connect(self):
         try:
             self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
             self.conversation_group_name = f"chat_{self.conversation_id}"
         except KeyError:
-            print("WebSocket rejected: 'conversation_id' missing in URL params.")
+            print("❌ WebSocket rejected: 'conversation_id' missing in URL params.")
             await self.close(code=4001)
             return
 
-        # Join group
+        # Join chat group
         await self.channel_layer.group_add(
             self.conversation_group_name,
             self.channel_name
@@ -51,14 +47,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json.get('message')
 
         if not message:
+            print("⚠️ Empty message received, skipping.")
             return
 
+        # Save message to DB
         new_message = await self.save_message(self.scope['user'], message)
 
+        # Broadcast to group
         await self.channel_layer.group_send(
             self.conversation_group_name,
             {
-                'type': 'chat.message',
+                'type': 'chat_message',
                 'id': new_message.id,
                 'sender': {
                     'id': self.scope['user'].id,
@@ -66,27 +65,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'profile_pics': str(self.scope['user'].profile_pics)
                     if getattr(self.scope['user'], "profile_pics", None) else None,
                 },
-                'content': message,
+                'content': new_message.content,
                 'timestamp': new_message.timestamp.isoformat(),
             }
         )
 
     async def chat_message(self, event):
+        """Send message event to WebSocket"""
         await self.send(text_data=json.dumps(event))
 
-@sync_to_async
-def save_message(self, user, message):
+    @sync_to_async
+    def save_message(self, user, message):
+        """Save message to database and trigger notification"""
         from .models import Message, Conversation
+        from network.notifications.service import NotificationService
+
         conversation = get_object_or_404(Conversation, id=self.conversation_id)
+
+        # Save the message
         new_message = Message.objects.create(
             conversation=conversation,
             sender=user,
             content=message
         )
 
-        # ✅ Notify the other participant
+        # Notify other participants
         other_participants = conversation.participants.exclude(id=user.id)
-        from network.notifications.service import NotificationService
         for recipient in other_participants:
             NotificationService.create(
                 recipient=recipient,
@@ -95,10 +99,8 @@ def save_message(self, user, message):
                 message=f"{user.username} sent you a message: {message[:50]}",
                 metadata={
                     'conversation_id': conversation.id,
-                    'message_id': new_message.id
+                    'message_id': new_message.id,
                 }
             )
 
         return new_message
-
-
