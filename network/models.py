@@ -444,7 +444,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="products")
     stock_quantity = models.PositiveIntegerField(default=1)
-    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=2)
     
     # Status and Metadata
     is_active = models.BooleanField(default=True)
@@ -472,54 +472,109 @@ class Order(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="orders")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     order_currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="orders")
-    
+
     # Order Statuses
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Processing', 'Processing'),
+        ('Paid', 'Paid'),
         ('Shipped', 'Shipped'),
         ('Delivered', 'Delivered'),
         ('Cancelled', 'Cancelled'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    
-    # Transaction Details
-    transaction_id = models.CharField(max_length=200, unique=True, blank=True, null=True)
-    
+
+    # Payment / Transaction details
+    transaction_id = models.CharField(max_length=200, unique=True, blank=True, null=True)  # Flutterwave tx_ref
+    flutterwave_tx_ref = models.CharField(max_length=255, blank=True, null=True)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pending', 'Pending'),
+            ('Successful', 'Successful'),
+            ('Failed', 'Failed'),
+        ],
+        default='Pending',
+    )
+
+    # Delivery details
+    kwik_delivery_id = models.CharField(max_length=255, blank=True, null=True)
+    delivery_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pending', 'Pending'),
+            ('PickedUp', 'Picked Up'),
+            ('InTransit', 'In Transit'),
+            ('Delivered', 'Delivered'),
+        ],
+        default='Pending',
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
-        return f"Order #{self.id} by {self.buyer.username}"
-    
+        return f"Order #{self.id} by {self.buyer.username if self.buyer else 'Unknown'}"
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name="ordered_items")
+    seller = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="order_sales")  # 🧩 NEW FIELD
     quantity = models.PositiveIntegerField(default=1)
-    price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2) # Store the price at time of purchase to prevent issues if seller changes the price later
+    price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)  # locked price
+
+    def subtotal(self):
+        return self.quantity * self.price_at_purchase
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.title}"
-    
+        return f"{self.quantity} x {self.product.title if self.product else 'Deleted Product'}"
+
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return f"Cart for {self.user.username}"
-    
+
+
 class CartItem(models.Model):
     cart = models.ForeignKey('Cart', on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    
+
     def __str__(self):
         return f"{self.quantity} x {self.product.title} in cart"
+
+class CompletedPurchase(models.Model):
+    buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="purchases")
+    seller = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="completed_sales")
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name="completed_purchases")
+    quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    PAYMENT_METHODS = [
+        ('wallet', 'Wallet'),
+        ('card', 'Card'),
+        ('ussd', 'USSD'),
+        ('bank_transfer', 'Bank Transfer'),
+    ]
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='wallet')
+
+    STATUS_CHOICES = [
+        ('Completed', 'Completed'),
+        ('Refunded', 'Refunded'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Completed')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.title} - {self.buyer.username} → {self.seller.username}"
+
     
 class MarketComment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="market_comments", default=1)

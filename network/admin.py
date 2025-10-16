@@ -63,7 +63,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ('is_sold_out',)
     fieldsets = (
         ('Product Information', {
-            'fields': ('title', 'description', 'price', 'currency', 'category', 'stock_quantity', 'state')
+            'fields': ('title', 'description', 'price', 'currency', 'category', 'stock_quantity', 'state', 'weight')
         }),
         ('Status', {
             'fields': ('is_active', 'is_featured', 'is_sold_out')
@@ -110,3 +110,4 @@ admin.site.register(MarketImage)
 admin.site.register(Review)
 admin.site.register(DeviceToken)
 admin.site.register(Notification)
+admin.site.register(CompletedPurchase)

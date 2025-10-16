@@ -347,12 +347,39 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     buyer = serializers.StringRelatedField()
-    
+
     class Meta:
         model = Order
         fields = [
-            'id', 'buyer', 'total_amount', 'order_currency', 'status',
-            'transaction_id', 'items', 'created_at'
+            'id',
+            'buyer',
+            'total_amount',
+            'order_currency',
+            'status',
+            'transaction_id',
+            'items',
+            'created_at',
+            'updated_at',
+            
+        ]
+
+class CompletedPurchaseSerializer(serializers.ModelSerializer):
+    buyer = serializers.StringRelatedField()
+    seller = serializers.StringRelatedField()
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = CompletedPurchase
+        fields = [
+            'id',
+            'buyer',
+            'seller',
+            'product',
+            'quantity',
+            'total_price',
+            'payment_method',
+            'status',
+            'created_at',
         ]
 # serializers.py
 class ReviewSerializer(serializers.ModelSerializer):

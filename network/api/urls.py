@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 from network.api.views import *
 from network.api.market_views import *
+from network.api import market_views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -25,6 +26,7 @@ urlpatterns = [
     
     path('get-csrf-token/', views.get_csrf_token, name="api_get-csrf-token"),
     path('save-token/', SavePushTokenView.as_view(), name='save_token'),
+ 
 
     path('notifications', NotificationListView.as_view(), name='notifications'),
     path('notifications/<int:notification_id>/mark-read/', mark_notification_read, name='api_notification-mark-read'),
@@ -65,8 +67,13 @@ urlpatterns = [
     path('products/update-status/<int:pk>/', ProductStatusUpdateView.as_view(), name='product-status-update'),
     
     path('checkout/', CheckoutView.as_view(), name='checkout'),
-    
-    path('orders/', UserOrdersView.as_view(), name='my-orders'),
-    path('sales/', UserSalesView.as_view(), name='my-sales'),
+    path('checkout/complete/', market_views.complete_checkout, name='complete-checkout'),
+    path('initialize-payment/', market_views.initialize_payment, name='initialize-payment'),
+    path('create_kwik_delivery/', market_views.create_kwik_delivery, name='create-quick-delivery'),
+
+    path('orders/', UserOrdersView.as_view(), name='user-orders'),
+    path('purchases/', PurchaseHistoryView.as_view(), name='purchase-history'),
+    path('sales/', SalesHistoryView.as_view(), name='sales-history'),
+    path('record-purchase/', CreateCompletedPurchaseView.as_view(), name='record-purchase'),
     path('', include(router.urls)),
 ]

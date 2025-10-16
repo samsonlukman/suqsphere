@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from django.shortcuts import render, get_object_or_404, redirect
+from decimal import Decimal
 from network.models import *
 from .serializers import *
 from rest_framework import viewsets, permissions
@@ -12,8 +14,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q
 from rest_framework import generics
 from network.notifications.service import NotificationService
+import requests
+from rest_framework.decorators import api_view, permission_classes
+from django.conf import settings
 # Ensure Product, ProductSerializer are imported from their respective locations
-
 from django.db.models import Q
 from rest_framework import generics
 # Ensure Product, ProductSerializer are imported from their respective locations
@@ -287,29 +291,74 @@ class CheckoutView(APIView):
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+    
 class UserOrdersView(generics.ListAPIView):
-    """
-    Lists a user's purchase history.
-    """
-    permission_classes = [IsAuthenticated]
+    """Fetch all orders made by the logged-in user."""
     serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(buyer=self.request.user).order_by('-created_at')
+        return Order.objects.filter(buyer=self.request.user).order_by('-id')
 
-class UserSalesView(generics.ListAPIView):
-    """
-    Lists a user's sales history.
-    """
-    permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer
+
+class PurchaseHistoryView(generics.ListAPIView):
+    """Fetch all completed purchases by the logged-in user (buyer)."""
+    serializer_class = CompletedPurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Find all order items for products sold by the user
-        sold_products = self.request.user.listed_products.all()
-        order_ids = OrderItem.objects.filter(product__in=sold_products).values_list('order', flat=True)
-        return Order.objects.filter(id__in=order_ids).order_by('-created_at')
+        return CompletedPurchase.objects.filter(buyer=self.request.user).order_by('-id')
+
+
+class SalesHistoryView(generics.ListAPIView):
+    """Fetch all completed sales by the logged-in user (seller)."""
+    serializer_class = CompletedPurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CompletedPurchase.objects.filter(seller=self.request.user).order_by('-id')
+    
+
+
+class CreateCompletedPurchaseView(generics.CreateAPIView):
+    """
+    Record a successful purchase after payment.
+    Expected POST data:
+    {
+      "product_id": 5,
+      "quantity": 2,
+      "total_price": 4000.00,
+      "payment_method": "card"
+    }
+    """
+    serializer_class = CompletedPurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        buyer = request.user
+        product_id = request.data.get('product_id')
+        quantity = request.data.get('quantity', 1)
+        total_price = request.data.get('total_price')
+        payment_method = request.data.get('payment_method', 'wallet')
+
+        if not product_id or not total_price:
+            return Response({'error': 'Product ID and total price are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product = get_object_or_404(Product, id=product_id)
+        seller = product.user  # assuming Product has a `user` field as the seller
+
+        completed = CompletedPurchase.objects.create(
+            buyer=buyer,
+            seller=seller,
+            product=product,
+            quantity=quantity,
+            total_price=total_price,
+            payment_method=payment_method,
+            status='Completed'
+        )
+
+        serializer = CompletedPurchaseSerializer(completed)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
@@ -333,3 +382,143 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CurrencyListView(ListAPIView):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def initialize_payment(request):
+    user = request.user
+    data = request.data
+
+    total = Decimal(data.get('total'))
+    tx_ref = f"TX-{user.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+
+    print(f"Data: {data}")
+    print(f"Total: {total}")
+
+    payload = {
+        "tx_ref": tx_ref,
+        "amount": str(total),
+        "currency": "NGN",
+        "redirect_url": "suqsphere://payment-success",
+        "customer": {
+            "email": user.email,
+            "name": user.get_full_name() or user.username,
+        },
+        "customizations": {
+            "title": "Suqsphere Purchase",
+            "description": "Payment for items",
+        },
+    }
+
+    headers = {
+        "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post("https://api.flutterwave.com/v3/payments", json=payload, headers=headers)
+    res_data = response.json()
+
+    if res_data.get("status") == "success":
+        order = Order.objects.create(
+            buyer=user,
+            total_amount=total,
+            flutterwave_tx_ref=tx_ref,
+        )
+        # Add order items
+        cart_items = CartItem.objects.filter(cart__user=user)
+        for item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                seller=item.product.seller,  # assumes product.seller exists
+                quantity=item.quantity,
+                price_at_purchase=item.product.price,
+            )
+        return Response({"payment_link": res_data["data"]["link"]})
+    else:
+        return Response({"error": "Unable to initialize payment"}, status=400)
+
+
+def create_kwik_delivery(order):
+    url = "https://api.kwik.delivery/api/v1/deliveries"
+    headers = {
+        "Authorization": f"Bearer {settings.KWIK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "pickup": {
+            "address": "Warehouse address",
+            "contact_name": "Suqsphere Dispatch",
+            "contact_phone": "+2348000000000"
+        },
+        "dropoff": {
+            "address": "Customer Address",
+            "contact_name": order.buyer.get_full_name(),
+            "contact_phone": order.buyer.profile.phone_number,
+        },
+        "package": {
+            "weight": "2kg",
+            "description": f"Order #{order.id} items"
+        },
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code == 201:
+        data = response.json()
+        order.kwik_delivery_id = data["id"]
+        order.delivery_status = "picked_up"
+        order.save()
+        return data
+    else:
+        return None
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_checkout(request):
+    reference = request.data.get('reference')
+    address = request.data.get('delivery_address')
+    city = request.data.get('city')
+    state = request.data.get('state')
+    phone = request.data.get('phone')
+
+    # ✅ Verify payment with Flutterwave
+    headers = {'Authorization': f'Bearer {settings.FLW_SECRET_KEY}'}
+    verify_url = f"https://api.flutterwave.com/v3/transactions/{reference}/verify"
+    response = requests.get(verify_url, headers=headers)
+    data = response.json()
+
+    if data['status'] == 'success' and data['data']['status'] == 'successful':
+        # ✅ Create order & trigger Kwik Delivery here
+        # Example:
+        # create_order(user=request.user, address=address, total=data['data']['amount'])
+        # send_to_kwik(address, city, state, phone)
+        return Response({'detail': 'Order created and delivery initiated.'})
+    else:
+        return Response({'detail': 'Payment verification failed.'}, status=400)
+    
+
+class UserOrdersView(generics.ListAPIView):
+    """Fetch all orders made by the logged-in user."""
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(buyer=self.request.user).order_by('-id')
+
+
+class PurchaseHistoryView(generics.ListAPIView):
+    """Fetch all completed purchases by the logged-in user (buyer)."""
+    serializer_class = CompletedPurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CompletedPurchase.objects.filter(buyer=self.request.user).order_by('-id')
+
+
+class SalesHistoryView(generics.ListAPIView):
+    """Fetch all completed sales by the logged-in user (seller)."""
+    serializer_class = CompletedPurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CompletedPurchase.objects.filter(seller=self.request.user).order_by('-id')
