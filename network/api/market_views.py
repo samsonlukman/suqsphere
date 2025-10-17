@@ -386,57 +386,90 @@ class CurrencyListView(ListAPIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def initialize_payment(request):
-    user = request.user
-    data = request.data
+    from decimal import Decimal
+    import traceback
 
-    total = Decimal(data.get('total'))
-    tx_ref = f"TX-{user.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    print("\n=== INITIALIZE PAYMENT STARTED ===")
 
-    print(f"Data: {data}")
-    print(f"Total: {total}")
+    try:
+        print("✅ AUTHENTICATED USER:", request.user)
+        print("📩 RAW REQUEST DATA:", request.data)
 
-    payload = {
-        "tx_ref": tx_ref,
-        "amount": str(total),
-        "currency": "NGN",
-        "redirect_url": "suqsphere://payment-success",
-        "customer": {
-            "email": user.email,
-            "name": user.get_full_name() or user.username,
-        },
-        "customizations": {
-            "title": "Suqsphere Purchase",
-            "description": "Payment for items",
-        },
-    }
+        user = request.user
+        data = request.data
+        total = Decimal(data.get('total', '0'))
 
-    headers = {
-        "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
-        "Content-Type": "application/json",
-    }
+        if total <= 0:
+            print("❌ Invalid total amount:", total)
+            return Response({"error": "Invalid total amount"}, status=400)
 
-    response = requests.post("https://api.flutterwave.com/v3/payments", json=payload, headers=headers)
-    res_data = response.json()
+        tx_ref = f"TX-{user.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+        print("🧾 Transaction Reference:", tx_ref)
 
-    if res_data.get("status") == "success":
-        order = Order.objects.create(
-            buyer=user,
-            total_amount=total,
-            flutterwave_tx_ref=tx_ref,
-        )
-        # Add order items
-        cart_items = CartItem.objects.filter(cart__user=user)
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                seller=item.product.seller,  # assumes product.seller exists
-                quantity=item.quantity,
-                price_at_purchase=item.product.price,
+        payload = {
+            "tx_ref": tx_ref,
+            "amount": str(total),
+            "currency": "NGN",
+            "redirect_url": "suqsphere://payment-success",
+            "customer": {
+                "email": user.email,
+                "name": user.get_full_name() or user.username,
+            },
+            "customizations": {
+                "title": "Suqsphere Purchase",
+                "description": "Payment for items",
+            },
+        }
+
+        print("📦 Payload Sent to Flutterwave:", payload)
+
+        headers = {
+            "Authorization": f"Bearer {settings.FLW_SECRET_KEY}",
+            "Content-Type": "application/json",
+        }
+
+        print("🔐 Headers:", headers)
+
+        response = requests.post("https://api.flutterwave.com/v3/payments", json=payload, headers=headers)
+        print("🌍 Flutterwave Response Code:", response.status_code)
+        print("📨 Flutterwave Response Body:", response.text)
+
+        res_data = response.json()
+
+        if res_data.get("status") == "success":
+            print("✅ Payment initialized successfully!")
+            order = Order.objects.create(
+                buyer=user,
+                total_amount=total,
+                flutterwave_tx_ref=tx_ref,
             )
-        return Response({"payment_link": res_data["data"]["link"]})
-    else:
-        return Response({"error": "Unable to initialize payment"}, status=400)
+
+            # Add order items
+            cart_items = CartItem.objects.filter(cart__user=user)
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    seller=item.product.seller,
+                    quantity=item.quantity,
+                    price_at_purchase=item.product.price,
+                )
+
+            print("🛒 Order Created:", order.id)
+            return Response({"payment_link": res_data["data"]["link"]})
+
+        else:
+            print("❌ Flutterwave responded with error:", res_data)
+            return Response({"error": res_data}, status=400)
+
+    except Exception as e:
+        print("🔥 Exception occurred during payment initialization:")
+        print(traceback.format_exc())
+        return Response({"error": str(e)}, status=500)
+
+    finally:
+        print("=== INITIALIZE PAYMENT ENDED ===\n")
+
 
 
 def create_kwik_delivery(order):

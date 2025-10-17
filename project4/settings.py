@@ -13,11 +13,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ============================================================
 SECRET_KEY = '13kl@xtukpwe&xj2xoysxe9_6=tf@f8ewxer5n&ifnd46+6$%8'
 DEBUG = False  # 🚀 Set to False in production
-FLW_SECRET_KEY = "FLWSECK-ff074512b3ab79ba7670bfc928856937-18bda5799e4vt-X"
+FLW_SECRET_KEY = "FLWSECK-dda49099762cf2950af109ed725503d2-199f104f47fvt-X"
+FLW_SECRET_KEYY = "FLWSECK_TEST-a24fb9fa352050c7c26c76b659b4d2f7-X"
 FRONTEND_URL = "https://192.168.0.202/"
 
 ALLOWED_HOSTS = [
-    'suqsphere.com', '10.186.202.66', '127.0.0.1', 'www.suqsphere.com', '13.60.34.232', '10.102.181.66',  '192.168.0.202'
+    'suqsphere.com', '10.202.37.66', '10.186.202.66', '127.0.0.1', 'www.suqsphere.com', '13.60.34.232', '10.102.181.66',  '192.168.0.202'
 ]
 
 # ============================================================
