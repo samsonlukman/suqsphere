@@ -5,7 +5,7 @@ import json
 from django.core import serializers
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect
@@ -1132,7 +1132,8 @@ def login_view(request):
                 "message": "Invalid username and/or password."
             })
     else:
-        return render(request, "network/login.html")
+        return HttpResponse("Coming Soon")
+        #return render(request, "network/login.html")
 
 
 def logout_view(request):

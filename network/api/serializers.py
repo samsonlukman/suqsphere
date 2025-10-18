@@ -207,46 +207,23 @@ class EditProfileSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-    
+    password = serializers.CharField(write_only=True, validators=[validate_password])
 
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'phone_number', 'password', 'profile_pics']
         
 
-    def validate(self, data):
-        password = data.get('password')
-        try:
-            # Use Django's password validation to ensure a strong password
-            validate_password(password=password)
-        except ValidationError as e:
-            # Print the validation error details
-            print(f"Validation error: {e.messages}")
-            raise serializers.ValidationError(e.messages)
-
-        return data
-
-    def to_representation(self, instance):
-        return {
-            'status': 'error',
-            'message': 'Validation error',
-            'errors': self.errors,
-        }
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered.")
+        return value
 
     def create(self, validated_data):
-        try:
-            # Try to create the user
-            user = User.objects.create_user(**validated_data)
-            return user
-        except ValidationError as ve:
-            # Handle validation error and include it in the response
-            self.errors = ve.messages
-            return None
-        except Exception as e:
-            # Print the error and raise the exception again
-            print(f"Error creating user: {e}")
-            raise e
+        user = User.objects.create_user(**validated_data)
+        user.is_active = False  # disable account until email verified
+        user.save()
+        return user
         
 #MARKETPLACE SERIALIZERS
 

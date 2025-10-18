@@ -14,6 +14,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_str
 from rest_framework.pagination import LimitOffsetPagination
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -69,11 +71,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.core.mail import send_mail
 from django.contrib.auth.views import PasswordResetView
 
 User = get_user_model()
@@ -744,19 +745,62 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
     
+
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
-    permission_classes = [permissions.AllowAny] # Allow anyone to register
-    parser_classes = [MultiPartParser, FormParser] # Required for handling file uploads (profile_pics)
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
 
-    # Override the default create method to add custom pre-validation or context
+    def perform_create(self, serializer):
+        user = serializer.save(is_active=False)
+
+        # Generate verification link
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        verify_url = f"{settings.FRONTEND_URL}/api/verify-email/{uid}/{token}/"
+
+        # Send verification email
+        send_mail(
+            subject="Verify your Suqsphere Account",
+            message=f"Hi {user.username},\n\nPlease verify your email by clicking the link below:\n{verify_url}\n\nIf you didn’t create this account, please ignore this email.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+        return user
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer) # Calls serializer.save() which uses custom .create()
+        user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+        return Response(
+            {
+                "message": "Registration successful! Please check your email to verify your account.",
+                "email": user.email,
+            },
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+class VerifyEmailAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response({"message": "Email verified successfully!"})
+        else:
+            return Response({"error": "Invalid or expired verification link."}, status=400)
+
+        
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrf_token': csrf_token})

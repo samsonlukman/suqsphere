@@ -15,7 +15,7 @@ SECRET_KEY = '13kl@xtukpwe&xj2xoysxe9_6=tf@f8ewxer5n&ifnd46+6$%8'
 DEBUG = False  # 🚀 Set to False in production
 FLW_SECRET_KEY = "FLWSECK-dda49099762cf2950af109ed725503d2-199f104f47fvt-X"
 FLW_SECRET_KEYY = "FLWSECK_TEST-a24fb9fa352050c7c26c76b659b4d2f7-X"
-FRONTEND_URL = "https://192.168.0.202/"
+FRONTEND_URL = "http://10.202.37.66:8000"
 
 ALLOWED_HOSTS = [
     'suqsphere.com', '10.202.37.66', '10.186.202.66', '127.0.0.1', 'www.suqsphere.com', '13.60.34.232', '10.102.181.66',  '192.168.0.202'
@@ -103,6 +103,7 @@ ASGI_APPLICATION = 'project4.asgi.application'
 # ============================================================
 # 🗄️ DATABASE CONFIGURATION
 # ============================================================
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # ❗ Replace with PostgreSQL/MySQL in production if needed
@@ -110,6 +111,18 @@ DATABASES = {
     }
 }
 
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'suqsphere_db',
+        'USER': 'suqsphere_user',
+        'PASSWORD': 'Boolean@int95',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+"""
 # ============================================================
 # 👥 AUTH CONFIGURATION
 # ============================================================

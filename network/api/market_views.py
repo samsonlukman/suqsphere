@@ -414,6 +414,7 @@ def initialize_payment(request):
             "customer": {
                 "email": user.email,
                 "name": user.get_full_name() or user.username,
+                 "phone_number": user.phone_number,
             },
             "customizations": {
                 "title": "Suqsphere Purchase",
@@ -438,6 +439,7 @@ def initialize_payment(request):
 
         if res_data.get("status") == "success":
             print("✅ Payment initialized successfully!")
+
             order = Order.objects.create(
                 buyer=user,
                 total_amount=total,
@@ -455,7 +457,12 @@ def initialize_payment(request):
                     price_at_purchase=item.product.price,
                 )
 
-            print("🛒 Order Created:", order.id)
+            print(f"🛒 Order #{order.id} created with {cart_items.count()} items")
+
+            # ✅ Clear the cart AFTER successfully creating the order
+            deleted_count, _ = CartItem.objects.filter(cart__user=user).delete()
+            print(f"🧹 Cleared {deleted_count} items from user's cart after order creation")
+
             return Response({"payment_link": res_data["data"]["link"]})
 
         else:
@@ -469,6 +476,7 @@ def initialize_payment(request):
 
     finally:
         print("=== INITIALIZE PAYMENT ENDED ===\n")
+
 
 
 

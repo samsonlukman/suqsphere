@@ -39,6 +39,7 @@ urlpatterns = [
     path('password-reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password-reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('register/', RegisterAPIView.as_view(), name='api_register'),
+    path("verify-email/<uidb64>/<token>/", VerifyEmailAPIView.as_view(), name="verify-email"),
     
     path('profile/<int:user_id>/', ProfileView.as_view(), name='api_profile'),
     path('profile/edit/', UserProfileUpdateView.as_view(), name='profile-edit'),
