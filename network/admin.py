@@ -73,6 +73,7 @@ class ProductAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class OrderItemInline(admin.TabularInline):
     """Inline to show order items on the Order admin page."""
     model = OrderItem
@@ -84,19 +85,50 @@ class OrderItemInline(admin.TabularInline):
 # These classes customize the list view and detail view of each model.
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'buyer', 'status', 'total_amount', 'created_at')
+    list_display = ('id', 'buyer', 'status', 'total_amount', 'created_at', 'delivery_type')
     list_filter = ('status', 'created_at', 'order_currency')
-    search_fields = ('buyer__username', 'transaction_id')
+    search_fields = ('buyer__username', 'flutterwave_tx_ref', 'delivery_type')
     inlines = [OrderItemInline]
     readonly_fields = ('created_at',)
     fieldsets = (
         ('Order Details', {
-            'fields': ('buyer', 'status', 'total_amount', 'order_currency', 'transaction_id')
+            'fields': ('buyer', 'status', 'total_amount', 'order_currency', 'flutterwave_tx_ref', 'delivery_type')
         }),
         ('Timestamps', {
-            'fields': ('created_at', 'updated_at')
+            'fields': ('created_at',)
         }),
     )
+
+@admin.register(ManualDelivery)
+class ManualDeliveryAdmin(admin.ModelAdmin):
+    list_display = (
+        'reference',
+        'user',
+        'full_name',
+        'email',
+        'phone_number',
+        'total_items',
+        'total_amount',
+        'status',
+        'created_at',
+    )
+    list_filter = ('status', 'created_at')
+    search_fields = ('reference', 'user__username', 'email', 'phone_number')
+    readonly_fields = ('created_at', 'reference', 'total_amount', 'total_items')  # status removed here
+    ordering = ('-created_at',)
+
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('user', 'full_name', 'email', 'phone_number'),
+        }),
+        ('Order Details', {
+            'fields': ('total_items', 'total_amount', 'reference'),
+        }),
+        ('Status & Timestamp', {
+            'fields': ('status', 'created_at'),
+        }),
+    )
+
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):

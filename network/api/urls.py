@@ -71,10 +71,11 @@ urlpatterns = [
     path('checkout/complete/', market_views.complete_checkout, name='complete-checkout'),
     path('initialize-payment/', market_views.initialize_payment, name='initialize-payment'),
     path('create_kwik_delivery/', market_views.create_kwik_delivery, name='create-quick-delivery'),
+    path('manual-checkout/', manual_checkout, name='manual-checkout'),
 
     path('orders/', UserOrdersView.as_view(), name='user-orders'),
     path('purchases/', PurchaseHistoryView.as_view(), name='purchase-history'),
-    path('sales/', SalesHistoryView.as_view(), name='sales-history'),
+    path('sales/', market_views.my_sales, name='sales-history'),
     path('record-purchase/', CreateCompletedPurchaseView.as_view(), name='record-purchase'),
     path('', include(router.urls)),
 ]

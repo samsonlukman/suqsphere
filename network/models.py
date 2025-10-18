@@ -468,21 +468,47 @@ class Product(models.Model):
         self.is_sold_out = (self.stock_quantity == 0)
         super().save(*args, **kwargs)
 
+# Order Statuses
+STATUS_CHOICES = [
+    ('Pending', 'Pending'),
+    ('Processing', 'Processing'),
+    ('Paid', 'Paid'),
+    ('Shipped', 'Shipped'),
+    ('Delivered', 'Delivered'),
+    ('Cancelled', 'Cancelled'),
+]
+
+
+class ManualDelivery(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='manual_deliveries')
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='manual_delivery', null=True, blank=True)
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    total_items = models.PositiveIntegerField(default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    reference = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Update In Orders')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Auto-update order status to match manual delivery status
+        if self.order and self.status != self.order.status:
+            self.order.status = self.status
+            self.order.save(update_fields=['status'])
+
+    def __str__(self):
+        return f"Order by {self.user.username} on {self.created_at}: {self.reference}"
+
 class Order(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="orders")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    order_currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="orders")
+    order_currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, related_name="orders", default=18)
 
-    # Order Statuses
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Paid', 'Paid'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered'),
-        ('Cancelled', 'Cancelled'),
-    ]
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    delivery_type = models.CharField(max_length=50, default='manual')  # e.g., Standard, Express
 
     # Payment / Transaction details
     transaction_id = models.CharField(max_length=200, unique=True, blank=True, null=True)  # Flutterwave tx_ref
@@ -515,7 +541,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Order #{self.id} by {self.buyer.username if self.buyer else 'Unknown'}"
+        return f"Order #{self.id} by {self.buyer.username if self.buyer else 'Unknown'}: {self.buyer.phone_number}, {self.buyer.email}"
 
 
 class OrderItem(models.Model):

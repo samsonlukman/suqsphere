@@ -316,10 +316,12 @@ class CartSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
-    
+    seller_id = serializers.IntegerField(source='seller.id', read_only=True)
+
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price_at_purchase']
+        fields = ['id', 'product', 'quantity', 'price_at_purchase', 'seller_id']
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)

@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from decimal import Decimal
 from network.models import *
+from django.core.mail import send_mail
+import traceback
 from .serializers import *
 from rest_framework import viewsets, permissions
 from rest_framework.generics import ListAPIView
@@ -310,13 +312,22 @@ class PurchaseHistoryView(generics.ListAPIView):
         return CompletedPurchase.objects.filter(buyer=self.request.user).order_by('-id')
 
 
-class SalesHistoryView(generics.ListAPIView):
-    """Fetch all completed sales by the logged-in user (seller)."""
-    serializer_class = CompletedPurchaseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_sales(request):
+    user = request.user
+    
+    # Get orders where any OrderItem has this user as seller
+    orders = Order.objects.filter(
+        items__seller=user, 
+        status='Delivered'  # Only delivered orders
+    ).distinct().order_by('-created_at')
 
-    def get_queryset(self):
-        return CompletedPurchase.objects.filter(seller=self.request.user).order_by('-id')
+    for i in orders:
+        print(i)
+    
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
     
 
 
@@ -383,6 +394,93 @@ class CurrencyListView(ListAPIView):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def manual_checkout(request):
+    print("\n=== MANUAL CHECKOUT STARTED ===")
+    try:
+        user = request.user
+        cart_items = CartItem.objects.filter(cart__user=user)
+        if not cart_items.exists():
+            return Response({"error": "Your cart is empty."}, status=400)
+
+        total_items = sum(item.quantity for item in cart_items)
+        total_amount = sum(Decimal(item.product.price) * item.quantity for item in cart_items)
+
+        reference = f"MD-{user.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+        print(f"🧾 ManualDelivery Reference: {reference}")
+
+        manual_delivery = ManualDelivery.objects.create(
+            user=user,
+            full_name=user.get_full_name() or user.username,
+            email=user.email,
+            phone_number=user.phone_number,
+            total_items=total_items,
+            total_amount=total_amount,
+            reference=reference,
+        )
+
+        # Create order records
+        order = Order.objects.create(
+            buyer=user,
+            total_amount=total_amount,
+            flutterwave_tx_ref=reference,  # no payment ref
+            delivery_type="manual",
+        )
+        for item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                seller=item.product.seller,
+                quantity=item.quantity,
+                price_at_purchase=item.product.price,
+            )
+
+        # Clear cart
+        deleted_count, _ = CartItem.objects.filter(cart__user=user).delete()
+        print(f"🧹 Cleared {deleted_count} cart items for user {user.username}")
+
+        # --- Send email to superusers ---
+        superusers = User.objects.filter(is_superuser=True, is_active=True)
+        superuser_emails = [su.email for su in superusers if su.email]
+
+        if superuser_emails:
+            subject = f"New Manual Checkout: {reference}"
+            message = (
+                f"A new manual delivery request has been made.\n\n"
+                f"Reference: {reference}\n"
+                f"Buyer: {user.get_full_name() or user.username}\n"
+                f"Email: {user.email}\n"
+                f"Phone: {user.phone_number}\n"
+                f"Total Items: {total_items}\n"
+                f"Total Amount: {total_amount}\n\n"
+                f"Please process this order accordingly."
+            )
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                superuser_emails,
+                fail_silently=False,
+            )
+            print(f"📧 Email sent to superusers: {superuser_emails}")
+
+        return Response({
+            "message": "Order placed successfully. We will contact you shortly.",
+            "reference": manual_delivery.reference,
+            "total_items": total_items,
+            "total_amount": str(total_amount),
+        }, status=201)
+
+    except Exception as e:
+        print("🔥 Exception during manual checkout:")
+        print(traceback.format_exc())
+        return Response({"error": str(e)}, status=500)
+
+    finally:
+        print("=== MANUAL CHECKOUT ENDED ===\n")
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def initialize_payment(request):
@@ -444,6 +542,7 @@ def initialize_payment(request):
                 buyer=user,
                 total_amount=total,
                 flutterwave_tx_ref=tx_ref,
+                delivery_type="automated",
             )
 
             # Add order items
