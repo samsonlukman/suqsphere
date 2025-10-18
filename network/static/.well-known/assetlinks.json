@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.app.suqsphere",
+    "sha256_cert_fingerprints": [
+       "50:54:CA:7F:0E:D5:26:27:83:D9:70:7B:BA:AC:69:2F:3D:26:D5:8C:FA:1D:5C:83:14:39:B3:B4:F2:84:43:F2"
+    ]
+  }
+}]

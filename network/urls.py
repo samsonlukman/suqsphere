@@ -4,6 +4,7 @@ from . import views, custom_context_processors
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path(".well-known/assetlinks.json", views.assetlinks, name="assetlinks"),
     path("friends", views.friends_list, name="friends_list"),
     path("myfollowing", views.myfollowing, name='myfollowing'),
     path('user_connections', custom_context_processors.user_connections, name='user_connections'),

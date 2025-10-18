@@ -2,10 +2,12 @@ from django.db.models import F, ExpressionWrapper, DateTimeField, Value
 from datetime import datetime
 from django.db.models.functions import Coalesce
 import json
+import os
+from django.conf import settings
 from django.core import serializers
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponse, FileResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect
@@ -1174,6 +1176,13 @@ def register(request):
 
 
 
+def assetlinks(request):
+    file_path = os.path.join(settings.BASE_DIR, 'network', 'static', '.well-known', 'assetlinks.json')
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), content_type='application/json')
+    else:
+        raise Http404("assetlinks.json not found")
+    
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     success_url = reverse_lazy('registration/password_reset_done')
